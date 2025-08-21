@@ -59,13 +59,14 @@ export function LensRequestDialog({
   const [expirationDays, setExpirationDays] = useState("30");
 
   // Server actions with useActionState
-  const [approveState, approveAction] = useActionState(
+  const [approveState, approveAction, isApprovePending] = useActionState(
     async () => {
       if (!request) return { error: "No hay solicitud seleccionada" };
 
+      const codeToUse = accessCode || "";
       const result = await updateLensRequest(request._id, {
         status: "approved",
-        accessCode: accessCode || undefined,
+        accessCode: codeToUse,
         expiration: {
           days: parseInt(expirationDays) || 30,
         },
@@ -79,10 +80,10 @@ export function LensRequestDialog({
 
       return { error: result.error };
     },
-    {}
+    { error: undefined }
   );
 
-  const [rejectState, rejectAction] = useActionState(
+  const [rejectState, rejectAction, isRejectPending] = useActionState(
     async () => {
       if (!request) return { error: "No hay solicitud seleccionada" };
 
@@ -99,7 +100,7 @@ export function LensRequestDialog({
 
       return { error: result.error };
     },
-    {}
+    { error: undefined }
   );
 
   const formatDate = (dateString: string) => {
@@ -281,7 +282,7 @@ export function LensRequestDialog({
                       disabled={!rejectionReason.trim()}
                       className="text-red-600 border-red-300 hover:bg-red-50"
                     >
-                      {rejectState.pending ? (
+                      {isRejectPending ? (
                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       ) : (
                         <XCircle className="h-4 w-4 mr-2" />
@@ -296,7 +297,7 @@ export function LensRequestDialog({
                       style={{ backgroundColor: "#1859A9" }}
                       className="text-white hover:bg-blue-700"
                     >
-                      {approveState.pending ? (
+                      {isApprovePending ? (
                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       ) : (
                         <CheckCircle className="h-4 w-4 mr-2" />

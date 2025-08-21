@@ -26,10 +26,6 @@ export default function SolicitudLentesPage() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    checkAuthAndLoadUser();
-  }, [checkAuthAndLoadUser]);
-
   const checkAuthAndLoadUser = useCallback(async () => {
     try {
       const response = await fetch("/api/auth/user", {
@@ -55,6 +51,10 @@ export default function SolicitudLentesPage() {
       setLoading(false);
     }
   }, [router]);
+
+  useEffect(() => {
+    checkAuthAndLoadUser();
+  }, [checkAuthAndLoadUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

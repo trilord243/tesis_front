@@ -44,12 +44,12 @@ export function MetaQuestSetForm() {
       if (!formData.headsetSerialNumber.trim()) {
         throw new Error("El número de serie del headset es requerido");
       }
-      if (!formData.controllers[0].serialNumber.trim()) {
+      if (!formData.controllers[0]?.serialNumber?.trim()) {
         throw new Error(
           "El número de serie del primer controlador es requerido"
         );
       }
-      if (!formData.controllers[1].serialNumber.trim()) {
+      if (!formData.controllers[1]?.serialNumber?.trim()) {
         throw new Error(
           "El número de serie del segundo controlador es requerido"
         );
@@ -76,10 +76,10 @@ export function MetaQuestSetForm() {
 
       const result = await createMetaQuestSet(setData);
 
-      if (result.success) {
+      if (result.success && result.set) {
         setMessage({
           type: "success",
-          text: `Set MetaQuest "${result.set?.headset.name}" creado exitosamente`,
+          text: `Set MetaQuest "${result.set.headset.name}" creado exitosamente`,
           set: result.set,
         });
         // Reset form

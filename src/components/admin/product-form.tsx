@@ -76,10 +76,10 @@ export function ProductForm() {
 
       const result = await createProduct(productData);
 
-      if (result.success) {
+      if (result.success && result.product) {
         setMessage({
           type: "success",
-          text: `Producto "${result.product?.name}" creado exitosamente`,
+          text: `Producto "${result.product.name}" creado exitosamente`,
           product: result.product,
         });
         // Reset form

@@ -51,10 +51,20 @@ export default function MisReservasPage() {
     return false;
   }, [router]);
 
+  const loadRequests = useCallback(async () => {
+    try {
+      const response = await fetch("/api/lens-request/user", {
+        credentials: "include",
+      });
 
-  useEffect(() => {
-    loadUserAndRequests();
-  }, [loadUserAndRequests]);
+      if (response.ok) {
+        const requestsData = await response.json();
+        setRequests(requestsData);
+      }
+    } catch (error) {
+      console.error("Error cargando solicitudes:", error);
+    }
+  }, []);
 
   const loadUserAndRequests = useCallback(async () => {
     try {
@@ -81,20 +91,9 @@ export default function MisReservasPage() {
     }
   }, [router, ensureNotAdmin, loadRequests]);
 
-  const loadRequests = useCallback(async () => {
-    try {
-      const response = await fetch("/api/lens-request/user", {
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        const requestsData = await response.json();
-        setRequests(requestsData);
-      }
-    } catch (error) {
-      console.error("Error cargando solicitudes:", error);
-    }
-  }, []);
+  useEffect(() => {
+    loadUserAndRequests();
+  }, [loadUserAndRequests]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {

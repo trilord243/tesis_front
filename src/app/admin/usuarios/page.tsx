@@ -41,10 +41,6 @@ export default function AdminUsuariosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    checkAdminAndLoadUsers();
-  }, [checkAdminAndLoadUsers]);
-
   const loadUsers = useCallback(async () => {
     try {
       const response = await fetch("/api/admin/users", {
@@ -92,6 +88,9 @@ export default function AdminUsuariosPage() {
     }
   }, [router, loadUsers]);
 
+  useEffect(() => {
+    checkAdminAndLoadUsers();
+  }, [checkAdminAndLoadUsers]);
 
   const handleToggleRole = async (userId: string, currentRole: string) => {
     const newRole = currentRole === "admin" ? "user" : "admin";

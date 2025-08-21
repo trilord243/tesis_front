@@ -35,16 +35,6 @@ export function LensRequestsManager() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Load requests on component mount
-  useEffect(() => {
-    loadRequests();
-  }, [loadRequests]);
-
-  // Filter requests when search term or status filter changes
-  useEffect(() => {
-    filterRequests();
-  }, [filterRequests]);
-
   const loadRequests = useCallback(async () => {
     try {
       setLoading(true);
@@ -87,6 +77,16 @@ export function LensRequestsManager() {
 
     setFilteredRequests(filtered);
   }, [requests, searchTerm, statusFilter]);
+
+  // Load requests on component mount
+  useEffect(() => {
+    loadRequests();
+  }, [loadRequests]);
+
+  // Filter requests when search term or status filter changes
+  useEffect(() => {
+    filterRequests();
+  }, [filterRequests]);
 
   const handleViewRequest = useCallback((request: LensRequest) => {
     setSelectedRequest(request);
@@ -135,6 +135,7 @@ export function LensRequestsManager() {
       const timer = setTimeout(() => setError(""), 10000);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [error]);
 
   if (loading) {

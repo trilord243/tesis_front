@@ -81,7 +81,7 @@ export default async function DashboardPage() {
       <Navbar
         isAuthenticated={true}
         showAuthButtons={false}
-        isAdmin={user.role === "admin"}
+        isAdmin={false}
       />
       <div className="min-h-screen bg-gray-50" style={{ paddingTop: "80px" }}>
         {/* Main Content */}
@@ -103,36 +103,6 @@ export default async function DashboardPage() {
               </div>
             </div>
           </div>
-          {/* Panel Admin para usuarios administradores */}
-          {user.role === "admin" && (
-            <Alert className="mb-6 border-orange-200 bg-orange-50">
-              <Shield className="h-4 w-4" style={{ color: "#FF8200" }} />
-              <AlertDescription className="flex items-center justify-between">
-                <div>
-                  <span className="text-sm font-medium text-gray-700">
-                    Acceso de Administrador:
-                  </span>
-                  <span
-                    className="ml-3 text-base font-medium"
-                    style={{ color: "#FF8200" }}
-                  >
-                    Tienes permisos de administración del sistema
-                  </span>
-                </div>
-                <Link href="/admin/dashboard">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="ml-4"
-                    style={{ borderColor: "#FF8200", color: "#FF8200" }}
-                  >
-                    <Shield className="h-4 w-4 mr-2" />
-                    Ir al Panel Admin
-                  </Button>
-                </Link>
-              </AlertDescription>
-            </Alert>
-          )}
 
           {/* Código de Acceso Destacado */}
           {user.codigo_acceso && (
@@ -222,10 +192,10 @@ export default async function DashboardPage() {
                           className="text-sm font-medium"
                           style={{
                             color:
-                              user.role === "admin" ? "#FF8200" : "#003087",
+                              (user.role as string) === "admin" ? "#FF8200" : "#003087",
                           }}
                         >
-                          {user.role === "admin" ? "Administrador" : "Usuario"}
+                          {(user.role as string) === "admin" ? "Administrador" : "Usuario"}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
