@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getAuthToken, getCurrentUser } from "@/lib/auth";
+import { NextResponse } from "next/server";
+import { getAuthToken } from "@/lib/auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const token = await getAuthToken();
 

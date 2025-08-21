@@ -1,26 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { requireAuth, getCurrentUser } from "@/lib/auth";
 import { Navbar } from "@/components/layout/navbar";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Calendar,
   Clock,
   CheckCircle,
-  AlertCircle,
   XCircle,
   Glasses,
   Loader2,
@@ -48,21 +43,20 @@ export default function MisReservasPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [requests, setRequests] = useState<LensRequest[]>([]);
-  const [error, setError] = useState("");
-  const ensureNotAdmin = (u: User | null) => {
+  const ensureNotAdmin = useCallback((u: User | null) => {
     if (u?.role === "admin") {
       router.replace("/admin/dashboard");
       return true;
     }
     return false;
-  };
+  }, [router]);
 
 
   useEffect(() => {
     loadUserAndRequests();
-  }, []);
+  }, [loadUserAndRequests]);
 
-  const loadUserAndRequests = async () => {
+  const loadUserAndRequests = useCallback(async () => {
     try {
       // Verificar autenticación y obtener usuario
       const userResponse = await fetch("/api/auth/user", {
@@ -82,13 +76,12 @@ export default function MisReservasPage() {
       await loadRequests();
     } catch (error) {
       console.error("Error:", error);
-      setError("Error al cargar la información");
     } finally {
       setLoading(false);
     }
-  };
+  }, [router, ensureNotAdmin, loadRequests]);
 
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
     try {
       const response = await fetch("/api/lens-request/user", {
         credentials: "include",
@@ -101,7 +94,7 @@ export default function MisReservasPage() {
     } catch (error) {
       console.error("Error cargando solicitudes:", error);
     }
-  };
+  }, []);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -161,7 +154,6 @@ export default function MisReservasPage() {
 
   const pendingRequests = requests.filter((r) => r.status === "pending");
   const approvedRequests = requests.filter((r) => r.status === "approved");
-  const rejectedRequests = requests.filter((r) => r.status === "rejected");
 
   return (
     <>

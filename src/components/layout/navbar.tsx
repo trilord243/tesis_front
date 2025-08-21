@@ -16,7 +16,6 @@ import {
   User,
   QrCode,
   ClipboardList,
-  Shield,
 } from "lucide-react";
 import { useState } from "react";
 

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getAuthToken } from "@/lib/auth";
 import { jwtVerify } from "jose";
 import { User } from "@/types/auth";
@@ -8,7 +8,7 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "changeme_secret_key"
 );
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const token = await getAuthToken();
 

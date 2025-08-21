@@ -1,7 +1,6 @@
 import { getCurrentUser, requireAuth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { UserProfile } from "@/components/dashboard/user-profile";
-import { LogoutButton } from "@/components/auth/logout-button";
 import { Navbar } from "@/components/layout/navbar";
 import {
   Card,
@@ -17,13 +16,8 @@ import {
   Calendar,
   User as UserIcon,
   QrCode,
-  Glasses,
-  Package,
-  Settings,
-  Home,
   ClipboardList,
   Shield,
-  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { jwtVerify, SignJWT } from "jose";
+import { jwtVerify } from "jose";
 import type {
   User,
   LoginCredentials,
@@ -82,7 +82,7 @@ export async function register(userData: RegisterData) {
       );
     }
 
-    const user: User = await response.json();
+    await response.json();
 
     // Después del registro exitoso, hacer login automático
     const loginResult = await login({

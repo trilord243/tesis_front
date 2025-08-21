@@ -1,9 +1,4 @@
-interface ActionButtonsProps {
-  readonly onStartReservation?: () => void;
-  readonly onViewDemo?: () => void;
-}
-
-function ActionButtons({ onStartReservation, onViewDemo }: ActionButtonsProps) {
+function ActionButtons() {
   return (
     <div className="flex flex-col sm:flex-row gap-4">
       <a href="/demo-reserva">

@@ -38,12 +38,12 @@ export function LensRequestsManager() {
   // Load requests on component mount
   useEffect(() => {
     loadRequests();
-  }, []);
+  }, [loadRequests]);
 
   // Filter requests when search term or status filter changes
   useEffect(() => {
     filterRequests();
-  }, [requests, searchTerm, statusFilter]);
+  }, [filterRequests]);
 
   const loadRequests = useCallback(async () => {
     try {

@@ -4,21 +4,12 @@ import * as React from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  children: React.ReactNode;
-}
-
 interface SelectTriggerProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
 }
 
 interface SelectContentProps {
-  children: React.ReactNode;
-}
-
-interface SelectItemProps
-  extends React.OptionHTMLAttributes<HTMLOptionElement> {
   children: React.ReactNode;
 }
 

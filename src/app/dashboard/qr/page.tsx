@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, QrCode, Download, Info, Shield } from "lucide-react";
+import { ArrowLeft, QrCode, Info, Shield } from "lucide-react";
 import {
   Card,
   CardContent,

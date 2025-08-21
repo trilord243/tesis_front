@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import Link from "next/link";
@@ -41,12 +41,7 @@ export default function PerfilPage() {
     cedula: "",
   });
 
-  useEffect(() => {
-    // Cargar datos del usuario
-    fetchUserData();
-  }, []);
-
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       const response = await fetch("/api/auth/user", {
         credentials: "include",
@@ -78,7 +73,12 @@ export default function PerfilPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    // Cargar datos del usuario
+    fetchUserData();
+  }, [fetchUserData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

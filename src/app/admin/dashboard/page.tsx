@@ -19,7 +19,6 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
-  UserCheck,
 } from "lucide-react";
 
 export const metadata: Metadata = {

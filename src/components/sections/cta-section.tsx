@@ -1,9 +1,4 @@
-interface CTAButtonsProps {
-  readonly onCreateAccount?: () => void;
-  readonly onMoreInfo?: () => void;
-}
-
-function CTAButtons({ onCreateAccount, onMoreInfo }: CTAButtonsProps) {
+function CTAButtons() {
   return (
     <div className="flex flex-col sm:flex-row gap-4">
       <a href="/demo-reserva">

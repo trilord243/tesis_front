@@ -9,7 +9,6 @@ import {
   Computer,
   Headphones,
   Settings,
-  FileText,
   Send,
   CheckCircle,
   Mail,
@@ -546,7 +545,6 @@ function MockEmailNotification() {
 }
 
 export function DemoReservationProcess() {
-  const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
     // Configurar estilos personalizados para Driver.js

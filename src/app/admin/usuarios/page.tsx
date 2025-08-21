@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import Link from "next/link";
@@ -43,9 +43,26 @@ export default function AdminUsuariosPage() {
 
   useEffect(() => {
     checkAdminAndLoadUsers();
+  }, [checkAdminAndLoadUsers]);
+
+  const loadUsers = useCallback(async () => {
+    try {
+      const response = await fetch("/api/admin/users", {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al cargar usuarios");
+      }
+
+      const usersData = await response.json();
+      setUsers(usersData);
+    } catch (error) {
+      console.error("Error cargando usuarios:", error);
+    }
   }, []);
 
-  const checkAdminAndLoadUsers = async () => {
+  const checkAdminAndLoadUsers = useCallback(async () => {
     try {
       // Verificar que el usuario actual es admin
       const userResponse = await fetch("/api/auth/user", {
@@ -73,22 +90,8 @@ export default function AdminUsuariosPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router, loadUsers]);
 
-  const loadUsers = async () => {
-    try {
-      const response = await fetch("/api/admin/users", {
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        const usersData = await response.json();
-        setUsers(usersData);
-      }
-    } catch (error) {
-      console.error("Error cargando usuarios:", error);
-    }
-  };
 
   const handleToggleRole = async (userId: string, currentRole: string) => {
     const newRole = currentRole === "admin" ? "user" : "admin";

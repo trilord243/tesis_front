@@ -289,7 +289,7 @@ export default async function AdminActivosPage() {
                 • Los activos se actualizan automáticamente cuando se realizan reservas
               </p>
               <p className="mb-2">
-                • El estado "Disponible" indica que el equipo está listo para ser reservado
+                • El estado &quot;Disponible&quot; indica que el equipo está listo para ser reservado
               </p>
               <p>
                 • Para gestión avanzada de inventario, contacte al administrador del sistema

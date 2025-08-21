@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import Link from "next/link";
@@ -13,7 +13,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { User } from "@/types/auth";
@@ -29,9 +28,9 @@ export default function SolicitudLentesPage() {
 
   useEffect(() => {
     checkAuthAndLoadUser();
-  }, []);
+  }, [checkAuthAndLoadUser]);
 
-  const checkAuthAndLoadUser = async () => {
+  const checkAuthAndLoadUser = useCallback(async () => {
     try {
       const response = await fetch("/api/auth/user", {
         credentials: "include",
@@ -55,7 +54,7 @@ export default function SolicitudLentesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

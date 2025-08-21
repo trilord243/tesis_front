@@ -1,12 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 
 export function LogoutButton() {
-  const router = useRouter();
-
   const handleLogout = async () => {
     try {
       const response = await fetch("/api/auth/logout", {

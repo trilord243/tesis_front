@@ -60,7 +60,7 @@ export function LensRequestDialog({
 
   // Server actions with useActionState
   const [approveState, approveAction] = useActionState(
-    async (_prevState: unknown, _formData: FormData) => {
+    async () => {
       if (!request) return { error: "No hay solicitud seleccionada" };
 
       const result = await updateLensRequest(request._id, {
@@ -83,7 +83,7 @@ export function LensRequestDialog({
   );
 
   const [rejectState, rejectAction] = useActionState(
-    async (_prevState: unknown, _formData: FormData) => {
+    async () => {
       if (!request) return { error: "No hay solicitud seleccionada" };
 
       const result = await updateLensRequest(request._id, {

@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 const COOKIE_NAME = "auth-token";
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Eliminar la cookie de autenticación
     const cookieStore = await cookies();
