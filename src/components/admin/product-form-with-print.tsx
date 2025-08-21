@@ -43,17 +43,18 @@ export function ProductFormWithPrint() {
   // Load headsets when controller type is selected
   const loadHeadsets = async () => {
     if (headsetsLoaded) return;
-    
+
     const result = await getProducts();
     if (result.success) {
-      const headsetProducts = result.products?.filter(p => p.type === "headset") || [];
+      const headsetProducts =
+        result.products?.filter((p) => p.type === "headset") || [];
       setHeadsets(headsetProducts);
       setHeadsetsLoaded(true);
     }
   };
 
   const handleTypeChange = (type: "headset" | "controller") => {
-    setFormData(prev => ({ ...prev, type, headsetId: "" }));
+    setFormData((prev) => ({ ...prev, type, headsetId: "" }));
     if (type === "controller") {
       loadHeadsets();
     }
@@ -61,10 +62,13 @@ export function ProductFormWithPrint() {
 
   const handlePrint = async () => {
     if (!createdProduct) return;
-    
+
     setIsPrinting(true);
-    const result = await printProductLabel(createdProduct.hexValue, "new-product");
-    
+    const result = await printProductLabel(
+      createdProduct.hexValue,
+      "new-product"
+    );
+
     if (result.success) {
       setMessage({
         type: "success",
@@ -120,7 +124,7 @@ export function ProductFormWithPrint() {
           text: `Activo "${result.product.name}" creado exitosamente`,
           product: result.product,
         });
-        
+
         // Reset form
         setFormData({
           name: "",
@@ -128,7 +132,7 @@ export function ProductFormWithPrint() {
           type: "headset",
           headsetId: "",
         });
-        
+
         // Show print dialog after a short delay
         setTimeout(() => {
           setShowPrintDialog(true);
@@ -153,24 +157,32 @@ export function ProductFormWithPrint() {
     <>
       <div className="space-y-6">
         {message && !showPrintDialog && (
-          <Alert className={`${
-            message.type === "success" 
-              ? "border-green-200 bg-green-50" 
-              : "border-red-200 bg-red-50"
-          }`}>
+          <Alert
+            className={`${
+              message.type === "success"
+                ? "border-green-200 bg-green-50"
+                : "border-red-200 bg-red-50"
+            }`}
+          >
             {message.type === "success" ? (
               <CheckCircle className="h-4 w-4 text-green-600" />
             ) : (
               <AlertCircle className="h-4 w-4 text-red-600" />
             )}
-            <AlertDescription className={
-              message.type === "success" ? "text-green-800" : "text-red-800"
-            }>
+            <AlertDescription
+              className={
+                message.type === "success" ? "text-green-800" : "text-red-800"
+              }
+            >
               {message.text}
               {message.product && (
                 <div className="mt-2 text-sm">
-                  <p><strong>Código:</strong> {message.product.codigo}</p>
-                  <p><strong>RFID Tag:</strong> {message.product.hexValue}</p>
+                  <p>
+                    <strong>Código:</strong> {message.product.codigo}
+                  </p>
+                  <p>
+                    <strong>RFID Tag:</strong> {message.product.hexValue}
+                  </p>
                 </div>
               )}
             </AlertDescription>
@@ -180,14 +192,19 @@ export function ProductFormWithPrint() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Product Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Nombre del Activo *
             </label>
             <input
               type="text"
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
               placeholder="Ej: MetaQuest 3, Controller izquierdo MQ3"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
@@ -196,14 +213,22 @@ export function ProductFormWithPrint() {
 
           {/* Serial Number */}
           <div>
-            <label htmlFor="serialNumber" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="serialNumber"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Número de Serie *
             </label>
             <input
               type="text"
               id="serialNumber"
               value={formData.serialNumber}
-              onChange={(e) => setFormData(prev => ({ ...prev, serialNumber: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  serialNumber: e.target.value,
+                }))
+              }
               placeholder="Ej: MQ3-12345, CTRL-L-67890"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
@@ -244,13 +269,21 @@ export function ProductFormWithPrint() {
           {/* Headset Selection (only for controllers) */}
           {formData.type === "controller" && (
             <div>
-              <label htmlFor="headsetId" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="headsetId"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Headset Asociado *
               </label>
               <select
                 id="headsetId"
                 value={formData.headsetId}
-                onChange={(e) => setFormData(prev => ({ ...prev, headsetId: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    headsetId: e.target.value,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
@@ -293,44 +326,61 @@ export function ProductFormWithPrint() {
 
       {/* Print Dialog */}
       <Dialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>
-        <DialogContent className="max-w-md mx-auto">
+        <DialogContent className="max-w-3xl mx-auto">
           <DialogHeader>
             <DialogTitle>¡Activo Creado Exitosamente!</DialogTitle>
             <DialogDescription>
               ¿Deseas imprimir la etiqueta RFID ahora?
             </DialogDescription>
           </DialogHeader>
-          
+
           {createdProduct && (
             <div className="space-y-4 py-4">
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span className="font-medium text-green-800">Activo creado correctamente</span>
+                  <span className="font-medium text-green-800">
+                    Activo creado correctamente
+                  </span>
                 </div>
                 <div className="space-y-1 text-sm text-gray-700">
-                  <p><strong>Nombre:</strong> {createdProduct.name}</p>
-                  <p><strong>Serial:</strong> {createdProduct.serialNumber}</p>
-                  <p><strong>Código:</strong> {createdProduct.codigo}</p>
-                  <p className="font-mono text-xs"><strong>RFID:</strong> {createdProduct.hexValue}</p>
+                  <p>
+                    <strong>Nombre:</strong> {createdProduct.name}
+                  </p>
+                  <p>
+                    <strong>Serial:</strong> {createdProduct.serialNumber}
+                  </p>
+                  <p>
+                    <strong>Código:</strong> {createdProduct.codigo}
+                  </p>
+                  <p className="font-mono text-xs">
+                    <strong>RFID:</strong> {createdProduct.hexValue}
+                  </p>
                 </div>
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <p className="text-sm text-blue-800">
-                  La etiqueta RFID contiene toda la información necesaria para el seguimiento automático del activo.
+                  La etiqueta RFID contiene toda la información necesaria para
+                  el seguimiento automático del activo.
                 </p>
               </div>
 
               {message && showPrintDialog && (
-                <Alert className={`${
-                  message.type === "success" 
-                    ? "border-green-200 bg-green-50" 
-                    : "border-red-200 bg-red-50"
-                }`}>
-                  <AlertDescription className={
-                    message.type === "success" ? "text-green-800" : "text-red-800"
-                  }>
+                <Alert
+                  className={`${
+                    message.type === "success"
+                      ? "border-green-200 bg-green-50"
+                      : "border-red-200 bg-red-50"
+                  }`}
+                >
+                  <AlertDescription
+                    className={
+                      message.type === "success"
+                        ? "text-green-800"
+                        : "text-red-800"
+                    }
+                  >
                     {message.text}
                   </AlertDescription>
                 </Alert>

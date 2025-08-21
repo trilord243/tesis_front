@@ -25,7 +25,7 @@ export default function LoginPage() {
           paddingBottom: "40px",
         }}
       >
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-3xl">
           {/* Logo y Título */}
           <div className="text-center mb-6 sm:mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full shadow-2xl mb-4">

@@ -23,7 +23,9 @@ interface ProductPrintButtonProps {
 export function ProductPrintButton({ product }: ProductPrintButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
-  const [printType, setPrintType] = useState<"new-product" | "reprint">("new-product");
+  const [printType, setPrintType] = useState<"new-product" | "reprint">(
+    "new-product"
+  );
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -54,59 +56,81 @@ export function ProductPrintButton({ product }: ProductPrintButtonProps) {
           <Printer className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md mx-auto">
-        <DialogHeader>
-          <DialogTitle>Imprimir Etiqueta RFID</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="max-w-3xl mx-auto">
+        <DialogHeader className="pb-3">
+          <DialogTitle className="text-base">
+            Imprimir Etiqueta RFID
+          </DialogTitle>
+          <DialogDescription className="text-xs">
             Imprimir etiqueta RFID para {product.name}
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4 py-4">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-gray-500">Activo:</p>
-              <p className="font-medium">{product.name}</p>
+          <div className="grid grid-cols-4 gap-4 text-xs">
+            <div className="space-y-1">
+              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
+                Activo:
+              </p>
+              <p className="font-semibold text-gray-900 text-sm">
+                {product.name}
+              </p>
             </div>
-            <div>
-              <p className="text-gray-500">Serial:</p>
-              <p className="font-medium">{product.serialNumber}</p>
+            <div className="space-y-1">
+              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
+                Serial:
+              </p>
+              <p className="font-semibold text-gray-900 text-sm">
+                {product.serialNumber}
+              </p>
             </div>
-            <div>
-              <p className="text-gray-500">Código:</p>
-              <p className="font-medium">{product.codigo}</p>
+            <div className="space-y-1">
+              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
+                Código:
+              </p>
+              <p className="font-semibold text-gray-900 text-sm">
+                {product.codigo}
+              </p>
             </div>
-            <div>
-              <p className="text-gray-500">RFID Tag:</p>
-              <p className="font-mono text-xs">{product.hexValue}</p>
+            <div className="space-y-1">
+              <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
+                RFID Tag:
+              </p>
+              <p className="font-mono text-xs font-semibold text-gray-900 bg-gray-50 px-2 py-1 rounded break-all">
+                {product.hexValue}
+              </p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Tipo de impresión:</label>
-            <div className="grid grid-cols-2 gap-2">
+            <label className="text-xs font-semibold text-gray-700">
+              Tipo de impresión:
+            </label>
+            <div className="grid grid-cols-2 gap-4">
               <Button
                 type="button"
-                variant={printType === "new-product" ? "default" : "outline"}
+                variant={printType === "new-product" ? "primary" : "outline"}
                 size="sm"
                 onClick={() => setPrintType("new-product")}
                 disabled={isPrinting}
+                className="py-2 px-3 text-xs"
               >
                 Nueva Etiqueta
               </Button>
               <Button
                 type="button"
-                variant={printType === "reprint" ? "default" : "outline"}
+                variant={printType === "reprint" ? "primary" : "outline"}
                 size="sm"
                 onClick={() => setPrintType("reprint")}
                 disabled={isPrinting}
+                className="py-2 px-3 text-xs"
               >
                 Reimpresión
               </Button>
             </div>
-            <p className="text-xs text-gray-500">
-              {printType === "new-product" 
-                ? "Para activos recién creados" 
+            <p className="text-xs text-gray-500 italic">
+              {printType === "new-product"
+                ? "Para activos recién creados"
                 : "Para reemplazar etiquetas dañadas o perdidas"}
             </p>
           </div>
@@ -128,11 +152,12 @@ export function ProductPrintButton({ product }: ProductPrintButtonProps) {
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="pt-4">
           <Button
             variant="outline"
             onClick={() => setIsOpen(false)}
             disabled={isPrinting}
+            className="px-6 py-2 text-sm"
           >
             Cancelar
           </Button>
@@ -140,6 +165,7 @@ export function ProductPrintButton({ product }: ProductPrintButtonProps) {
             onClick={handlePrint}
             disabled={isPrinting}
             style={{ backgroundColor: isPrinting ? "#ccc" : "#FF8200" }}
+            className="px-6 py-2 text-sm"
           >
             {isPrinting ? (
               <>

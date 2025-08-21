@@ -81,9 +81,9 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="w-full min-w-[320px] bg-white rounded-2xl shadow-2xl">
+    <div className="w-full bg-white rounded-2xl shadow-2xl">
       {/* Header Section */}
-      <div className="px-8 sm:px-10 pt-8 sm:pt-10 pb-6 text-center">
+      <div className="px-10 sm:px-12 pt-10 sm:pt-12 pb-8 text-center">
         <h2
           className="text-2xl sm:text-3xl font-bold mb-3"
           style={{
@@ -100,7 +100,7 @@ export function RegisterForm() {
 
       {/* Form Section */}
       <form onSubmit={handleSubmit}>
-        <div className="px-8 sm:px-10 pb-8">
+        <div className="px-10 sm:px-12 pb-10">
           {/* Error Alert */}
           {error && (
             <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -109,7 +109,7 @@ export function RegisterForm() {
           )}
 
           {/* Name and LastName Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
             {/* Name Field */}
             <div>
               <label
@@ -203,7 +203,7 @@ export function RegisterForm() {
           </div>
 
           {/* Password and Confirm Password Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-7">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-7">
             {/* Password Field */}
             <div>
               <label
@@ -279,7 +279,7 @@ export function RegisterForm() {
         </div>
 
         {/* Footer Section */}
-        <div className="px-8 sm:px-10 pb-8 pt-6 text-center border-t border-gray-100">
+        <div className="px-10 sm:px-12 pb-10 pt-8 text-center border-t border-gray-100">
           <p className="text-sm text-gray-600">
             ¿Ya tienes cuenta?{" "}
             <Link
