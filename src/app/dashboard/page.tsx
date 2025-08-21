@@ -1,0 +1,305 @@
+import { getCurrentUser, requireAuth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { UserProfile } from "@/components/dashboard/user-profile";
+import { LogoutButton } from "@/components/auth/logout-button";
+import { Navbar } from "@/components/layout/navbar";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Metadata, Viewport } from "next";
+import Link from "next/link";
+import {
+  Calendar,
+  User as UserIcon,
+  QrCode,
+  Glasses,
+  Package,
+  Settings,
+  Home,
+  ClipboardList,
+  Shield,
+  AlertCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Dashboard - CentroMundoX",
+  description: "Panel de control de usuario",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
+export default async function DashboardPage() {
+  await requireAuth();
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return <div>Error: Usuario no encontrado</div>;
+  }
+
+  // Si el usuario es administrador, redirigir al panel de admin
+  if (user.role === "admin") {
+    redirect("/admin/dashboard");
+  }
+
+
+  const menuItems = [
+    {
+      title: "Solicitar Lentes VR/AR",
+      description: "Solicita acceso a lentes de realidad virtual y aumentada",
+      icon: Calendar,
+      href: "/dashboard/reservas",
+      color: "#1859A9",
+    },
+    {
+      title: "Mis Solicitudes",
+      description: "Gestiona tus solicitudes de lentes e historial",
+      icon: ClipboardList,
+      href: "/dashboard/mis-reservas",
+      color: "#003087",
+    },
+    {
+      title: "Mi Perfil",
+      description: "Actualiza tu información personal",
+      icon: UserIcon,
+      href: "/dashboard/perfil",
+      color: "#FF8200",
+    },
+    {
+      title: "Mi QR",
+      description: "Visualiza tu código QR de acceso",
+      icon: QrCode,
+      href: "/dashboard/qr",
+      color: "#FF8200",
+    },
+  ];
+
+  return (
+    <>
+      <Navbar
+        isAuthenticated={true}
+        showAuthButtons={false}
+        isAdmin={user.role === "admin"}
+      />
+      <div className="min-h-screen bg-gray-50" style={{ paddingTop: "80px" }}>
+        {/* Main Content */}
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {/* Welcome Section */}
+          <div className="mb-8">
+            <div className="flex items-center space-x-4 mb-4">
+              <div
+                className="flex items-center justify-center w-12 h-12 rounded-full"
+                style={{ backgroundColor: "#1859A9" }}
+              >
+                <div className="text-lg font-black text-white">UM</div>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold" style={{ color: "#1859A9" }}>
+                  Bienvenido, {user.name}
+                </h1>
+                <p className="text-gray-600">Panel de control - CentroMundoX</p>
+              </div>
+            </div>
+          </div>
+          {/* Panel Admin para usuarios administradores */}
+          {user.role === "admin" && (
+            <Alert className="mb-6 border-orange-200 bg-orange-50">
+              <Shield className="h-4 w-4" style={{ color: "#FF8200" }} />
+              <AlertDescription className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-medium text-gray-700">
+                    Acceso de Administrador:
+                  </span>
+                  <span
+                    className="ml-3 text-base font-medium"
+                    style={{ color: "#FF8200" }}
+                  >
+                    Tienes permisos de administración del sistema
+                  </span>
+                </div>
+                <Link href="/admin/dashboard">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-4"
+                    style={{ borderColor: "#FF8200", color: "#FF8200" }}
+                  >
+                    <Shield className="h-4 w-4 mr-2" />
+                    Ir al Panel Admin
+                  </Button>
+                </Link>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Código de Acceso Destacado */}
+          {user.codigo_acceso && (
+            <Alert className="mb-6 border-blue-200 bg-blue-50">
+              <Shield className="h-4 w-4" style={{ color: "#1859A9" }} />
+              <AlertDescription className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-medium text-gray-700">
+                    Tu código de acceso al centro:
+                  </span>
+                  <span
+                    className="ml-3 text-2xl font-mono font-bold"
+                    style={{ color: "#003087" }}
+                  >
+                    {user.codigo_acceso}
+                  </span>
+                </div>
+                <Link href="/dashboard/qr">
+                  <Button variant="outline" size="sm" className="ml-4">
+                    <QrCode className="h-4 w-4 mr-2" />
+                    Ver QR
+                  </Button>
+                </Link>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Perfil de Usuario */}
+            <div className="lg:col-span-1">
+              <UserProfile user={user} />
+            </div>
+
+            {/* Contenido Principal */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Estadísticas Rápidas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="border-0 shadow-md">
+                  <CardHeader className="pb-2">
+                    <CardTitle
+                      className="text-base"
+                      style={{ color: "#1859A9" }}
+                    >
+                      Equipos Reservados
+                    </CardTitle>
+                    <CardDescription>
+                      Equipos actualmente en tu posesión
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div
+                      className="text-2xl font-bold"
+                      style={{ color: "#FF8200" }}
+                    >
+                      {user.equipos_reservados?.length || 0}
+                    </div>
+                    {user.equipos_reservados &&
+                      user.equipos_reservados.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs text-gray-500">
+                            Últimos equipos:
+                          </p>
+                          <div className="text-sm text-gray-700">
+                            {user.equipos_reservados.slice(0, 2).join(", ")}
+                            {user.equipos_reservados.length > 2 && "..."}
+                          </div>
+                        </div>
+                      )}
+                  </CardContent>
+                </Card>
+
+                <Card className="border-0 shadow-md">
+                  <CardHeader className="pb-2">
+                    <CardTitle
+                      className="text-base"
+                      style={{ color: "#1859A9" }}
+                    >
+                      Estado de Cuenta
+                    </CardTitle>
+                    <CardDescription>Información de tu cuenta</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Rol:</span>
+                        <span
+                          className="text-sm font-medium"
+                          style={{
+                            color:
+                              user.role === "admin" ? "#FF8200" : "#003087",
+                          }}
+                        >
+                          {user.role === "admin" ? "Administrador" : "Usuario"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">
+                          Miembro desde:
+                        </span>
+                        <span className="text-sm font-medium">
+                          {new Date(user.registrationDate).toLocaleDateString(
+                            "es-ES"
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Menu de Navegación */}
+              <Card className="border-0 shadow-md">
+                <CardHeader>
+                  <CardTitle style={{ color: "#1859A9" }}>
+                    Acciones Disponibles
+                  </CardTitle>
+                  <CardDescription>
+                    Accede a todas las funcionalidades del sistema
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {menuItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="block group"
+                      >
+                        <div className="p-4 border rounded-lg hover:shadow-md transition-all hover:border-brand-primary group-hover:scale-[1.02]">
+                          <div className="flex items-start space-x-3">
+                            <div
+                              className="p-2 rounded-lg bg-opacity-10"
+                              style={{
+                                backgroundColor: `${item.color}20`,
+                                color: item.color,
+                              }}
+                            >
+                              <item.icon className="h-5 w-5" />
+                            </div>
+                            <div className="flex-1">
+                              <h3
+                                className="font-semibold"
+                                style={{ color: item.color }}
+                              >
+                                {item.title}
+                              </h3>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {item.description}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </main>
+      </div>
+    </>
+  );
+}
