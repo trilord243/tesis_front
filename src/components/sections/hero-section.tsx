@@ -19,7 +19,7 @@ function HeroContent() {
   return (
     <div>
       <h1 className="headliner text-brand-primary mb-6">
-        Centro de Investigación de Centro mundo x
+        Centro de Investigación de Centro mundo xaa
       </h1>
 
       <p className="subcopy text-brand-gray mb-8">
@@ -41,7 +41,7 @@ function HeroVisual() {
         <div className="bg-brand-primary text-white rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-4">
           <span className="text-3xl font-roboto-condensed font-black">CMX</span>
         </div>
-        <p className="titular text-brand-secondary">CentroMundoX</p>
+        <p className="titular text-brand-secondary">CentroMundoXaaa</p>
         <p className="font-roboto text-brand-gray">Centro de Investigación</p>
         <div className="mt-4 flex justify-center space-x-2">
           <div className="w-2 h-2 bg-brand-orange rounded-full"></div>
