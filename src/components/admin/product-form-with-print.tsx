@@ -293,7 +293,7 @@ export function ProductFormWithPrint() {
 
       {/* Print Dialog */}
       <Dialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-md mx-auto">
           <DialogHeader>
             <DialogTitle>¡Activo Creado Exitosamente!</DialogTitle>
             <DialogDescription>
