@@ -132,3 +132,40 @@ export async function getCabinetInventory() {
     };
   }
 }
+
+export async function printProductLabel(hexValue: string, printType: "new-product" | "reprint" = "new-product") {
+  try {
+    const token = await getAuthToken();
+    if (!token) {
+      return {
+        success: false,
+        error: "No tienes autorización para realizar esta acción",
+      };
+    }
+
+    const response = await fetch(`${API_BASE_URL}/products/admin/send-print/${hexValue}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ printType }),
+    });
+
+    if (!response.ok) {
+      const error: ApiError = await response.json();
+      throw new Error(
+        Array.isArray(error.message) ? error.message.join(", ") : error.message
+      );
+    }
+
+    const result = await response.json();
+    return { success: true, result };
+  } catch (error) {
+    console.error("Print product label error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Error al imprimir etiqueta",
+    };
+  }
+}

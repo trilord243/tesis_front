@@ -18,18 +18,17 @@ export default function LoginPage() {
     <>
       <Navbar isAuthenticated={false} showAuthButtons={false} />
       <div
-        className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12"
+        className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 lg:pt-32 pb-12"
         style={{
           background: "linear-gradient(135deg, #1859A9 0%, #003087 100%)",
-          paddingTop: "120px", // Más espacio para el navbar
         }}
       >
-        <div className="w-full max-w-lg sm:max-w-xl lg:max-w-2xl xl:max-w-3xl">
+        <div className="w-full max-w-md">
           {/* Logo y Título */}
-          <div className="text-center mb-8 sm:mb-10 lg:mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 bg-white rounded-full shadow-2xl mb-6">
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full shadow-2xl mb-4">
               <div
-                className="text-3xl sm:text-4xl lg:text-5xl font-black"
+                className="text-2xl sm:text-3xl font-black"
                 style={{
                   color: "#1859A9",
                   fontFamily: "Roboto Condensed, sans-serif",
@@ -40,7 +39,7 @@ export default function LoginPage() {
             </div>
 
             <h1
-              className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-3"
+              className="text-3xl sm:text-4xl font-black text-white mb-2"
               style={{
                 fontFamily: "Roboto Condensed, sans-serif",
                 textShadow: "0 2px 4px rgba(0,0,0,0.3)",
@@ -50,7 +49,7 @@ export default function LoginPage() {
             </h1>
 
             <p
-              className="text-xl sm:text-2xl lg:text-3xl text-white/90 mx-auto"
+              className="text-lg sm:text-xl text-white/90 mx-auto"
               style={{
                 fontFamily: "Roboto, sans-serif",
                 fontWeight: 300,

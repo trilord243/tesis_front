@@ -4,147 +4,336 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a modern Next.js 15 client application for Centro Mundo X reservation system, built with React 19, TypeScript, Tailwind CSS v4, and Shadcn UI components. The app uses server-side authentication with JWT tokens and connects to a backend API for user management, product reservations, and lens requests.
+Centro Mundo X Equipment Management System - A comprehensive full-stack solution for managing high-end VR equipment and research facilities. The system integrates RFID tracking, smart cabinet control, label printing, and user access management.
+
+### System Components
+
+- **client-backup**: Next.js 15 frontend with React 19, TypeScript, Tailwind CSS v4
+- **centromundox-api-reservas**: NestJS backend API with MongoDB, JWT auth, RFID tracking
+- **fx9600-control-**: RFID cabinet controller embedded on FX9600 reader
+- **demo-impresion**: ZPL label printing service for RFID tags
+- **CC600-entranceFront**: React 19 + Vite frontend for entrance authentication (EnterpriseBrowser kiosk app)
+
+## Architecture
+
+```
+/home/trilord243/tesis/
+├── client-backup/              # Main Web Client (Next.js 15)
+│   ├── src/app/               # App Router pages
+│   ├── src/components/        # React components
+│   └── middleware.ts          # Route protection
+├── centromundox-api-reservas/  # Main API (NestJS)
+│   ├── src/auth/              # JWT authentication
+│   ├── src/products/          # Equipment inventory
+│   ├── src/cabinet/           # Cabinet tracking
+│   └── src/zones/             # Zone management
+├── fx9600-control-/           # RFID Cabinet Controller
+│   ├── index.js              # Main server entry
+│   ├── main.js               # Door control & RFID
+│   └── mongo.js              # MongoDB connection
+├── demo-impresion/            # Label Printing Service
+│   ├── printer.js            # TCP printer connection
+│   └── server.js             # EPC generation API
+└── CC600-entranceFront/       # Entrance Frontend (React)
+```
 
 ## Development Commands
 
+### Full Stack Development
+
 ```bash
-# Development with Turbopack
-npm run dev
+# Start all services (from centromundox-api-reservas)
+cd centromundox-api-reservas
+npm run dev:all              # Starts API + Client
 
-# Production build
-npm run build
+# Individual services
+cd client-backup && npm run dev        # Client on :3001
+cd centromundox-api-reservas && npm run start:dev  # API on :3000
+cd fx9600-control- && npm start        # Cabinet controller
+cd demo-impresion && npm run server    # Print service on :3000
+cd CC600-entranceFront && npm run dev  # Entrance UI (Vite on :5173)
+```
 
-# Start production server
-npm start
+### Code Quality (ALWAYS run after changes)
 
-# Lint code (run after making changes)
+```bash
+# Client (Next.js)
+cd client-backup
 npm run lint
 
-# Add Shadcn UI components
-npm run ui:add [component-name]
+# API (NestJS)
+cd centromundox-api-reservas
+npm run lint
+npm run format
+
+# Entrance Frontend (Vite)
+cd CC600-entranceFront
+npm run lint
 ```
 
-**Important**: Always run `npm run lint` after making changes to ensure code quality and fix any linting issues before considering a task complete.
+### Testing
 
-## Authentication Architecture
+```bash
+# API Tests
+cd centromundox-api-reservas
+npm run test              # Unit tests
+npm run test:e2e         # End-to-end tests
+npm run test:cov         # Coverage report
 
-The application uses a JWT-based authentication system with Next.js middleware:
-
-- **Server Actions**: All auth operations in `src/lib/auth.ts` use "use server" directive
-- **Middleware**: Route protection in `middleware.ts` handles auth redirects
-- **Cookie-based**: JWT tokens stored in secure HTTP-only cookies
-- **API Integration**: Backend at `http://localhost:3000` (configurable via `NEXT_PUBLIC_API_URL`)
-
-### Protected Routes
-- `/dashboard` - Requires authentication
-- `/profile` - Requires authentication  
-- `/reservations` - Requires authentication
-
-### Auth Routes (redirect to dashboard if authenticated)
-- `/auth/login`
-- `/auth/register`
-
-## Key Architecture Patterns
-
-### Server Components First
-- Default to React Server Components
-- Minimize "use client" usage
-- Async components for data fetching
-- Error boundaries with `src/components/ui/error-boundary.tsx`
-
-### Authentication Flow
-1. Login/register via server actions in `src/lib/auth.ts`
-2. JWT stored in secure cookies
-3. Middleware validates routes in `middleware.ts`
-4. Server actions handle API communication
-
-### Component Structure
-```
-src/components/
-├── auth/           # Auth-related components
-├── dashboard/      # Dashboard-specific components  
-├── layout/         # Header, footer, navigation
-├── sections/       # Landing page sections
-└── ui/            # Reusable UI components (Shadcn)
+# Manual API Testing
+# Use .http files in centromundox-api-reservas/
+# Available test files:
+# - auth-examples.http
+# - admin-product-examples.http
+# - reservations-examples.http
+# - test-lens-request-email.http
+# - test-user-registration.http
 ```
 
-## TypeScript Configuration
+### Building for Production
 
-- Strict TypeScript enabled
-- Interfaces preferred over types
-- Server action return types defined in `src/types/auth.ts`
-- Async API patterns with proper error handling
+```bash
+# Client (Next.js)
+cd client-backup
+npm run build            # Creates .next/ production build
+npm start                # Runs production server
 
-## API Integration
+# Entrance Frontend (Vite)
+cd CC600-entranceFront
+npm run build            # Creates dist/ production build
+npm run preview          # Preview production build
+```
 
-Backend API documented in `DOCUMENTACION-FRONTEND.md` provides:
-- User management and authentication
-- Product inventory and reservations
-- Lens request system
-- Admin functionality
+### Admin Operations
 
-Key endpoints:
-- `POST /auth/login` - Authentication
-- `GET /products` - Product catalog
-- `POST /reservations` - Create reservations
-- `POST /lens-requests` - Request lens access
+```bash
+cd centromundox-api-reservas
+npm run create-admin     # Create admin user
+```
 
-## Brand Guidelines
+## System Integration Flow
 
-The application strictly follows Centro Mundo X brand guidelines:
-- **Primary Blue**: `#1859A9` 
-- **Primary Orange**: `#FF8200`
-- **Secondary Blue**: `#003087`
-- **Secondary Orange**: `#F68629`
-- **Fonts**: Roboto and Roboto Condensed
+### Equipment Check-out/Check-in
 
-## Environment Variables
+1. **User Authentication** (client-backup → centromundox-api-reservas)
+   - JWT-based login with role management
+   - Access code generation with expiration
 
-Required environment variables:
-- `NEXT_PUBLIC_API_URL` - Backend API URL (default: http://localhost:3000)
-- `JWT_SECRET` - JWT signing secret
+2. **Cabinet Access** (fx9600-control)
+   - User enters access code → Door unlocks
+   - RFID scans on door close → Inventory update
+   - Automatic check-out/check-in detection
+
+3. **Label Printing** (demo-impresion)
+   - Generate GIAI-96 EPC codes for new equipment
+   - Print RFID labels via TCP to Zebra printers
+
+4. **Real-time Tracking** (centromundox-api-reservas)
+   - Cabinet inventory synchronization
+   - Zone assignment tracking
+   - User equipment reservations
+
+## Key Technologies
+
+### Frontend Stack
+- **Next.js 15**: App Router with Server Components
+- **React 19**: Latest features including useActionState
+- **TypeScript**: Strict mode with interfaces
+- **Tailwind CSS v4**: Design tokens system
+- **Shadcn UI**: Component library
+
+### Backend Stack
+- **NestJS**: Modular architecture with decorators
+- **MongoDB**: Document database with TypeORM
+- **JWT**: Bearer token authentication
+- **Swagger**: Auto-generated API documentation
+
+### Hardware Integration
+- **FX9600 RFID Reader**: Real-time tag scanning
+- **Zebra Printers**: ZPL command printing
+- **GPIO Control**: Door locks and sensors
+- **GIAI-96 EPC**: RFID tag encoding standard
+
+## API Endpoints
+
+### Main API (centromundox-api-reservas)
+
+```
+Base URL: http://localhost:3000
+Swagger: http://localhost:3000/api/docs
+
+Authentication:
+POST /auth/login              # Get JWT token
+GET /users                    # List users (auth required)
+
+Equipment:
+GET /products                 # List all equipment
+POST /products/metaquest-set  # Create VR set (admin)
+GET /products/hex/:value      # Find by RFID tag
+
+Access Requests:
+POST /lens-requests           # Request equipment access
+PATCH /lens-requests/:id      # Approve/reject (admin)
+
+Cabinet:
+GET /cabinet/status           # Current inventory
+POST /cabinet/sync            # Update inventory
+```
+
+### Cabinet Controller (fx9600-control-)
+
+```
+POST /login                   # Authenticate & open door
+POST /return                  # Initialize return process
+GET /status                   # Cabinet inventory
+POST /confirm                 # Manual check-out
+```
+
+### Print Service (demo-impresion)
+
+```
+POST /generate-epc            # Generate & print label
+POST /generate-epc-only       # Generate code only
+```
+
+## Database Schema
+
+### Core Collections
+
+**Users** (MongoDB)
+- Authentication credentials
+- Role (admin/user)
+- Access codes with expiration
+- Equipment reservations
+- RFID tag expectations
+
+**Products** (MongoDB)
+- VR headsets and controllers
+- RFID tags (hexValue in GIAI-96)
+- Serial numbers
+- Availability status
+- Zone assignments
+
+**Cabinet** (MongoDB)
+- Real-time tag inventory
+- Version control for updates
+- Products inside/outside tracking
+
+## Security Configuration
+
+### JWT Authentication
+```env
+JWT_SECRET=your-secret-key    # Strong secret required
+```
+
+### CORS Configuration
+- localhost:3000 (API)
+- localhost:3001 (Client dev)
+
+### Cookie Settings
+- httpOnly: true
+- secure: true (production)
+- sameSite: 'lax'
 
 ## Code Style Guidelines
 
-The project follows the conventions defined in `.cursor/rules/new.mdc`:
-- Functional and declarative patterns
-- Named exports for components
-- Event handlers prefixed with "handle"
-- Server Components where possible
-- Proper TypeScript interfaces (preferred over types)
-- Modern Next.js 15 patterns with async params/searchParams
-- Use `useActionState` instead of deprecated `useFormState`
-- Always use async versions of runtime APIs (cookies, headers, params, searchParams)
-- Const maps instead of enums
+### TypeScript/JavaScript
+- Prefer interfaces over types
+- Use const maps instead of enums
 - Descriptive names with auxiliary verbs (isLoading, hasError)
+- Event handlers prefixed with "handle"
+- Modern async/await patterns
 
-## Development Notes
+### React/Next.js
+- Server Components by default
+- Minimize "use client" directives
+- Use async runtime APIs (cookies, headers, params)
+- useActionState instead of deprecated useFormState
+- Error boundaries for production stability
 
-- Uses Turbopack for faster development builds
-- Error boundaries implemented for production stability
-- Middleware handles authentication state management
-- Server actions provide type-safe API integration
-- Shadcn UI system provides consistent component library
+### NestJS
+- Modular architecture with clear separation
+- Custom decorators and interceptors
+- DTOs with class-validator
+- Guard-based authorization
+- One export per file
 
-## Critical Implementation Details
+## Brand Guidelines
 
-### Async API Pattern (Next.js 15)
-When working with Next.js 15 runtime APIs, always use the async versions:
-```typescript
-// Correct - async versions
-const cookieStore = await cookies();
-const headersList = await headers();
-const params = await props.params;
-const searchParams = await props.searchParams;
+### Centro Mundo X Colors
+- Primary Blue: `#1859A9`
+- Primary Orange: `#FF8200`
+- Secondary Blue: `#003087`
+- Secondary Orange: `#F68629`
+
+### Typography
+- Roboto (body text)
+- Roboto Condensed (headings)
+
+## Environment Variables
+
+### Client (.env.local)
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000
+JWT_SECRET=your-secret-key
 ```
 
-### Authentication Implementation
-- JWT tokens stored in secure HTTP-only cookies (`auth-token`)
-- Middleware in `middleware.ts` protects routes and handles redirects
-- Server actions in `src/lib/auth.ts` handle all auth operations
-- Cookie options configured for security (httpOnly, secure in production, sameSite: lax)
+### API (.env)
+```env
+PORT=3000
+JWT_SECRET=your-secret-key
+MONGODB_URI=mongodb+srv://...
+NODE_ENV=development
+```
 
-## Pending Tasks
+## Common Tasks
 
-- agregar el endpoint
+### Adding New API Endpoints
+1. Create DTO with validation decorators
+2. Add controller method with guards
+3. Implement service layer
+4. Add Swagger documentation
+5. Update client server actions
+6. Test with .http files
+
+### Adding UI Components
+1. Use Shadcn CLI: `npm run ui:add [component]`
+2. Follow Server Component patterns
+3. Add TypeScript interfaces
+4. Test responsive behavior
+
+### RFID Tag Management
+1. Generate EPC with demo-impresion service
+2. Print label on Zebra printer
+3. Register in products collection
+4. Assign to zone if needed
+5. Track in cabinet inventory
+
+## Troubleshooting
+
+### Common Issues
+- **CORS Errors**: Check API CORS configuration
+- **JWT Expiration**: Verify token expiration logic
+- **MongoDB Connection**: Check connection string
+- **RFID Reader**: Ensure FX9600 is accessible
+- **Printer Connection**: Verify IP and port 9100
+
+### Debug Tools
+- Swagger UI: `/api/docs`
+- HTTP test files in API directory
+- NestJS logger for all environments
+- Middleware debug logs for auth state
+
+## Important Notes
+
+1. **Always run linting** after code changes before considering tasks complete
+2. **ReservationsModule** in API is implemented but not active - add to AppModule imports if needed
+3. **Token blacklisting** uses in-memory storage - implement Redis for production
+4. **MongoDB URIs** are hardcoded in some modules - should be moved to environment variables
+5. **RFID scanning** operates in 5-second windows for tag accumulation
+6. **Door control**: LOW = open, HIGH = locked
+7. **CC600-entranceFront** runs on EnterpriseBrowser kiosk with Config.xml configuration
+8. **Vite proxy** configured for Shelly device at 10.105.1.198 in CC600-entranceFront
+9. **Build outputs**: 
+   - client-backup: `.next/` directory
+   - CC600-entranceFront: `dist/` directory

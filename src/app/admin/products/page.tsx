@@ -15,14 +15,14 @@ import {
   Package,
   Plus,
   ArrowLeft,
-  Eye,
   AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ProductsList } from "@/components/admin/products-list";
 
 export const metadata: Metadata = {
-  title: "Gestión de Productos - Admin CentroMundoX",
-  description: "Administrar productos del inventario",
+  title: "Gestión de Activos - Admin CentroMundoX",
+  description: "Administrar activos del inventario",
 };
 
 export const viewport: Viewport = {
@@ -64,7 +64,7 @@ export default async function ProductsAdminPage() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold" style={{ color: "#1859A9" }}>
-                    Gestión de Productos
+                    Gestión de Activos
                   </h1>
                   <p className="text-gray-600">Administrar inventario de equipos</p>
                 </div>
@@ -73,7 +73,7 @@ export default async function ProductsAdminPage() {
                 <Link href="/admin/products/add">
                   <Button style={{ backgroundColor: "#FF8200" }}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Agregar Producto
+                    Agregar Activo
                   </Button>
                 </Link>
                 <Link href="/admin/dashboard">
@@ -91,7 +91,7 @@ export default async function ProductsAdminPage() {
             <Alert className="mb-6 border-red-200 bg-red-50">
               <AlertCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
-                Error al cargar productos: {productsResult.error}
+                Error al cargar activos: {productsResult.error}
               </AlertDescription>
             </Alert>
           )}
@@ -101,9 +101,9 @@ export default async function ProductsAdminPage() {
             <Card className="border-0 shadow-md">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base" style={{ color: "#1859A9" }}>
-                  Total Productos
+                  Total Activos
                 </CardTitle>
-                <CardDescription>Productos en el sistema</CardDescription>
+                <CardDescription>Activos en el sistema</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold" style={{ color: "#FF8200" }}>
@@ -154,50 +154,10 @@ export default async function ProductsAdminPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {headsets.length > 0 ? (
-                  <div className="space-y-3">
-                    {headsets.map((headset) => (
-                      <div
-                        key={headset._id}
-                        className="flex items-center justify-between p-3 border rounded-lg"
-                      >
-                        <div className="flex-1">
-                          <h4 className="font-medium">{headset.name}</h4>
-                          <p className="text-sm text-gray-500">
-                            S/N: {headset.serialNumber}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            Código: {headset.codigo}
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              headset.isAvailable
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {headset.isAvailable ? "Disponible" : "En uso"}
-                          </span>
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Package className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>No hay headsets registrados</p>
-                    <Link href="/admin/products/add">
-                      <Button className="mt-4" style={{ backgroundColor: "#FF8200" }}>
-                        Agregar primer headset
-                      </Button>
-                    </Link>
-                  </div>
-                )}
+                <ProductsList 
+                  products={products || []}
+                  type="headset"
+                />
               </CardContent>
             </Card>
 
@@ -212,50 +172,10 @@ export default async function ProductsAdminPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {controllers.length > 0 ? (
-                  <div className="space-y-3">
-                    {controllers.map((controller) => (
-                      <div
-                        key={controller._id}
-                        className="flex items-center justify-between p-3 border rounded-lg"
-                      >
-                        <div className="flex-1">
-                          <h4 className="font-medium">{controller.name}</h4>
-                          <p className="text-sm text-gray-500">
-                            S/N: {controller.serialNumber}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            Código: {controller.codigo}
-                          </p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              controller.isAvailable
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {controller.isAvailable ? "Disponible" : "En uso"}
-                          </span>
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Package className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>No hay controladores registrados</p>
-                    <Link href="/admin/products/add">
-                      <Button className="mt-4" style={{ backgroundColor: "#FF8200" }}>
-                        Agregar controladores
-                      </Button>
-                    </Link>
-                  </div>
-                )}
+                <ProductsList 
+                  products={products || []}
+                  type="controller"
+                />
               </CardContent>
             </Card>
           </div>

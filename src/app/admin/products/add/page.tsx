@@ -1,6 +1,6 @@
 import { getCurrentUser, requireAdmin } from "@/lib/auth";
 import { Navbar } from "@/components/layout/navbar";
-import { ProductForm } from "@/components/admin/product-form";
+import { ProductFormWithPrint } from "@/components/admin/product-form-with-print";
 import { MetaQuestSetForm } from "@/components/admin/metaquest-set-form";
 import {
   Card,
@@ -20,8 +20,8 @@ import {
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Agregar Producto - Admin CentroMundoX",
-  description: "Agregar nuevos productos al inventario",
+  title: "Agregar Activo - Admin CentroMundoX",
+  description: "Agregar nuevos activos al inventario",
 };
 
 export const viewport: Viewport = {
@@ -58,15 +58,15 @@ export default async function AddProductPage() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold" style={{ color: "#1859A9" }}>
-                    Agregar Producto
+                    Agregar Activo
                   </h1>
-                  <p className="text-gray-600">Crear nuevos productos en el inventario</p>
+                  <p className="text-gray-600">Crear nuevos activos en el inventario</p>
                 </div>
               </div>
-              <Link href="/admin/products">
+              <Link href="/admin/assets">
                 <Button variant="outline" size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Volver a Productos
+                  Volver a Activos
                 </Button>
               </Link>
             </div>
@@ -80,7 +80,7 @@ export default async function AddProductPage() {
                   <Package className="h-6 w-6" style={{ color: "#1859A9" }} />
                   <div>
                     <CardTitle style={{ color: "#1859A9" }}>
-                      Producto Individual
+                      Activo Individual
                     </CardTitle>
                     <CardDescription>
                       Agregar un headset o controlador individual
@@ -89,7 +89,7 @@ export default async function AddProductPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <ProductForm />
+                <ProductFormWithPrint />
               </CardContent>
             </Card>
 
@@ -125,13 +125,13 @@ export default async function AddProductPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="font-semibold mb-2" style={{ color: "#003087" }}>
-                    Producto Individual
+                    Activo Individual
                   </h4>
                   <ul className="text-sm text-gray-600 space-y-1">
                     <li>• Usa esto para agregar headsets o controladores por separado</li>
                     <li>• Para controladores, necesitas el ID del headset asociado</li>
                     <li>• El sistema genera automáticamente códigos EPC únicos</li>
-                    <li>• Cada producto recibe un código interno automático</li>
+                    <li>• Cada activo recibe un código interno automático</li>
                   </ul>
                 </div>
                 <div>
@@ -142,7 +142,7 @@ export default async function AddProductPage() {
                     <li>• Crea 1 headset + 2 controladores en una sola operación</li>
                     <li>• Los controladores se vinculan automáticamente al headset</li>
                     <li>• Más eficiente para configurar equipos completos</li>
-                    <li>• Todos los productos reciben códigos únicos</li>
+                    <li>• Todos los activos reciben códigos únicos</li>
                   </ul>
                 </div>
               </div>

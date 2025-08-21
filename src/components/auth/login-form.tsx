@@ -51,11 +51,11 @@ export function LoginForm() {
   };
 
   return (
-    <div className="w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
       {/* Header Section */}
-      <div className="px-8 sm:px-12 lg:px-16 pt-10 sm:pt-12 lg:pt-14 pb-8 text-center">
+      <div className="px-6 sm:px-8 lg:px-10 pt-8 sm:pt-10 lg:pt-12 pb-6 text-center">
         <h2
-          className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3"
+          className="text-2xl sm:text-3xl font-bold mb-2"
           style={{
             color: "#1859A9",
             fontFamily: "Roboto Condensed, sans-serif",
@@ -63,26 +63,26 @@ export function LoginForm() {
         >
           Iniciar Sesión
         </h2>
-        <p className="text-base sm:text-lg lg:text-xl text-gray-600">
-          Ingresa tus credenciales para acceder a tu cuenta
+        <p className="text-sm sm:text-base text-gray-600">
+          Ingresa tus credenciales para acceder
         </p>
       </div>
 
       {/* Form Section */}
       <form onSubmit={handleSubmit}>
-        <div className="px-8 sm:px-12 lg:px-16 pb-8">
+        <div className="px-6 sm:px-8 lg:px-10 pb-8">
           {/* Error Alert */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm sm:text-base text-red-700">{error}</p>
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
 
           {/* Email Field */}
-          <div className="mb-6">
+          <div className="mb-4">
             <label
               htmlFor="email"
-              className="block text-sm sm:text-base lg:text-lg font-medium text-gray-700 mb-3"
+              className="block text-sm font-medium text-gray-700 mb-2"
             >
               Email
             </label>
@@ -94,7 +94,7 @@ export function LoginForm() {
               required
               disabled={loading}
               autoComplete="email"
-              className="w-full px-5 py-4 text-base sm:text-lg border border-gray-300 rounded-lg
+              className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg
                        focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none
                        disabled:bg-gray-50 disabled:cursor-not-allowed
                        transition-all duration-200"
@@ -102,10 +102,10 @@ export function LoginForm() {
           </div>
 
           {/* Password Field */}
-          <div className="mb-8">
+          <div className="mb-6">
             <label
               htmlFor="password"
-              className="block text-sm sm:text-base lg:text-lg font-medium text-gray-700 mb-3"
+              className="block text-sm font-medium text-gray-700 mb-2"
             >
               Contraseña
             </label>
@@ -117,7 +117,7 @@ export function LoginForm() {
               required
               disabled={loading}
               autoComplete="current-password"
-              className="w-full px-5 py-4 text-base sm:text-lg border border-gray-300 rounded-lg
+              className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg
                        focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none
                        disabled:bg-gray-50 disabled:cursor-not-allowed
                        transition-all duration-200"
@@ -128,10 +128,10 @@ export function LoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 text-base sm:text-lg lg:text-xl font-semibold text-white rounded-lg
+            className="w-full py-3 text-base font-semibold text-white rounded-lg
                      shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed
                      transition-all duration-200 transform hover:-translate-y-0.5
-                     flex items-center justify-center gap-3"
+                     flex items-center justify-center gap-2"
             style={{ backgroundColor: loading ? "#FFA347" : "#FF8200" }}
             onMouseEnter={(e) => {
               if (!loading) e.currentTarget.style.backgroundColor = "#F68629";
@@ -142,7 +142,7 @@ export function LoginForm() {
           >
             {loading ? (
               <>
-                <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
                 <span>Iniciando sesión...</span>
               </>
             ) : (
@@ -152,8 +152,8 @@ export function LoginForm() {
         </div>
 
         {/* Footer Section */}
-        <div className="px-8 sm:px-12 lg:px-16 pb-10 pt-4 text-center border-t border-gray-100">
-          <p className="text-sm sm:text-base lg:text-lg text-gray-600">
+        <div className="px-6 sm:px-8 lg:px-10 pb-8 pt-4 text-center border-t border-gray-100">
+          <p className="text-sm text-gray-600">
             ¿No tienes cuenta?{" "}
             <Link
               href="/auth/register"
