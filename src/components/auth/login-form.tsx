@@ -53,9 +53,9 @@ export function LoginForm() {
   return (
     <div className="w-full min-w-[320px] bg-white rounded-2xl shadow-2xl">
       {/* Header Section */}
-      <div className="px-6 sm:px-8 pt-6 sm:pt-8 pb-4 text-center">
+      <div className="px-8 sm:px-10 pt-8 sm:pt-10 pb-6 text-center">
         <h2
-          className="text-2xl sm:text-3xl font-bold mb-2"
+          className="text-2xl sm:text-3xl font-bold mb-3"
           style={{
             color: "#1859A9",
             fontFamily: "Roboto Condensed, sans-serif",
@@ -70,16 +70,16 @@ export function LoginForm() {
 
       {/* Form Section */}
       <form onSubmit={handleSubmit}>
-        <div className="px-6 sm:px-8 pb-6">
+        <div className="px-8 sm:px-10 pb-8">
           {/* Error Alert */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
 
           {/* Email Field */}
-          <div className="mb-4">
+          <div className="mb-5">
             <label
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 mb-2"
@@ -102,7 +102,7 @@ export function LoginForm() {
           </div>
 
           {/* Password Field */}
-          <div className="mb-6">
+          <div className="mb-7">
             <label
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-2"
@@ -152,7 +152,7 @@ export function LoginForm() {
         </div>
 
         {/* Footer Section */}
-        <div className="px-6 sm:px-8 pb-6 pt-4 text-center border-t border-gray-100">
+        <div className="px-8 sm:px-10 pb-8 pt-6 text-center border-t border-gray-100">
           <p className="text-sm text-gray-600">
             ¿No tienes cuenta?{" "}
             <Link
