@@ -81,7 +81,7 @@ export function RegisterForm() {
   };
 
   return (
-    <div className="w-full bg-white rounded-2xl shadow-2xl">
+    <div className="w-full min-w-[320px] bg-white rounded-2xl shadow-2xl">
       {/* Header Section */}
       <div className="px-6 sm:px-8 pt-6 sm:pt-8 pb-4 text-center">
         <h2
