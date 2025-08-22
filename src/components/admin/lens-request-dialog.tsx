@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { LensRequest, updateLensRequest } from "@/lib/lens-requests";
+import { LensRequest, updateLensRequest, UpdateLensRequestData } from "@/lib/lens-requests";
 
 interface LensRequestDialogProps {
   request: LensRequest | null;
@@ -54,7 +54,6 @@ export function LensRequestDialog({
   onClose,
   onUpdate,
 }: LensRequestDialogProps) {
-  const [accessCode, setAccessCode] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [expirationDays, setExpirationDays] = useState("30");
 
@@ -63,14 +62,15 @@ export function LensRequestDialog({
     async () => {
       if (!request) return { error: "No hay solicitud seleccionada" };
 
-      const codeToUse = accessCode || "";
-      const result = await updateLensRequest(request._id, {
+      // El backend generará automáticamente un código de acceso
+      const updateData: UpdateLensRequestData = {
         status: "approved",
-        accessCode: codeToUse,
         expiration: {
           days: parseInt(expirationDays) || 30,
         },
-      });
+      };
+
+      const result = await updateLensRequest(request._id, updateData);
 
       if (result.success) {
         onUpdate();
@@ -114,7 +114,6 @@ export function LensRequestDialog({
   };
 
   const handleClose = () => {
-    setAccessCode("");
     setRejectionReason("");
     setExpirationDays("30");
     onClose();
@@ -126,7 +125,7 @@ export function LensRequestDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="w-[95vw] max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Detalles de la Solicitud</DialogTitle>
           <DialogDescription>
@@ -134,7 +133,7 @@ export function LensRequestDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Current Status */}
           <div className="flex items-center space-x-2">
             <Badge className={`${statusConfig[request.status].color} border`}>
@@ -149,23 +148,23 @@ export function LensRequestDialog({
               <UserIcon className="h-4 w-4 mr-2" />
               Información del Usuario
             </h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
               <div>
-                <span className="text-gray-600">Nombre:</span>
-                <p className="font-medium">{request.userName}</p>
+                <span className="text-gray-600 block text-xs uppercase tracking-wide">Nombre:</span>
+                <p className="font-medium text-gray-900">{request.userName}</p>
               </div>
               <div>
-                <span className="text-gray-600">Email:</span>
-                <p className="font-medium">{request.userEmail}</p>
+                <span className="text-gray-600 block text-xs uppercase tracking-wide">Email:</span>
+                <p className="font-medium text-gray-900 break-all">{request.userEmail}</p>
               </div>
               <div>
-                <span className="text-gray-600">Fecha de solicitud:</span>
-                <p className="font-medium">{formatDate(request.createdAt)}</p>
+                <span className="text-gray-600 block text-xs uppercase tracking-wide">Fecha de solicitud:</span>
+                <p className="font-medium text-gray-900">{formatDate(request.createdAt)}</p>
               </div>
               {request.processedAt && (
                 <div>
-                  <span className="text-gray-600">Procesada:</span>
-                  <p className="font-medium">{formatDate(request.processedAt)}</p>
+                  <span className="text-gray-600 block text-xs uppercase tracking-wide">Procesada:</span>
+                  <p className="font-medium text-gray-900">{formatDate(request.processedAt)}</p>
                 </div>
               )}
             </div>
@@ -188,17 +187,17 @@ export function LensRequestDialog({
               <h4 className="font-medium mb-3 text-green-800">
                 Información de Acceso
               </h4>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                 <div>
-                  <span className="text-green-700">Código:</span>
-                  <p className="font-mono bg-white px-2 py-1 rounded border">
+                  <span className="text-green-700 block text-xs uppercase tracking-wide">Código:</span>
+                  <p className="font-mono bg-white px-3 py-2 rounded border text-center text-lg font-bold">
                     {request.accessCode}
                   </p>
                 </div>
                 {request.expiresAt && (
                   <div>
-                    <span className="text-green-700">Expira:</span>
-                    <p className="font-medium">{formatDate(request.expiresAt)}</p>
+                    <span className="text-green-700 block text-xs uppercase tracking-wide">Expira:</span>
+                    <p className="font-medium text-green-800">{formatDate(request.expiresAt)}</p>
                   </div>
                 )}
               </div>
@@ -226,20 +225,18 @@ export function LensRequestDialog({
                   <h5 className="font-medium text-green-800 mb-3">
                     Aprobar Solicitud
                   </h5>
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="accessCode" className="text-sm">
-                        Código de acceso (opcional)
-                      </Label>
-                      <Input
-                        id="accessCode"
-                        placeholder="Se generará automáticamente si se deja vacío"
-                        value={accessCode}
-                        onChange={(e) => setAccessCode(e.target.value)}
-                      />
+                  <div className="space-y-4">
+                    <div className="bg-green-100 p-3 rounded-md border border-green-200">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-800">Código de Acceso</span>
+                      </div>
+                      <p className="text-sm text-green-700">
+                        Se generará automáticamente un código único de 6 dígitos
+                      </p>
                     </div>
                     <div>
-                      <Label htmlFor="expirationDays" className="text-sm">
+                      <Label htmlFor="expirationDays" className="text-sm font-medium">
                         Días de expiración
                       </Label>
                       <Input
@@ -249,7 +246,9 @@ export function LensRequestDialog({
                         max="365"
                         value={expirationDays}
                         onChange={(e) => setExpirationDays(e.target.value)}
+                        className="mt-1"
                       />
+                      <p className="text-xs text-green-600 mt-1">Entre 1 y 365 días</p>
                     </div>
                   </div>
                 </div>
@@ -260,7 +259,7 @@ export function LensRequestDialog({
                     Rechazar Solicitud
                   </h5>
                   <div>
-                    <Label htmlFor="rejectionReason" className="text-sm">
+                    <Label htmlFor="rejectionReason" className="text-sm font-medium">
                       Razón del rechazo
                     </Label>
                     <Textarea
@@ -269,12 +268,14 @@ export function LensRequestDialog({
                       value={rejectionReason}
                       onChange={(e) => setRejectionReason(e.target.value)}
                       rows={3}
+                      className="mt-1"
                     />
+                    <p className="text-xs text-red-600 mt-1">Este mensaje será visible para el usuario</p>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex justify-end space-x-3">
+                <div className="flex flex-col-reverse sm:flex-row justify-end space-y-reverse space-y-3 sm:space-y-0 sm:space-x-3">
                   <form action={rejectAction}>
                     <Button
                       type="submit"

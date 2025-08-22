@@ -218,14 +218,14 @@ export function LensRequestsManager() {
       {/* Requests Table */}
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="text-lg sm:text-xl">
             Solicitudes de Lentes ({filteredRequests.length})
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm sm:text-base">
             Gestiona las solicitudes de acceso a lentes VR/AR
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 sm:p-6">
           <LensRequestTable
             requests={filteredRequests}
             onViewRequest={handleViewRequest}

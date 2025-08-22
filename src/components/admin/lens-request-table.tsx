@@ -84,15 +84,15 @@ export function LensRequestTable({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <Table>
+    <div className="overflow-x-auto border rounded-lg">
+      <Table className="min-w-[700px]">
         <TableHeader>
-          <TableRow>
-            <TableHead>Usuario</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Fecha</TableHead>
-            <TableHead>Acceso</TableHead>
-            <TableHead>Acciones</TableHead>
+          <TableRow className="bg-gray-50">
+            <TableHead className="min-w-[200px] font-semibold text-sm">Usuario</TableHead>
+            <TableHead className="min-w-[120px] font-semibold text-sm">Estado</TableHead>
+            <TableHead className="min-w-[150px] font-semibold text-sm hidden sm:table-cell">Fecha</TableHead>
+            <TableHead className="min-w-[140px] font-semibold text-sm">Acceso</TableHead>
+            <TableHead className="min-w-[160px] font-semibold text-center text-sm">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -100,33 +100,33 @@ export function LensRequestTable({
             const StatusIcon = statusConfig[request.status].icon;
             return (
               <TableRow key={request._id}>
-                <TableCell>
+                <TableCell className="py-4">
                   <div className="flex items-center space-x-3">
                     <div className="flex-shrink-0">
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center"
+                        className="w-10 h-10 rounded-full flex items-center justify-center"
                         style={{ backgroundColor: "#1859A9" }}
                       >
-                        <UserIcon className="h-4 w-4 text-white" />
+                        <UserIcon className="h-5 w-5 text-white" />
                       </div>
                     </div>
-                    <div>
-                      <p className="font-medium">{request.userName}</p>
-                      <p className="text-sm text-gray-500">{request.userEmail}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-gray-900 truncate">{request.userName}</p>
+                      <p className="text-sm text-gray-500 truncate">{request.userEmail}</p>
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4">
                   <Badge
-                    className={`${statusConfig[request.status].color} border`}
+                    className={`${statusConfig[request.status].color} border whitespace-nowrap`}
                   >
                     <StatusIcon className="h-3 w-3 mr-1" />
                     {statusConfig[request.status].label}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4 hidden sm:table-cell">
                   <div className="text-sm">
-                    <p>{formatDate(request.createdAt)}</p>
+                    <p className="font-medium text-gray-900">{formatDate(request.createdAt)}</p>
                     {request.processedAt && (
                       <p className="text-xs text-gray-500">
                         Procesada: {formatDate(request.processedAt)}
@@ -134,29 +134,32 @@ export function LensRequestTable({
                     )}
                   </div>
                 </TableCell>
-                <TableCell>
-                  {request.accessCode && (
+                <TableCell className="py-4">
+                  {request.accessCode ? (
                     <div className="text-sm">
-                      <p className="font-mono bg-gray-100 px-2 py-1 rounded text-xs">
+                      <p className="font-mono bg-gray-100 px-3 py-2 rounded-md text-sm font-semibold text-center">
                         {request.accessCode}
                       </p>
                       {request.expiresAt && (
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 mt-1 text-center">
                           Expira: {formatDate(request.expiresAt)}
                         </p>
                       )}
                     </div>
+                  ) : (
+                    <span className="text-sm text-gray-400 italic">Sin código</span>
                   )}
                 </TableCell>
-                <TableCell>
-                  <div className="flex items-center space-x-2">
+                <TableCell className="py-4">
+                  <div className="flex items-center justify-center space-x-1 sm:space-x-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => onViewRequest(request)}
+                      className="whitespace-nowrap px-2 sm:px-3"
                     >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Ver
+                      <Eye className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Ver</span>
                     </Button>
                     {onDeleteRequest && (
                       <Button
@@ -164,10 +167,10 @@ export function LensRequestTable({
                         size="sm"
                         onClick={() => handleDelete(request._id)}
                         disabled={deletingId === request._id}
-                        className="text-red-600 border-red-300 hover:bg-red-50"
+                        className="text-red-600 border-red-300 hover:bg-red-50 whitespace-nowrap px-2 sm:px-3"
                       >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        {deletingId === request._id ? "..." : "Eliminar"}
+                        <Trash2 className="h-4 w-4 sm:mr-1" />
+                        <span className="hidden sm:inline">{deletingId === request._id ? "..." : "Eliminar"}</span>
                       </Button>
                     )}
                   </div>
