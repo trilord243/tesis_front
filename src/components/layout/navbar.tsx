@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -137,22 +138,19 @@ export function Navbar({
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-blue-50 via-white to-orange-50 backdrop-blur-sm border-b border-gray-200 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20 md:h-24">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3">
-            <div className="bg-brand-primary text-white rounded-lg p-2">
-              <div className="font-bold text-lg font-roboto-condensed">UM</div>
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-brand-primary font-roboto-condensed font-bold text-xl">
-                CentroMundoX
-              </h1>
-              <p className="text-brand-gray text-xs font-roboto">
-                Sistema de Reservas
-              </p>
-            </div>
+            <Image
+              src="/centro-mundo-x-logo.png"
+              alt="Centro Mundo X"
+              width={240}
+              height={80}
+              className="h-16 md:h-20 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -257,7 +255,7 @@ export function Navbar({
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-gradient-to-b from-blue-50/50 to-white border-t border-gray-200">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (

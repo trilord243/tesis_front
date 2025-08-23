@@ -19,7 +19,7 @@ function HeroContent() {
   return (
     <div>
       <h1 className="headliner text-brand-primary mb-6">
-        Centro de Investigación de Centro mundo xaa
+        Centro de Investigación Centro Mundo X
       </h1>
 
       <p className="subcopy text-brand-gray mb-8">
@@ -36,19 +36,20 @@ function HeroContent() {
 
 function HeroVisual() {
   return (
-    <div className="bg-gradient-to-br from-brand-primary/10 to-brand-orange/10 rounded-3xl p-8 h-96 flex items-center justify-center">
-      <div className="text-center">
-        <div className="bg-brand-primary text-white rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-4">
-          <span className="text-3xl font-roboto-condensed font-black">CMX</span>
-        </div>
-        <p className="titular text-brand-secondary">CentroMundoXaaa</p>
-        <p className="font-roboto text-brand-gray">Centro de Investigación</p>
-        <div className="mt-4 flex justify-center space-x-2">
-          <div className="w-2 h-2 bg-brand-orange rounded-full"></div>
-          <div className="w-2 h-2 bg-brand-primary rounded-full"></div>
-          <div className="w-2 h-2 bg-brand-secondary rounded-full"></div>
-        </div>
-      </div>
+    <div className="relative rounded-3xl overflow-hidden h-[500px] md:h-[600px]">
+      <video
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        loop
+        muted
+        playsInline
+      >
+        <source
+          src="https://videos-empresas.nyc3.cdn.digitaloceanspaces.com/companies/asdasdasd@asadasd.com/video_1753896381926.mp4"
+          type="video/mp4"
+        />
+        Tu navegador no soporta el elemento de video.
+      </video>
     </div>
   );
 }

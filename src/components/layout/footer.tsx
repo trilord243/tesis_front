@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 interface FooterLinkProps {
   readonly href: string;
@@ -18,14 +19,16 @@ function FooterLink({ href, children }: FooterLinkProps) {
 
 function FooterLogo() {
   return (
-    <div className="flex items-center mb-6">
-      <div className="bg-brand-orange text-white rounded-lg p-2 mr-3">
-        <div className="font-bold text-lg font-roboto-condensed">UM</div>
-      </div>
-      <div>
-        <h3 className="font-roboto-condensed font-bold text-lg">Centro Mundo X</h3>
-        <p className="text-white/80 text-sm font-roboto">Sistema de Reservas</p>
-      </div>
+    <div className="mb-6">
+      <Image
+        src="/centro-mundo-x-logo.png"
+        alt="Centro Mundo X"
+        width={200}
+        height={67}
+        className="h-16 w-auto brightness-0 invert"
+        priority
+      />
+      <p className="text-white/80 text-sm font-roboto mt-2">Sistema de Reservas</p>
     </div>
   );
 }
