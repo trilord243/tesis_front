@@ -1,0 +1,244 @@
+### Product Types API Tests
+
+# Variables
+@baseUrl = http://localhost:3000
+
+@productTypeId = # Replace with actual product type ID
+@productId = # Replace with actual product ID
+
+###
+# 1. Create a Product Type (Admin only)
+POST {{baseUrl}}/product-types
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "COMPUTADORA",
+  "description": "Equipos de cómputo y tecnología",
+  "defaultTags": ["tecnología", "electrónico", "oficina", "portátil"]
+}
+
+###
+# 2. Create another Product Type
+POST {{baseUrl}}/product-types
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "SILLA",
+  "description": "Muebles y mobiliario",
+  "defaultTags": ["mueble", "ergonómico", "oficina"]
+}
+
+###
+# 3. Create VR Product Type
+POST {{baseUrl}}/product-types
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "METAQUEST",
+  "description": "Dispositivos de realidad virtual MetaQuest",
+  "defaultTags": ["VR", "tecnología", "entretenimiento", "realidad-virtual"]
+}
+
+###
+# 4. Get all Product Types
+GET {{baseUrl}}/product-types
+
+###
+# 5. Get only active Product Types
+GET {{baseUrl}}/product-types?active=true
+
+###
+# 6. Get Product Type by ID
+GET {{baseUrl}}/product-types/{{productTypeId}}
+
+###
+# 7. Get Product Type by name
+GET {{baseUrl}}/product-types/name/COMPUTADORA
+
+###
+# 8. Update Product Type (Admin only)
+PATCH {{baseUrl}}/product-types/{{productTypeId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "description": "Equipos de cómputo actualizados",
+  "defaultTags": ["tecnología", "electrónico", "oficina", "portátil", "nueva-generación"]
+}
+
+###
+# 9. Add tags to Product Type (Admin only)
+POST {{baseUrl}}/product-types/{{productTypeId}}/tags
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "tags": ["premium", "nuevo"]
+}
+
+###
+# 10. Remove tags from Product Type (Admin only)
+DELETE {{baseUrl}}/product-types/{{productTypeId}}/tags
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "tags": ["portátil"]
+}
+
+###
+# 11. Deactivate Product Type (Admin only)
+PATCH {{baseUrl}}/product-types/{{productTypeId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+###
+# PRODUCT TESTS WITH TAGS
+###
+
+# 12. Create Product with Product Type and Custom Tags (Admin only)
+POST {{baseUrl}}/products
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Laptop Dell XPS 13",
+  "serialNumber": "DLL-XPS13-001",
+  "type": "headset",
+  "productTypeId": "{{productTypeId}}",
+  "tags": ["nuevo", "sala-A", "premium"]
+}
+
+###
+# 13. Search Products by Tags
+GET {{baseUrl}}/products/search/by-tags?tags=tecnología,nuevo
+
+###
+# 14. Update Product Tags (Admin only)
+PATCH {{baseUrl}}/products/{{productId}}/tags
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "tags": ["actualizado", "sala-B", "premium", "mantenimiento"]
+}
+
+###
+# 15. Add Tags to Product (Admin only)
+POST {{baseUrl}}/products/{{productId}}/tags
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "tags": ["urgente", "revisión"]
+}
+
+###
+# 16. Remove Tags from Product (Admin only)
+DELETE {{baseUrl}}/products/{{productId}}/tags
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "tags": ["mantenimiento", "urgente"]
+}
+
+###
+# 17. Apply Product Type to Existing Product (Admin only)
+PATCH {{baseUrl}}/products/{{productId}}/product-type
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "productTypeId": "{{productTypeId}}"
+}
+
+###
+# 18. Create MetaQuest Set with Product Type
+POST {{baseUrl}}/products/metaquest-set
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "headsetName": "MetaQuest 3 Pro",
+  "headsetSerialNumber": "MQ3P-001",
+  "controllers": [
+    {
+      "serialNumber": "CTRL-L-001"
+    },
+    {
+      "serialNumber": "CTRL-R-001"
+    }
+  ]
+}
+
+###
+# 19. Delete Product Type (Admin only) - Use with caution
+DELETE {{baseUrl}}/product-types/{{productTypeId}}
+Authorization: Bearer {{adminToken}}
+
+### WORKFLOW EXAMPLES
+
+# Example Workflow 1: Create Computer Product Type and Product
+# Step 1: Create the product type
+POST {{baseUrl}}/product-types
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "LAPTOP",
+  "description": "Computadoras portátiles",
+  "defaultTags": ["tecnología", "portátil", "trabajo"]
+}
+
+###
+# Step 2: Create product using the type (replace productTypeId with ID from step 1)
+POST {{baseUrl}}/products
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "MacBook Pro M3",
+  "serialNumber": "APPLE-MBP-M3-001",
+  "type": "headset",
+  "productTypeId": "REPLACE_WITH_LAPTOP_TYPE_ID",
+  "tags": ["premium", "desarrollo"]
+}
+
+###
+# Step 3: Search for all laptop products
+GET {{baseUrl}}/products/search/by-tags?tags=portátil
+
+###
+# Example Workflow 2: Furniture Management
+# Step 1: Create furniture product type
+POST {{baseUrl}}/product-types
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "ESCRITORIO",
+  "description": "Muebles de oficina - Escritorios",
+  "defaultTags": ["mueble", "oficina", "trabajo", "ergonómico"]
+}
+
+###
+# Step 2: Create desk product
+POST {{baseUrl}}/products
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Escritorio Ejecutivo",
+  "serialNumber": "DESK-EXEC-001",
+  "type": "headset",
+  "productTypeId": "REPLACE_WITH_DESK_TYPE_ID",
+  "tags": ["madera", "sala-gerencia"]
+}

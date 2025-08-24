@@ -9,6 +9,9 @@ export interface Product {
   headsetId?: string;
   createdAt: string;
   updatedAt: string;
+  productTypeId?: string;
+  tags: string[];
+  allTags: string[];
 }
 
 export interface CreateProductData {
@@ -16,6 +19,8 @@ export interface CreateProductData {
   serialNumber: string;
   type: "headset" | "controller";
   headsetId?: string;
+  productTypeId?: string;
+  tags?: string[];
 }
 
 export interface CreateMetaQuestSetData {
@@ -34,4 +39,29 @@ export interface MetaQuestSetResponse {
 export interface ApiError {
   message: string | string[];
   statusCode?: number;
+}
+
+// Product Types interfaces
+export interface ProductType {
+  _id: string;
+  name: string;
+  description: string;
+  defaultTags: string[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProductTypeData {
+  name: string;
+  description: string;
+  defaultTags: string[];
+  isActive?: boolean;
+}
+
+export interface UpdateProductTypeData {
+  name?: string;
+  description?: string;
+  defaultTags?: string[];
+  isActive?: boolean;
 }

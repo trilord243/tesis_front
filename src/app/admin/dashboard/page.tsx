@@ -19,6 +19,7 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
+  Tags,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -60,12 +61,21 @@ export default async function AdminDashboardPage() {
       available: true,
     },
     {
-      title: "Gestión de Productos",
-      description: "Crear y administrar productos del inventario",
+      title: "Gestión de Activos",
+      description: "Crear y administrar activos del inventario",
       icon: Settings,
       href: "/admin/products",
       color: "#003087",
-      stats: "Crear productos",
+      stats: "Crear activos",
+      available: true,
+    },
+    {
+      title: "Tipos de Activos",
+      description: "Gestiona tipos y etiquetas predefinidas para activos",
+      icon: Tags,
+      href: "/admin/tipos-productos",
+      color: "#F68629",
+      stats: "Configurar tipos",
       available: true,
     },
   ];
@@ -89,7 +99,7 @@ export default async function AdminDashboardPage() {
       available: false,
     },
     {
-      title: "Inventario de Productos",
+      title: "Inventario de Activos",
       description: "Administra el catálogo de equipos",
       icon: Package,
       color: "#6B7280", 
@@ -189,11 +199,11 @@ export default async function AdminDashboardPage() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold" style={{ color: "#1859A9" }}>
-                    2
+                    4
                   </span>
                   <Shield className="h-8 w-8 text-blue-400" />
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Solicitudes y activos</p>
+                <p className="text-xs text-gray-500 mt-2">Funciones disponibles</p>
               </CardContent>
             </Card>
           </div>

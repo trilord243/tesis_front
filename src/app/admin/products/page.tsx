@@ -16,6 +16,7 @@ import {
   Plus,
   ArrowLeft,
   AlertCircle,
+  Tags,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductsList } from "@/components/admin/products-list";
@@ -70,6 +71,12 @@ export default async function ProductsAdminPage() {
                 </div>
               </div>
               <div className="flex items-center space-x-2">
+                <Link href="/admin/tipos-productos">
+                  <Button variant="outline" style={{ borderColor: "#F68629", color: "#F68629" }}>
+                    <Tags className="h-4 w-4 mr-2" />
+                    Tipos de Activos
+                  </Button>
+                </Link>
                 <Link href="/admin/products/add">
                   <Button style={{ backgroundColor: "#FF8200" }}>
                     <Plus className="h-4 w-4 mr-2" />

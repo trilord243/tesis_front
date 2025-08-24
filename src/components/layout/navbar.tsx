@@ -17,6 +17,8 @@ import {
   User,
   QrCode,
   ClipboardList,
+  Package2,
+  Tags,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -108,6 +110,16 @@ export function Navbar({
       href: "/admin/solicitudes",
       label: "Solicitudes",
       icon: ClipboardList,
+    },
+    {
+      href: "/admin/products",
+      label: "Activos",
+      icon: Package2,
+    },
+    {
+      href: "/admin/tipos-productos",
+      label: "Tipos de Activos",
+      icon: Tags,
     },
     {
       href: "/admin/activos",

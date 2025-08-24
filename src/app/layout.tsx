@@ -8,6 +8,14 @@ export const metadata: Metadata = {
     "Sistema de reservas Centro Mundo X - Excelencia, Innovación y espíritu emprendedor",
   keywords: ["reservas", "centro mundo x", "innovación", "excelencia"],
   authors: [{ name: "Centro Mundo X" }],
+  icons: {
+    icon: [
+      {
+        url: "/favicon.svg",
+        type: "image/svg+xml",
+      },
+    ],
+  },
   other: {
     // Preconnect to Google Fonts
     preconnect: "https://fonts.googleapis.com",
