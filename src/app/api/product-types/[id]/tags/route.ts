@@ -4,14 +4,15 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params;
   try {
     const body = await request.json();
     const authCookie = request.cookies.get("auth-token");
 
     const response = await fetch(
-      `${API_BASE_URL}/product-types/${params.id}/tags`,
+      `${API_BASE_URL}/product-types/${id}/tags`,
       {
         method: "POST",
         headers: {
@@ -41,14 +42,15 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params;
   try {
     const body = await request.json();
     const authCookie = request.cookies.get("auth-token");
 
     const response = await fetch(
-      `${API_BASE_URL}/product-types/${params.id}/tags`,
+      `${API_BASE_URL}/product-types/${id}/tags`,
       {
         method: "DELETE",
         headers: {

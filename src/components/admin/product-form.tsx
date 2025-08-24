@@ -23,7 +23,7 @@ export function ProductForm() {
     serialNumber: "",
     type: "headset",
     headsetId: "",
-    productTypeId: "",
+    productTypeId: undefined,
     tags: [],
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -89,7 +89,10 @@ export function ProductForm() {
   };
 
   const handleProductTypeSelect = (productTypeId: string | undefined, tags: string[]) => {
-    setFormData(prev => ({ ...prev, productTypeId }));
+    setFormData(prev => ({ 
+      ...prev, 
+      productTypeId 
+    }));
     setDefaultTags(tags);
   };
 

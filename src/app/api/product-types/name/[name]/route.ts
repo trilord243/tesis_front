@@ -4,13 +4,14 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { name: string } }
+  context: { params: Promise<{ name: string }> }
 ) {
+  const { name } = await context.params;
   try {
     const authCookie = request.cookies.get("auth-token");
 
     const response = await fetch(
-      `${API_BASE_URL}/product-types/name/${params.name}`,
+      `${API_BASE_URL}/product-types/name/${name}`,
       {
         method: "GET",
         headers: {

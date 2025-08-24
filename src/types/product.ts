@@ -19,7 +19,7 @@ export interface CreateProductData {
   serialNumber: string;
   type: "headset" | "controller";
   headsetId?: string;
-  productTypeId?: string;
+  productTypeId?: string | undefined;
   tags?: string[];
 }
 

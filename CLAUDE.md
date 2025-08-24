@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Next.js 15 client for Centro Mundo X Equipment Management System - Frontend application for managing VR equipment reservations with RFID tracking integration. Uses React 19, TypeScript with strict mode, and Tailwind CSS v4.
+Next.js 15 client for Centro Mundo X Equipment Management System - Frontend application for managing VR equipment reservations with RFID tracking integration and administrative functions. Features comprehensive product management, lens request processing, user administration, and equipment tracking with printing capabilities. Uses React 19, TypeScript with strict mode, and Tailwind CSS v4.
 
 ## Architecture
 
@@ -21,33 +21,46 @@ Next.js 15 client for Centro Mundo X Equipment Management System - Frontend appl
 src/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API route handlers (proxy to backend)
-│   │   ├── auth/         # Authentication endpoints
-│   │   ├── admin/        # Admin-only endpoints
-│   │   └── lens-request/ # Equipment request endpoints
+│   │   ├── auth/         # Authentication endpoints (login, register, user)
+│   │   ├── admin/        # Admin-only endpoints (users, lens-requests)
+│   │   ├── lens-request/ # Equipment request endpoints
+│   │   └── product-types/# Product type management API
 │   ├── auth/             # Auth pages (login, register)
 │   ├── dashboard/        # User dashboard pages
+│   │   ├── mis-reservas/ # User reservations
+│   │   ├── perfil/       # User profile
+│   │   ├── qr/          # QR code display
+│   │   └── reservas/    # Reservation system
 │   ├── admin/            # Admin dashboard pages
-│   └── layout.tsx        # Root layout with error boundary
+│   │   ├── activos/     # Asset management
+│   │   ├── dashboard/   # Admin main dashboard
+│   │   ├── productos/   # Product management
+│   │   ├── solicitudes/ # Lens request management
+│   │   ├── tipos-productos/ # Product types
+│   │   └── usuarios/    # User administration
+│   ├── demo-reserva/    # Demo reservation process
+│   └── layout.tsx       # Root layout with error boundary
 ├── components/
-│   ├── auth/             # Auth forms and buttons
-│   ├── dashboard/        # Dashboard components
-│   ├── layout/           # Navbar, footer
-│   ├── sections/         # Landing page sections
-│   └── ui/              # Shadcn UI components
-├── lib/                  # Utilities and helpers
-├── types/               # TypeScript interfaces
-└── middleware.ts        # JWT auth middleware
+│   ├── auth/            # Auth forms and buttons
+│   ├── admin/           # Admin-specific components (forms, dialogs, tables)
+│   ├── dashboard/       # Dashboard components
+│   ├── layout/          # Navbar, footer
+│   ├── sections/        # Landing page sections
+│   └── ui/             # Shadcn UI components
+├── lib/                 # Server actions and utilities
+├── types/              # TypeScript interfaces
+└── middleware.ts       # JWT auth middleware with role-based routing
 ```
 
 ## Development Commands
 
 ```bash
 # Development (with Turbopack)
-npm run dev              # Runs on http://localhost:3001
+npm run dev              # Runs on http://localhost:3001 (default port per package.json)
 
 # Production build
 npm run build           # Creates .next/ production build
-npm start               # Runs production server
+npm start               # Runs production server (PORT env var supported)
 
 # Code quality (ALWAYS run before committing)
 npm run lint            # Next.js linting with ESLint 9

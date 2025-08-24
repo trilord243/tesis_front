@@ -20,7 +20,7 @@ import {
 import { Plus, Tag } from "lucide-react";
 
 interface ProductTypeSelectorProps {
-  selectedTypeId?: string;
+  selectedTypeId?: string | undefined;
   onTypeSelect: (typeId: string | undefined, tags: string[]) => void;
   disabled?: boolean;
 }
