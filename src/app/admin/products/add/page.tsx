@@ -1,7 +1,6 @@
 import { getCurrentUser, requireAdmin } from "@/lib/auth";
 import { Navbar } from "@/components/layout/navbar";
-import { ProductFormWithPrint } from "@/components/admin/product-form-with-print";
-import { MetaQuestSetForm } from "@/components/admin/metaquest-set-form";
+import { EnhancedProductForm } from "@/components/admin/enhanced-product-form";
 import {
   Card,
   CardContent,
@@ -15,7 +14,6 @@ import {
   Package,
   Plus,
   ArrowLeft,
-  Gamepad2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -72,77 +70,55 @@ export default async function AddProductPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Individual Product Form */}
-            <Card className="border-0 shadow-md">
-              <CardHeader>
-                <div className="flex items-center space-x-3">
-                  <Package className="h-6 w-6" style={{ color: "#1859A9" }} />
-                  <div>
-                    <CardTitle style={{ color: "#1859A9" }}>
-                      Activo Individual
-                    </CardTitle>
-                    <CardDescription>
-                      Agregar un headset o controlador individual
-                    </CardDescription>
-                  </div>
+          {/* Product Form */}
+          <Card className="border-0 shadow-md max-w-4xl mx-auto">
+            <CardHeader>
+              <div className="flex items-center space-x-3">
+                <Package className="h-6 w-6" style={{ color: "#1859A9" }} />
+                <div>
+                  <CardTitle style={{ color: "#1859A9" }}>
+                    Nuevo Activo
+                  </CardTitle>
+                  <CardDescription>
+                    Agregar un nuevo activo al inventario con tipo personalizable
+                  </CardDescription>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <ProductFormWithPrint />
-              </CardContent>
-            </Card>
-
-            {/* MetaQuest Set Form */}
-            <Card className="border-0 shadow-md">
-              <CardHeader>
-                <div className="flex items-center space-x-3">
-                  <Gamepad2 className="h-6 w-6" style={{ color: "#FF8200" }} />
-                  <div>
-                    <CardTitle style={{ color: "#FF8200" }}>
-                      Set Completo MetaQuest
-                    </CardTitle>
-                    <CardDescription>
-                      Crear un set completo (1 headset + 2 controladores)
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <MetaQuestSetForm />
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <EnhancedProductForm />
+            </CardContent>
+          </Card>
 
           {/* Help Section */}
-          <Card className="mt-8 border-0 shadow-md">
+          <Card className="mt-8 border-0 shadow-md max-w-4xl mx-auto">
             <CardHeader>
               <CardTitle style={{ color: "#1859A9" }}>
-                Información Importante
+                Información del Sistema
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <h4 className="font-semibold mb-2" style={{ color: "#003087" }}>
-                    Activo Individual
+                    Tipos de Productos
                   </h4>
                   <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• Usa esto para agregar headsets o controladores por separado</li>
-                    <li>• Para controladores, necesitas el ID del headset asociado</li>
-                    <li>• El sistema genera automáticamente códigos EPC únicos</li>
-                    <li>• Cada activo recibe un código interno automático</li>
+                    <li>• Selecciona un tipo existente de la base de datos</li>
+                    <li>• Crea nuevos tipos si no encuentras el adecuado</li>
+                    <li>• Los tipos incluyen etiquetas predefinidas</li>
+                    <li>• Las sugerencias de nombres se adaptan al tipo seleccionado</li>
                   </ul>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-2" style={{ color: "#FF8200" }}>
-                    Set Completo MetaQuest
+                    Códigos y Etiquetas RFID
                   </h4>
                   <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• Crea 1 headset + 2 controladores en una sola operación</li>
-                    <li>• Los controladores se vinculan automáticamente al headset</li>
-                    <li>• Más eficiente para configurar equipos completos</li>
-                    <li>• Todos los activos reciben códigos únicos</li>
+                    <li>• El sistema genera automáticamente códigos EPC únicos</li>
+                    <li>• Las etiquetas RFID se pueden imprimir directamente</li>
+                    <li>• Cada activo recibe un código interno automático</li>
+                    <li>• Los tags personalizados complementan los predefinidos</li>
                   </ul>
                 </div>
               </div>

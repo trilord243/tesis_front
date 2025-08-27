@@ -3,7 +3,7 @@ export interface Product {
   name: string;
   serialNumber: string;
   hexValue: string;
-  type: "headset" | "controller";
+  type: string; // Tipo dinámico basado en ProductType
   codigo: string;
   isAvailable: boolean;
   headsetId?: string;
@@ -17,7 +17,7 @@ export interface Product {
 export interface CreateProductData {
   name: string;
   serialNumber: string;
-  type: "headset" | "controller";
+  type: string; // Tipo dinámico basado en ProductType
   headsetId?: string;
   productTypeId?: string | undefined;
   tags?: string[];
