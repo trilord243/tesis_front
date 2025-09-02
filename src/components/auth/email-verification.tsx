@@ -34,6 +34,7 @@ export function EmailVerification({ email, onBack }: EmailVerificationProps) {
     } else if (resendDisabled && countdown === 0) {
       setResendDisabled(false);
     }
+    return undefined;
   }, [countdown, resendDisabled]);
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {

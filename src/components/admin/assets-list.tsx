@@ -53,7 +53,7 @@ export function AssetsList({ products }: AssetsListProps) {
 
   const getStatusBadge = (product: Product) => {
     // Usar estadoUbicacion si existe, si no, determinar por isAvailable
-    const status = product.estadoUbicacion || product.status || (product.isAvailable ? "available" : "in_use");
+    const status = product.estadoUbicacion || (product.isAvailable ? "available" : "in_use");
     
     const statusConfig = {
       available: { bg: "bg-green-100", text: "text-green-800", label: "Disponible" },
@@ -121,7 +121,7 @@ export function AssetsList({ products }: AssetsListProps) {
                     </div>
                     <div className="text-gray-600">
                       <span className="font-medium">Ubicación:</span>{" "}
-                      {product.location || "Lab. Principal"}
+                      {product.ubicacionFisica || "Lab. Principal"}
                     </div>
                   </div>
                   
@@ -135,7 +135,7 @@ export function AssetsList({ products }: AssetsListProps) {
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-2 lg:flex-nowrap">
                   {/* Si está en mantenimiento, mostrar botón para completar */}
-                  {(product.estadoUbicacion === "maintenance" || product.status === "maintenance") ? (
+                  {product.estadoUbicacion === "maintenance" ? (
                     <Button
                       variant="outline"
                       size="sm"

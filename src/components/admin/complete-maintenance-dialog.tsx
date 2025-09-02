@@ -40,6 +40,12 @@ export function CompleteMaintenanceDialog({
     setIsLoading(true);
     
     try {
+      if (!formData.actualReturn) {
+        alert("La fecha de retorno es requerida");
+        setIsLoading(false);
+        return;
+      }
+
       const completeData = {
         actualReturn: formData.actualReturn,
         ...(formData.finalCost && { finalCost: parseFloat(formData.finalCost) }),

@@ -155,7 +155,7 @@ export default async function ActivosAdminPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-orange-600">
-                  {products?.filter(p => p.status === 'maintenance').length || 0}
+                  {products?.filter(p => p.estadoUbicacion === 'maintenance').length || 0}
                 </div>
               </CardContent>
             </Card>

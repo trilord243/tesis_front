@@ -71,7 +71,6 @@ export async function completeMaintenance(productId: string, completeData: Compl
 
     // Si no se especifica ubicación, usar la predeterminada
     const dataToSend = {
-      actualReturn: completeData.actualReturn || new Date().toISOString().split('T')[0],
       ...completeData,
     };
 
