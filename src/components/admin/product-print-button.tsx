@@ -56,7 +56,7 @@ export function ProductPrintButton({ product }: ProductPrintButtonProps) {
           <Printer className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl mx-auto">
+      <DialogContent className="max-w-md mx-auto w-full">
         <DialogHeader className="pb-3">
           <DialogTitle className="text-base">
             Imprimir Etiqueta RFID
@@ -67,7 +67,7 @@ export function ProductPrintButton({ product }: ProductPrintButtonProps) {
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="grid grid-cols-4 gap-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div className="space-y-1">
               <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
                 Activo:
@@ -152,20 +152,12 @@ export function ProductPrintButton({ product }: ProductPrintButtonProps) {
           )}
         </div>
 
-        <DialogFooter className="pt-4">
-          <Button
-            variant="outline"
-            onClick={() => setIsOpen(false)}
-            disabled={isPrinting}
-            className="px-6 py-2 text-sm"
-          >
-            Cancelar
-          </Button>
+        <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-4">
           <Button
             onClick={handlePrint}
             disabled={isPrinting}
+            className="w-full px-6 py-2 text-sm"
             style={{ backgroundColor: isPrinting ? "#ccc" : "#FF8200" }}
-            className="px-6 py-2 text-sm"
           >
             {isPrinting ? (
               <>
@@ -175,9 +167,17 @@ export function ProductPrintButton({ product }: ProductPrintButtonProps) {
             ) : (
               <>
                 <Printer className="h-4 w-4 mr-2" />
-                Imprimir
+                Imprimir Etiqueta
               </>
             )}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setIsOpen(false)}
+            disabled={isPrinting}
+            className="w-full px-6 py-2 text-sm"
+          >
+            Cancelar
           </Button>
         </DialogFooter>
       </DialogContent>

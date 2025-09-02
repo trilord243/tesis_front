@@ -23,20 +23,27 @@ export function ProductsList({ products, type }: ProductsListProps) {
           {filteredProducts.map((product) => (
             <div
               key={product._id}
-              className="flex items-center justify-between p-3 border rounded-lg"
+              className="flex items-center justify-between p-4 border rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow min-h-[80px]"
             >
-              <div className="flex-1">
-                <h4 className="font-medium">{product.name}</h4>
-                <p className="text-sm text-gray-500">
-                  S/N: {product.serialNumber}
-                </p>
-                <p className="text-xs text-gray-400">
-                  Código: {product.codigo}
-                </p>
+              <div className="flex-1 mr-4">
+                <h4 className="font-semibold text-lg mb-1" style={{ color: "#1859A9" }}>
+                  {product.name}
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                  <p className="text-gray-600">
+                    <span className="font-medium">S/N:</span> {product.serialNumber}
+                  </p>
+                  <p className="text-gray-600">
+                    <span className="font-medium">Código:</span> {product.codigo}
+                  </p>
+                  <p className="text-gray-500 font-mono text-xs col-span-full truncate">
+                    <span className="font-medium">RFID:</span> {product.hexValue}
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-col items-end space-y-3 min-w-[120px]">
                 <span
-                  className={`px-2 py-1 text-xs rounded-full ${
+                  className={`px-3 py-1 text-sm rounded-full font-medium ${
                     product.isAvailable
                       ? "bg-green-100 text-green-800"
                       : "bg-red-100 text-red-800"
@@ -53,7 +60,7 @@ export function ProductsList({ products, type }: ProductsListProps) {
         <div className="text-center py-8 text-gray-500">
           <Package className="h-12 w-12 mx-auto mb-4 text-gray-300" />
           <p>No hay {type === "headset" ? "headsets" : "controladores"} registrados</p>
-          <Link href="/admin/products/add">
+          <Link href="/admin/activos/add">
             <Button className="mt-4" style={{ backgroundColor: "#FF8200" }}>
               Agregar {type === "headset" ? "primer headset" : "controladores"}
             </Button>

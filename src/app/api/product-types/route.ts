@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         ...(authCookie ? { Cookie: `auth-token=${authCookie.value}` } : {}),
+        ...(authCookie ? { Authorization: `Bearer ${authCookie.value}` } : {}),
       },
     });
 

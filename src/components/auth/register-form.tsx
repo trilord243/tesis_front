@@ -3,10 +3,13 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { EmailVerification } from "./email-verification";
 
 export function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showVerification, setShowVerification] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -17,9 +20,14 @@ export function RegisterForm() {
     const name = formData.get("name") as string;
     const lastName = formData.get("lastName") as string;
     const email = formData.get("email") as string;
+    const countryCode = formData.get("countryCode") as string;
+    const phoneNumber = formData.get("phoneNumber") as string;
     const cedula = formData.get("cedula") as string;
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
+
+    // Combinar código de país y número de teléfono
+    const phone = phoneNumber ? `${countryCode}${phoneNumber}` : "";
 
     // Validaciones básicas
     if (
@@ -48,7 +56,7 @@ export function RegisterForm() {
     }
 
     try {
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch("/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,28 +65,38 @@ export function RegisterForm() {
           name,
           lastName,
           email,
+          phone,
           cedula,
           password,
         }),
-        credentials: "include",
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Error en el registro");
+        throw new Error(data.message || data.error || "Error en el registro");
       }
 
-      // Redireccionar al dashboard después del registro exitoso
-      console.log("Registro exitoso, redirigiendo...");
-
-      // Usar window.location para forzar una recarga completa
-      window.location.href = "/dashboard";
+      // Mostrar pantalla de verificación
+      setUserEmail(email);
+      setShowVerification(true);
+      setLoading(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error en el registro");
       setLoading(false);
     }
   };
+
+  const handleBackToRegister = () => {
+    setShowVerification(false);
+    setUserEmail("");
+    setError("");
+  };
+
+  // Mostrar componente de verificación si es necesario
+  if (showVerification) {
+    return <EmailVerification email={userEmail} onBack={handleBackToRegister} />;
+  }
 
   return (
     <div className="w-full bg-white rounded-2xl shadow-2xl">
@@ -178,6 +196,58 @@ export function RegisterForm() {
                        disabled:bg-gray-50 disabled:cursor-not-allowed
                        transition-all duration-200"
             />
+          </div>
+
+          {/* Phone Field */}
+          <div className="mb-5">
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Teléfono Celular
+            </label>
+            <div className="flex">
+              <select
+                name="countryCode"
+                disabled={loading}
+                className="px-3 py-3 text-base border border-gray-300 rounded-l-lg
+                         focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none
+                         disabled:bg-gray-50 disabled:cursor-not-allowed
+                         transition-all duration-200 bg-white min-w-[100px]"
+                defaultValue="+58"
+              >
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+58">🇻🇪 +58</option>
+                <option value="+52">🇲🇽 +52</option>
+                <option value="+57">🇨🇴 +57</option>
+                <option value="+51">🇵🇪 +51</option>
+                <option value="+54">🇦🇷 +54</option>
+                <option value="+56">🇨🇱 +56</option>
+                <option value="+55">🇧🇷 +55</option>
+                <option value="+593">🇪🇨 +593</option>
+                <option value="+507">🇵🇦 +507</option>
+                <option value="+34">🇪🇸 +34</option>
+                <option value="+33">🇫🇷 +33</option>
+                <option value="+44">🇬🇧 +44</option>
+                <option value="+49">🇩🇪 +49</option>
+                <option value="+39">🇮🇹 +39</option>
+              </select>
+              <input
+                id="phone"
+                name="phoneNumber"
+                type="tel"
+                placeholder="4129704419"
+                disabled={loading}
+                autoComplete="tel"
+                className="flex-1 px-4 py-3 text-base border border-l-0 border-gray-300 rounded-r-lg
+                         focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none
+                         disabled:bg-gray-50 disabled:cursor-not-allowed
+                         transition-all duration-200"
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Ingresa tu número sin el código de país
+            </p>
           </div>
 
           {/* Cedula Field */}

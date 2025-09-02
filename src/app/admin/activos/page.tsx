@@ -1,4 +1,5 @@
 import { getCurrentUser, requireAdmin } from "@/lib/auth";
+import { getProducts } from "@/lib/products";
 import { Navbar } from "@/components/layout/navbar";
 import {
   Card,
@@ -7,109 +8,53 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Metadata } from "next";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Metadata, Viewport } from "next";
+import Link from "next/link";
 import {
   Package,
-  Monitor,
-  Headphones,
-  Cpu,
-  HardDrive,
+  Plus,
+  ArrowLeft,
   AlertCircle,
+  Tags,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AssetsList } from "@/components/admin/assets-list";
+import { AssetLocationManager } from "@/components/admin/asset-location-manager";
 
 export const metadata: Metadata = {
-  title: "Activos Fijos - Admin CentroMundoX",
-  description: "Gestión de activos fijos del centro",
+  title: "Gestión de Activos - Admin CentroMundoX",
+  description: "Administrar activos del inventario",
 };
 
-export default async function AdminActivosPage() {
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
+export default async function ActivosAdminPage() {
   await requireAdmin();
   const user = await getCurrentUser();
+  const productsResult = await getProducts();
 
   if (!user) {
     return <div>Error: Usuario no encontrado</div>;
   }
 
-  // Datos de ejemplo para activos fijos
-  const activos = [
-    {
-      id: 1,
-      nombre: "Lentes VR Meta Quest 3",
-      categoria: "Realidad Virtual",
-      codigo: "VR-001",
-      estado: "Disponible",
-      ubicacion: "Sala VR 1",
-      fechaAdquisicion: "2024-01-15",
-      valor: "$899.99",
-      icon: Headphones,
-    },
-    {
-      id: 2,
-      nombre: "Lentes AR HoloLens 2",
-      categoria: "Realidad Aumentada",
-      codigo: "AR-001",
-      estado: "En uso",
-      ubicacion: "Sala AR",
-      fechaAdquisicion: "2023-12-10",
-      valor: "$3,500.00",
-      icon: Monitor,
-    },
-    {
-      id: 3,
-      nombre: "PC Gaming RTX 4090",
-      categoria: "Computadoras",
-      codigo: "PC-001",
-      estado: "Disponible",
-      ubicacion: "Estación 1",
-      fechaAdquisicion: "2024-02-20",
-      valor: "$2,999.99",
-      icon: Cpu,
-    },
-    {
-      id: 4,
-      nombre: "Servidor Principal",
-      categoria: "Servidores",
-      codigo: "SRV-001",
-      estado: "Operativo",
-      ubicacion: "Sala de Servidores",
-      fechaAdquisicion: "2023-10-05",
-      valor: "$5,500.00",
-      icon: HardDrive,
-    },
-  ];
-
-  const estadisticas = {
-    total: activos.length,
-    disponibles: activos.filter(a => a.estado === "Disponible").length,
-    enUso: activos.filter(a => a.estado === "En uso" || a.estado === "Operativo").length,
-    valorTotal: "$12,899.98",
-  };
-
-  const getEstadoColor = (estado: string) => {
-    switch (estado) {
-      case "Disponible":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "En uso":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "Operativo":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "Mantenimiento":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "Fuera de servicio":
-        return "bg-red-100 text-red-800 border-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
+  const products = productsResult.success ? productsResult.products : [];
 
   return (
     <>
-      <Navbar isAuthenticated={true} showAuthButtons={false} isAdmin={true} />
-      <div className="min-h-screen bg-gray-50" style={{ paddingTop: "64px" }}>
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
+      <Navbar
+        isAuthenticated={true}
+        showAuthButtons={false}
+        isAdmin={true}
+      />
+      <div className="min-h-screen bg-gray-50" style={{ paddingTop: "80px" }}>
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {/* Header Section */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-4">
                 <div
                   className="flex items-center justify-center w-12 h-12 rounded-full"
@@ -118,184 +63,123 @@ export default async function AdminActivosPage() {
                   <Package className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="titular" style={{ color: "#1859A9" }}>
-                    Gestión de Activos Fijos
+                  <h1 className="text-2xl font-bold" style={{ color: "#1859A9" }}>
+                    Gestión de Activos
                   </h1>
-                  <p className="text-sm text-gray-600">
-                    Inventario y control de equipos del CentroMundoX
-                  </p>
+                  <p className="text-gray-600">Administrar inventario de equipos</p>
                 </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Link href="/admin/tipos-activos">
+                  <Button variant="outline" style={{ borderColor: "#F68629", color: "#F68629" }}>
+                    <Tags className="h-4 w-4 mr-2" />
+                    Tipos de Activos
+                  </Button>
+                </Link>
+                <Link href="/admin/activos/add">
+                  <Button style={{ backgroundColor: "#FF8200" }}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Agregar Activo
+                  </Button>
+                </Link>
+                <Link href="/admin/dashboard">
+                  <Button variant="outline" size="sm">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Volver
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
-        </header>
 
-        {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Estadísticas */}
+          {/* Error handling */}
+          {!productsResult.success && (
+            <Alert className="mb-6 border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                Error al cargar activos: {productsResult.error}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <Card className="border-0 shadow-md">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  Total de Activos
+                <CardTitle className="text-base" style={{ color: "#1859A9" }}>
+                  Total Activos
                 </CardTitle>
+                <CardDescription>En el sistema</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold" style={{ color: "#1859A9" }}>
-                    {estadisticas.total}
-                  </span>
-                  <Package className="h-8 w-8 text-blue-400" />
+                <div className="text-2xl font-bold" style={{ color: "#FF8200" }}>
+                  {products?.length || 0}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Equipos registrados</p>
               </CardContent>
             </Card>
 
             <Card className="border-0 shadow-md">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-base" style={{ color: "#1859A9" }}>
                   Disponibles
                 </CardTitle>
+                <CardDescription>Listos para usar</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-green-600">
-                    {estadisticas.disponibles}
-                  </span>
-                  <Monitor className="h-8 w-8 text-green-400" />
+                <div className="text-2xl font-bold text-green-600">
+                  {products?.filter(p => p.isAvailable).length || 0}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Listos para usar</p>
               </CardContent>
             </Card>
 
             <Card className="border-0 shadow-md">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-base" style={{ color: "#1859A9" }}>
                   En Uso
                 </CardTitle>
+                <CardDescription>Actualmente prestados</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-blue-600">
-                    {estadisticas.enUso}
-                  </span>
-                  <Headphones className="h-8 w-8 text-blue-400" />
+                <div className="text-2xl font-bold text-blue-600">
+                  {products?.filter(p => !p.isAvailable).length || 0}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Actualmente ocupados</p>
               </CardContent>
             </Card>
 
             <Card className="border-0 shadow-md">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
-                  Valor Total
+                <CardTitle className="text-base" style={{ color: "#1859A9" }}>
+                  Mantenimiento
                 </CardTitle>
+                <CardDescription>En reparación</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold" style={{ color: "#FF8200" }}>
-                    {estadisticas.valorTotal}
-                  </span>
-                  <Cpu className="h-8 w-8 text-orange-400" />
+                <div className="text-2xl font-bold text-orange-600">
+                  {products?.filter(p => p.status === 'maintenance').length || 0}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Inversión total</p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Lista de Activos */}
-          <Card className="shadow-lg">
+          {/* Quick Asset Management */}
+          <div className="mb-8">
+            <AssetLocationManager />
+          </div>
+
+          {/* All Assets List */}
+          <Card className="border-0 shadow-md">
             <CardHeader>
               <CardTitle style={{ color: "#1859A9" }}>
-                Inventario de Activos Fijos
+                Listado de Activos
               </CardTitle>
               <CardDescription>
-                Lista completa de equipos y dispositivos del centro
+                Todos los activos del inventario con opciones de gestión
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {activos.length === 0 ? (
-                <div className="text-center py-8">
-                  <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No se encontraron activos registrados</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {activos.map((activo) => {
-                    const IconComponent = activo.icon;
-                    return (
-                      <Card key={activo.id} className="border border-gray-200 hover:shadow-md transition-shadow">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center space-x-3">
-                              <div 
-                                className="p-2 rounded-lg"
-                                style={{ backgroundColor: "#1859A920", color: "#1859A9" }}
-                              >
-                                <IconComponent className="h-6 w-6" />
-                              </div>
-                              <div>
-                                <h3 className="font-semibold text-gray-900 text-sm">
-                                  {activo.nombre}
-                                </h3>
-                                <p className="text-xs text-gray-500">{activo.codigo}</p>
-                              </div>
-                            </div>
-                            <span 
-                              className={`px-2 py-1 text-xs font-medium rounded-full border ${getEstadoColor(activo.estado)}`}
-                            >
-                              {activo.estado}
-                            </span>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="pt-0">
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Categoría:</span>
-                              <span className="font-medium">{activo.categoria}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Ubicación:</span>
-                              <span className="font-medium">{activo.ubicacion}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Adquisición:</span>
-                              <span className="font-medium">{activo.fechaAdquisicion}</span>
-                            </div>
-                            <div className="flex justify-between border-t pt-2">
-                              <span className="text-gray-600">Valor:</span>
-                              <span className="font-bold" style={{ color: "#FF8200" }}>
-                                {activo.valor}
-                              </span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
+              <AssetsList products={products || []} />
             </CardContent>
           </Card>
-
-          {/* Información adicional */}
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <AlertCircle className="h-6 w-6 text-blue-600" />
-              <h3 className="font-semibold text-blue-900">Información del Sistema</h3>
-            </div>
-            <div className="text-sm text-blue-800">
-              <p className="mb-2">
-                • Los activos se actualizan automáticamente cuando se realizan reservas
-              </p>
-              <p className="mb-2">
-                • El estado &quot;Disponible&quot; indica que el equipo está listo para ser reservado
-              </p>
-              <p>
-                • Para gestión avanzada de inventario, contacte al administrador del sistema
-              </p>
-            </div>
-          </div>
         </main>
       </div>
     </>

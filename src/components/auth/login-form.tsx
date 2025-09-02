@@ -1,16 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 import Link from "next/link";
 
 export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showResendOption, setShowResendOption] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+    setShowResendOption(false);
+    setUnverifiedEmail("");
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -36,17 +40,52 @@ export function LoginForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Error de autenticación");
+        // Verificar si es error de email no verificado
+        if (response.status === 401 && data.message && 
+            data.message.includes("verifica tu correo")) {
+          setError("Debes verificar tu correo electrónico antes de iniciar sesión");
+          setShowResendOption(true);
+          setUnverifiedEmail(email);
+        } else {
+          throw new Error(data.error || data.message || "Error de autenticación");
+        }
+      } else {
+        // Redireccionar al dashboard
+        console.log("Login exitoso, redirigiendo...");
+        
+        // Usar window.location para forzar una recarga completa
+        window.location.href = "/dashboard";
       }
-
-      // Redireccionar al dashboard
-      console.log("Login exitoso, redirigiendo...");
-
-      // Usar window.location para forzar una recarga completa
-      window.location.href = "/dashboard";
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error de autenticación");
+      if (!showResendOption) {
+        setError(err instanceof Error ? err.message : "Error de autenticación");
+      }
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!unverifiedEmail) return;
+
+    try {
+      const response = await fetch("/api/users/resend-verification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: unverifiedEmail }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setError("Se ha enviado un nuevo código de verificación a tu correo");
+        setShowResendOption(false);
+      } else {
+        setError(data.message || "Error al reenviar código de verificación");
+      }
+    } catch (err) {
+      setError("Error al reenviar código de verificación");
     }
   };
 
@@ -73,8 +112,33 @@ export function LoginForm() {
         <div className="px-10 sm:px-12 pb-10">
           {/* Error Alert */}
           {error && (
-            <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className={`mb-5 p-3 border rounded-lg ${
+              error.includes("enviado") ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+            }`}>
+              <p className={`text-sm ${
+                error.includes("enviado") ? "text-green-700" : "text-red-700"
+              }`}>
+                {error}
+              </p>
+              
+              {/* Botón de reenvío para usuarios no verificados */}
+              {showResendOption && (
+                <div className="mt-3 pt-3 border-t border-red-100">
+                  <p className="text-xs text-red-600 mb-2">
+                    ¿No tienes el código de verificación?
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    className="inline-flex items-center gap-2 px-3 py-1 text-xs font-medium 
+                             text-red-700 bg-red-100 border border-red-300 rounded-md
+                             hover:bg-red-200 transition-colors duration-200"
+                  >
+                    <Mail className="h-3 w-3" />
+                    Reenviar código de verificación
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

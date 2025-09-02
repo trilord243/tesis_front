@@ -326,7 +326,7 @@ export function ProductFormWithPrint() {
 
       {/* Print Dialog */}
       <Dialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>
-        <DialogContent className="max-w-3xl mx-auto">
+        <DialogContent className="max-w-md mx-auto w-full">
           <DialogHeader>
             <DialogTitle>¡Activo Creado Exitosamente!</DialogTitle>
             <DialogDescription>
@@ -388,20 +388,11 @@ export function ProductFormWithPrint() {
             </div>
           )}
 
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowPrintDialog(false);
-                setCreatedProduct(null);
-              }}
-              disabled={isPrinting}
-            >
-              Omitir
-            </Button>
+          <DialogFooter className="flex flex-col gap-2 w-full">
             <Button
               onClick={handlePrint}
               disabled={isPrinting}
+              className="w-full"
               style={{ backgroundColor: isPrinting ? "#ccc" : "#FF8200" }}
             >
               {isPrinting ? (
@@ -412,9 +403,20 @@ export function ProductFormWithPrint() {
               ) : (
                 <>
                   <Printer className="h-4 w-4 mr-2" />
-                  Imprimir Etiqueta
+                  Imprimir Etiqueta RFID
                 </>
               )}
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                setShowPrintDialog(false);
+                setCreatedProduct(null);
+              }}
+              disabled={isPrinting}
+            >
+              Omitir por Ahora
             </Button>
           </DialogFooter>
         </DialogContent>

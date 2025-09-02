@@ -17,6 +17,7 @@ export async function GET(
         headers: {
           "Content-Type": "application/json",
           ...(authCookie ? { Cookie: `auth-token=${authCookie.value}` } : {}),
+          ...(authCookie ? { Authorization: `Bearer ${authCookie.value}` } : {}),
         },
       }
     );

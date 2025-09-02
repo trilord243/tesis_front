@@ -28,7 +28,7 @@ import { Plus, Edit, Trash2, Tag, Package2, ArrowLeft } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
 import Link from "next/link";
 
-export default function TiposProductosPage() {
+export default function TiposActivosPage() {
   const [productTypes, setProductTypes] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

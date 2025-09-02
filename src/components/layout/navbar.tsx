@@ -107,24 +107,19 @@ export function Navbar({
       icon: LayoutDashboard,
     },
     {
-      href: "/admin/solicitudes",
-      label: "Solicitudes",
-      icon: ClipboardList,
-    },
-    {
-      href: "/admin/products",
-      label: "Activos",
+      href: "/admin/activos",
+      label: "Gestión de Activos",
       icon: Package2,
     },
     {
-      href: "/admin/tipos-productos",
+      href: "/admin/tipos-activos",
       label: "Tipos de Activos",
       icon: Tags,
     },
     {
-      href: "/admin/activos",
-      label: "Activos",
-      icon: Calendar,
+      href: "/admin/solicitudes",
+      label: "Solicitudes de Préstamo",
+      icon: ClipboardList,
     },
   ];
 
