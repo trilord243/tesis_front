@@ -145,7 +145,7 @@ export function AssetForm() {
     garantiaCobertura: "",
 
     // Ubicación
-    ubicacionFisica: "",
+    ubicacionFisica: "Laboratorio metaverso",
     estadoUbicacion: "available",
     edificio: "",
     piso: "",
@@ -200,11 +200,10 @@ export function AssetForm() {
   };
 
   const generateSerialNumber = () => {
-    // Generar un número de serie único basado en timestamp y valores aleatorios
-    const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const prefix = formData.marca ? formData.marca.substring(0, 3).toUpperCase() : "CMX";
-    const serialNumber = `${prefix}-${timestamp}-${random}`;
+    // Generar un número de serie totalmente numérico
+    const timestamp = Date.now().toString().slice(-8); // Últimos 8 dígitos del timestamp
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0'); // 4 dígitos aleatorios
+    const serialNumber = `${timestamp}${random}`; // Total: 12 dígitos
     
     setFormData((prev) => ({ ...prev, serialNumber }));
   };
@@ -348,7 +347,7 @@ export function AssetForm() {
       garantiaContacto: "",
       garantiaTelefono: "",
       garantiaCobertura: "",
-      ubicacionFisica: "",
+      ubicacionFisica: "Laboratorio metaverso",
       estadoUbicacion: "available",
       edificio: "",
       piso: "",
@@ -509,7 +508,7 @@ export function AssetForm() {
                         onChange={(e) =>
                           handleInputChange("serialNumber", e.target.value)
                         }
-                        placeholder="Ej: MET-M3XK9Z-A2B4CD"
+                        placeholder="Ej: 123456789012"
                         required
                         className="flex-1"
                       />
@@ -595,14 +594,42 @@ export function AssetForm() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="ubicacionFisica">Ubicación Física</Label>
-                    <Input
-                      id="ubicacionFisica"
+                    <Select
                       value={formData.ubicacionFisica}
-                      onChange={(e) =>
-                        handleInputChange("ubicacionFisica", e.target.value)
+                      onValueChange={(value) =>
+                        handleInputChange("ubicacionFisica", value)
                       }
-                      placeholder="Ej: Laboratorio metaverso"
-                    />
+                    >
+                      <SelectTrigger id="ubicacionFisica">
+                        <SelectValue placeholder="Selecciona una ubicación" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Laboratorio metaverso">
+                          Laboratorio metaverso
+                        </SelectItem>
+                        <SelectItem value="Laboratorio Principal">
+                          Laboratorio Principal
+                        </SelectItem>
+                        <SelectItem value="Sala de Realidad Virtual">
+                          Sala de Realidad Virtual
+                        </SelectItem>
+                        <SelectItem value="Área de Desarrollo">
+                          Área de Desarrollo
+                        </SelectItem>
+                        <SelectItem value="Bodega">
+                          Bodega
+                        </SelectItem>
+                        <SelectItem value="Oficina Administrativa">
+                          Oficina Administrativa
+                        </SelectItem>
+                        <SelectItem value="Sala de Reuniones">
+                          Sala de Reuniones
+                        </SelectItem>
+                        <SelectItem value="Centro de Datos">
+                          Centro de Datos
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label htmlFor="estadoUbicacion">Estado de Ubicación</Label>
