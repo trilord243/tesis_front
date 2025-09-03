@@ -233,17 +233,34 @@ export default function PerfilPage() {
                         )}
                       </p>
                     </div>
-                    {user.codigo_acceso && (
-                      <div>
-                        <p className="text-gray-500">Código de acceso</p>
-                        <p
-                          className="font-mono font-bold"
-                          style={{ color: "#FF8200" }}
-                        >
-                          {user.codigo_acceso}
+                    <div>
+                      <p className="text-gray-500">Código de acceso</p>
+                      {user.codigo_acceso ? (
+                        <div>
+                          <p
+                            className="font-mono font-bold"
+                            style={{ color: "#FF8200" }}
+                          >
+                            {user.codigo_acceso}
+                          </p>
+                          {user.accessCodeExpiresAt && (
+                            <p className="text-xs text-amber-700 mt-1">
+                              Expira: {new Date(user.accessCodeExpiresAt).toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-amber-600 text-sm italic">
+                          Pendiente de aprobación de solicitud
                         </p>
-                      </div>
-                    )}
+                      )}
+                    </div>
                     {user.equipos_reservados &&
                       user.equipos_reservados.length > 0 && (
                         <div>

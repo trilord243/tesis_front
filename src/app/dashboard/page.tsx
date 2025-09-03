@@ -104,8 +104,8 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* Código de Acceso Destacado */}
-          {user.codigo_acceso && (
+          {/* Estado de Acceso */}
+          {user.codigo_acceso ? (
             <Alert className="mb-6 border-blue-200 bg-blue-50">
               <Shield className="h-4 w-4" style={{ color: "#1859A9" }} />
               <AlertDescription className="flex items-center justify-between">
@@ -113,12 +113,25 @@ export default async function DashboardPage() {
                   <span className="text-sm font-medium text-gray-700">
                     Tu código de acceso al centro:
                   </span>
-                  <span
-                    className="ml-3 text-2xl font-mono font-bold"
-                    style={{ color: "#003087" }}
-                  >
-                    {user.codigo_acceso}
-                  </span>
+                  <div className="flex flex-col">
+                    <span
+                      className="text-2xl font-mono font-bold"
+                      style={{ color: "#003087" }}
+                    >
+                      {user.codigo_acceso}
+                    </span>
+                    {user.accessCodeExpiresAt && (
+                      <span className="text-xs text-amber-700 mt-1">
+                        Expira: {new Date(user.accessCodeExpiresAt).toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <Link href="/dashboard/qr">
                   <Button variant="outline" size="sm" className="ml-4">
@@ -126,6 +139,20 @@ export default async function DashboardPage() {
                     Ver QR
                   </Button>
                 </Link>
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Alert className="mb-6 border-amber-200 bg-amber-50">
+              <Shield className="h-4 w-4" style={{ color: "#F59E0B" }} />
+              <AlertDescription>
+                <div>
+                  <span className="text-sm font-medium text-amber-800">
+                    Código de acceso pendiente
+                  </span>
+                  <p className="text-xs text-amber-700 mt-1">
+                    Tu código de acceso se generará cuando un administrador apruebe tu solicitud de equipos.
+                  </p>
+                </div>
               </AlertDescription>
             </Alert>
           )}

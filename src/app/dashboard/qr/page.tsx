@@ -32,22 +32,24 @@ export default async function QRPage() {
     redirect("/admin/dashboard");
   }
 
+  // Si el usuario no tiene código de acceso, no generar QR válido
+  const hasAccessCode = user.codigo_acceso || isAdmin;
+  
   // Generar el contenido del QR con la información del usuario
-  // Para administradores, incluir información especial de identificación
-  const qrData = JSON.stringify({
+  const qrData = hasAccessCode ? JSON.stringify({
     userId: user._id,
     email: user.email,
     name: `${user.name} ${user.lastName}`,
     cedula: user.cedula,
     role: user.role,
-    accessCode: user.codigo_acceso || "N/A",
+    accessCode: user.codigo_acceso || (isAdmin ? "ADMIN_ACCESS" : "N/A"),
     adminAccess: isAdmin,
     permissions: isAdmin
       ? ["full_access", "manage_requests", "system_admin"]
       : ["basic_access"],
     timestamp: new Date().toISOString(),
     qrType: isAdmin ? "ADMIN_ACCESS" : "USER_ACCESS",
-  });
+  }) : "";
 
   return (
     <>
@@ -133,15 +135,27 @@ export default async function QRPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col items-center space-y-4">
-                <div className="bg-white p-6 rounded-lg shadow-inner">
-                  <QRCode
-                    value={qrData}
-                    size={250}
-                    level="H"
-                    fgColor={isAdmin ? "#FF8200" : "#1859A9"}
-                    bgColor="#FFFFFF"
-                  />
-                </div>
+                {hasAccessCode ? (
+                  <div className="bg-white p-6 rounded-lg shadow-inner">
+                    <QRCode
+                      value={qrData}
+                      size={250}
+                      level="H"
+                      fgColor={isAdmin ? "#FF8200" : "#1859A9"}
+                      bgColor="#FFFFFF"
+                    />
+                  </div>
+                ) : (
+                  <div className="bg-amber-50 border-2 border-dashed border-amber-300 p-8 rounded-lg text-center">
+                    <Shield className="h-16 w-16 text-amber-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-amber-800 mb-2">
+                      Código de acceso pendiente
+                    </h3>
+                    <p className="text-amber-700 text-sm">
+                      Tu código QR se generará cuando un administrador apruebe tu solicitud de equipos
+                    </p>
+                  </div>
+                )}
                 <div className="text-center space-y-2">
                   <p className="text-sm text-gray-600">
                     {isAdmin ? "ID de Administrador" : "ID de Usuario"}
@@ -194,9 +208,23 @@ export default async function QRPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Código de Acceso:</span>
                     <span className="font-medium">
-                      {user.codigo_acceso || "N/A"}
+                      {user.codigo_acceso || "Pendiente"}
                     </span>
                   </div>
+                  {user.accessCodeExpiresAt && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Código Expira:</span>
+                      <span className="font-medium text-amber-700">
+                        {new Date(user.accessCodeExpiresAt).toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-gray-600">Rol:</span>
                     <span
