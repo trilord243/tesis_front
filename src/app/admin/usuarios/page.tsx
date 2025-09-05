@@ -163,7 +163,7 @@ export default function AdminUsuariosPage() {
   return (
     <>
       <Navbar isAuthenticated={true} showAuthButtons={false} />
-      <div className="min-h-screen bg-gray-50" style={{ paddingTop: "64px" }}>
+      <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
         {/* Header */}
         <header className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Next.js 15 client for Centro Mundo X Equipment Management System - Frontend application for managing VR equipment reservations with RFID tracking integration and administrative functions. Features comprehensive product management, lens request processing, user administration, and equipment tracking with printing capabilities. Uses React 19, TypeScript with strict mode, and Tailwind CSS v4.
+Centro Mundo X Equipment Management System Frontend - A modern Next.js 15 application with React 19 for managing high-end VR/AR equipment reservations, featuring RFID tracking integration, real-time status updates, administrative dashboards, and an interactive landing page for the research facility.
 
 ## Architecture
 
-### Frontend Stack
+### Tech Stack
 - **Next.js 15.4.4** with App Router and Server Components
 - **React 19.1.0** with latest hooks (useActionState)
 - **TypeScript 5** with strict mode enabled
@@ -21,28 +21,18 @@ Next.js 15 client for Centro Mundo X Equipment Management System - Frontend appl
 src/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API route handlers (proxy to backend)
-│   │   ├── auth/         # Authentication endpoints (login, register, user)
-│   │   ├── admin/        # Admin-only endpoints (users, lens-requests)
+│   │   ├── auth/         # Authentication endpoints
+│   │   ├── admin/        # Admin-only endpoints
 │   │   ├── lens-request/ # Equipment request endpoints
-│   │   └── product-types/# Product type management API
+│   │   ├── product-types/# Product type management
+│   │   └── zones/        # Zone management
 │   ├── auth/             # Auth pages (login, register)
 │   ├── dashboard/        # User dashboard pages
-│   │   ├── mis-reservas/ # User reservations
-│   │   ├── perfil/       # User profile
-│   │   ├── qr/          # QR code display
-│   │   └── reservas/    # Reservation system
 │   ├── admin/            # Admin dashboard pages
-│   │   ├── activos/     # Asset management
-│   │   ├── dashboard/   # Admin main dashboard
-│   │   ├── productos/   # Product management
-│   │   ├── solicitudes/ # Lens request management
-│   │   ├── tipos-productos/ # Product types
-│   │   └── usuarios/    # User administration
-│   ├── demo-reserva/    # Demo reservation process
-│   └── layout.tsx       # Root layout with error boundary
+│   └── demo-reserva/     # Demo reservation process
 ├── components/
 │   ├── auth/            # Auth forms and buttons
-│   ├── admin/           # Admin-specific components (forms, dialogs, tables)
+│   ├── admin/           # Admin-specific components
 │   ├── dashboard/       # Dashboard components
 │   ├── layout/          # Navbar, footer
 │   ├── sections/        # Landing page sections
@@ -55,85 +45,41 @@ src/
 ## Development Commands
 
 ```bash
-# Development (with Turbopack)
-npm run dev              # Runs on http://localhost:3001 (default port per package.json)
+# Development
+npm run dev              # Runs on http://localhost:3001 with Turbopack
 
-# Production build
-npm run build           # Creates .next/ production build
+# Production
+npm run build           # Creates .next/ production build  
 npm start               # Runs production server (PORT env var supported)
 
-# Code quality (ALWAYS run before committing)
+# Code Quality (ALWAYS run after making changes)
 npm run lint            # Next.js linting with ESLint 9
 
 # UI Components
-npm run ui:add [component]  # Add Shadcn UI component
+npm run ui:add [component]  # Add Shadcn UI component via CLI
 ```
-
-## Authentication Flow
-
-1. **API Routes as Proxy**: All `/api/*` routes proxy to backend at `http://localhost:3000`
-2. **JWT Storage**: Tokens stored in httpOnly cookies (`auth-token`)
-3. **Middleware Protection**: Routes protected via `middleware.ts`
-4. **Role-based Routing**:
-   - Admin users: Redirected to `/admin/dashboard`
-   - Regular users: Redirected to `/dashboard`
-   - Protected routes require valid JWT
-
-## API Integration Pattern
-
-All backend calls go through Next.js API routes which:
-1. Receive client requests
-2. Forward to NestJS backend (port 3000)
-3. Handle JWT token in cookies
-4. Return formatted responses
-
-Example flow:
-```
-Client → /api/auth/login → Backend /auth/login → JWT in cookie → Response
-```
-
-## TypeScript Configuration
-
-### Strict Mode Settings
-- `strict: true`
-- `noUncheckedIndexedAccess: true`
-- `exactOptionalPropertyTypes: true`
-- `noImplicitReturns: true`
-
-### Path Aliases
-- `@/*` → `./src/*`
-- `@/components/*` → `./src/components/*`
-- `@/lib/*` → `./src/lib/*`
-- `@/types/*` → `./src/types/*`
 
 ## Environment Variables
 
 ```env
 # .env.local
-NEXT_PUBLIC_API_URL=http://localhost:3000  # Backend API URL
-JWT_SECRET=your-secret-key                 # Must match backend
+NEXT_PUBLIC_API_URL=https://centromundox-backend-947baa9d183e.herokuapp.com
+JWT_SECRET=changeme_secret_key  # Must match backend
 ```
 
-## Styling System
+## Authentication Flow
 
-### Design Tokens (Tailwind CSS v4)
-Located in `globals.css`:
-- Brand colors: `--color-primary-blue`, `--color-primary-orange`
-- Typography scales: `--font-size-*`, `--line-height-*`
-- Spacing: `--spacing-*`
-- Border radius: `--radius-*`
-
-### Brand Colors
-- Primary Blue: `#1859A9`
-- Primary Orange: `#FF8200`
-- Secondary Blue: `#003087`
-- Secondary Orange: `#F68629`
+1. **API Routes as Proxy**: All `/api/*` routes proxy to backend
+2. **JWT Storage**: Tokens stored in httpOnly cookies (`auth-token`)
+3. **Middleware Protection**: Routes protected via `middleware.ts`
+4. **Role-based Routing**:
+   - Admin users → `/admin/dashboard`
+   - Regular users → `/dashboard`
 
 ## Code Patterns
 
 ### Server Components (Default)
 ```tsx
-// Pages are async Server Components by default
 export default async function Page() {
   // Direct data fetching
   return <div>...</div>;
@@ -143,27 +89,49 @@ export default async function Page() {
 ### Client Components (When Needed)
 ```tsx
 "use client"; // Only when using hooks/browser APIs
-
-export default function Component() {
-  // Can use useState, useEffect, etc.
-}
 ```
 
 ### API Route Handler
 ```ts
-// src/app/api/*/route.ts
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  
   const response = await fetch(`${API_BASE_URL}/endpoint`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  
   return NextResponse.json(await response.json());
 }
 ```
+
+## TypeScript Configuration
+
+- `strict: true`
+- `noUncheckedIndexedAccess: true`
+- `exactOptionalPropertyTypes: true`
+- `noImplicitReturns: true`
+- Path aliases: `@/*` → `./src/*`
+
+## Styling System
+
+### Design Tokens (Tailwind CSS v4)
+Located in `globals.css`:
+- Brand colors: `--brand-primary: #1859A9`, `--brand-orange: #FF8200`
+- Typography: Roboto, Roboto Condensed
+- Spacing: `--spacing-*`
+- Border radius: `--radius-*`
+
+## Important Implementation Details
+
+1. **Cookie-based Auth**: JWT stored in httpOnly cookies (`auth-token`), not localStorage
+2. **Middleware Logging**: Debug logs in middleware.ts for auth flow troubleshooting
+3. **Error Boundaries**: Global error boundary in root layout
+4. **API Proxy Pattern**: Never call backend directly from client components - use `/api/*` routes
+5. **Turbopack**: Development uses `--turbopack` flag for faster builds
+6. **React 19**: Use `useActionState` instead of deprecated `useFormState`
+7. **Server Components Default**: Use Server Components unless client interactivity needed
+8. **Port Configuration**: Development runs on 3001 to avoid conflict with API (3000)
+9. **Production API**: Configured for Heroku backend deployment
 
 ## Common Tasks
 
@@ -186,38 +154,151 @@ export async function POST(request: NextRequest) {
 4. Handle loading and error states
 5. Use Shadcn UI form components
 
-## Important Implementation Details
+## Key Features
 
-1. **Cookie-based Auth**: JWT stored in httpOnly cookies, not localStorage
-2. **Middleware Logging**: Debug logs in middleware.ts for auth flow
-3. **Error Boundaries**: Global error boundary in root layout
-4. **Responsive Design**: All forms use responsive grid layouts
-5. **Admin Routes**: `/admin/*` paths require admin role in JWT
-6. **API Proxy Pattern**: Never call backend directly from client components
-7. **Turbopack**: Development uses `--turbopack` flag for faster builds
-8. **React 19**: Use `useActionState` instead of deprecated `useFormState`
+### Public Landing Page
+- **Hero Section**: Video background with reservation CTA
+- **Values Section**: Research center core values
+- **About Section**: Equipment showcase and capabilities
+- **Demo Reservation**: Interactive reservation flow (`/demo-reserva`)
 
-## Testing Approach
+### User Dashboard (`/dashboard`)
+- **Profile Management**: User information and settings
+- **Equipment Requests**: Submit and track lens requests
+- **QR Code Access**: Display access codes for cabinet
+- **Reservation History**: View past and current reservations
 
-Currently no test configuration. To add testing:
-1. Install Jest/Vitest + React Testing Library
-2. Add test scripts to package.json
-3. Create `__tests__` directories
-4. Follow Next.js testing guidelines
+### Admin Interface (`/admin`)
+- **Asset Management** (`/admin/activos`): Complete inventory CRUD
+- **Request Approval** (`/admin/solicitudes`): Review and approve lens requests
+- **User Management** (`/admin/usuarios`): User administration
+- **Product Types** (`/admin/tipos-activos`): Category and tag management
+- **Dashboard** (`/admin/dashboard`): Overview and statistics
 
-## Deployment Notes
+### Authentication Pages (`/auth`)
+- **Login**: Email/password authentication
+- **Register**: New user registration with email verification
+- **Email Verification**: Account verification flow
 
-- Build output: `.next/` directory
-- Static assets optimized automatically
-- Environment variables required in production
-- Ensure JWT_SECRET matches backend
-- Set NODE_ENV=production for secure cookies
+## API Integration
+
+### Proxy Architecture
+All API calls go through Next.js API routes that proxy to the backend:
+
+```typescript
+// Example: /api/auth/login/route.ts
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  
+  // Set httpOnly cookie if login successful
+  if (response.ok) {
+    const data = await response.json();
+    const response = NextResponse.json(data);
+    response.cookies.set("auth-token", data.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+    return response;
+  }
+  
+  return NextResponse.json(await response.json(), { status: response.status });
+}
+```
+
+### Key API Routes
+- `/api/auth/*` - Authentication endpoints
+- `/api/products/*` - Product management
+- `/api/lens-request/*` - Equipment requests
+- `/api/admin/*` - Admin-only operations
+- `/api/zones/*` - Zone management
+- `/api/product-types/*` - Product type operations
+
+## UI Component System
+
+### Shadcn UI Components
+Pre-configured components in `src/components/ui/`:
+- **Forms**: Input, Button, Label, Checkbox
+- **Layout**: Card, Separator, Tabs
+- **Feedback**: Toast, Tooltip, Dialog
+- **Navigation**: NavigationMenu, DropdownMenu
+- **Display**: Badge, Table, Command (cmdk)
+
+### Custom Components
+- **Navbar**: Responsive with role-based menu items
+- **Footer**: Brand information and links
+- **LoginForm/RegisterForm**: Authentication forms
+- **QRCodeDisplay**: Access code visualization
+- **ProductCard**: Equipment display cards
+
+## Security Configuration
+
+### Middleware Protection (`middleware.ts`)
+- JWT verification using `jose` library
+- Role-based route protection
+- Automatic redirects based on auth state
+- Debug logging for troubleshooting
+
+### Security Headers (next.config.ts)
+```javascript
+{
+  "X-Frame-Options": "SAMEORIGIN",
+  "X-Content-Type-Options": "nosniff",
+  "X-XSS-Protection": "1; mode=block",
+  "Referrer-Policy": "strict-origin-when-cross-origin"
+}
+```
+
+## Brand Guidelines
+
+### Colors (CSS Variables in globals.css)
+```css
+--brand-primary: #1859A9;    /* Primary Blue */
+--brand-orange: #FF8200;      /* Primary Orange */
+--brand-secondary: #003087;   /* Secondary Blue */
+--brand-orange-secondary: #F68629; /* Secondary Orange */
+```
+
+### Typography
+- **Headings**: Roboto Condensed
+- **Body Text**: Roboto
+- **Responsive Scaling**: Using clamp() for fluid typography
+
+## Testing & Development
+
+### Local Development Setup
+1. Copy `.env.example` to `.env.local`
+2. Update `NEXT_PUBLIC_API_URL` for local backend
+3. Run `npm install`
+4. Run `npm run dev`
+5. Access at `http://localhost:3001`
+
+### Common Issues & Solutions
+- **CORS Errors**: Check backend CORS configuration
+- **Auth Token Issues**: Clear cookies and re-login
+- **Middleware Loops**: Check redirect logic in middleware.ts
+- **Build Errors**: Run `npm run lint` to identify issues
 
 ## Related Services
 
 This client connects to:
 - **centromundox-api-reservas**: Main NestJS backend (port 3000)
-- **fx9600-control**: RFID cabinet controller (hardware integration)
-- **demo-impresion**: Label printing service (equipment tags)
+- **fx9600-control**: RFID cabinet controller
+- **demo-impresion**: Label printing service
 
 For full system documentation, see `/home/trilord243/tesis/CLAUDE.md`
+
+## Additional Documentation
+
+- `DOCUMENTACION-FRONTEND.md` - Spanish frontend documentation
+- `SISTEMA-AUTH-IMPLEMENTADO.md` - Authentication system details
+- `DEMO-INTERACTIVO-RESERVAS.md` - Demo reservation flow
+- `LANDING-BRAND-GUIDE.md` - Brand implementation guide
+- `MODELO-ACTIVOS.md` - Asset management model
+- `API-ENDPOINTS.md` - Complete API reference
+- `EMAIL_VERIFICATION_API_DOCS.md` - Email verification flow

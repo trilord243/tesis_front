@@ -1,28 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthToken, getCurrentUser } from "@/lib/auth";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 export async function POST(request: NextRequest) {
   try {
-    const token = await getAuthToken();
-
-    if (!token) {
+    // Obtener token de autenticación de las cookies
+    const authToken = request.cookies.get('auth-token')?.value;
+    
+    if (!authToken) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Obtener usuario actual
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 404 }
-      );
-    }
-
     // Obtener datos del cuerpo de la petición
-    const { requestReason } = await request.json();
+    const body = await request.json();
+    const { requestReason, willLeaveMetaverse, leaveReason, zoneName, plannedDate } = body;
 
+    // Validar campos requeridos
     if (!requestReason || !requestReason.trim()) {
       return NextResponse.json(
         { error: "La razón de la solicitud es requerida" },
@@ -30,38 +23,68 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Preparar datos para el backend (solo requestReason, el backend toma el resto del JWT)
+    // Validar campos de zona si es necesario
+    if (willLeaveMetaverse) {
+      if (!leaveReason || !leaveReason.trim()) {
+        return NextResponse.json(
+          { error: "Debe proporcionar una razón para sacar los lentes del laboratorio" },
+          { status: 400 }
+        );
+      }
+      if (!zoneName || !zoneName.trim()) {
+        return NextResponse.json(
+          { error: "Debe especificar una zona cuando sale del laboratorio" },
+          { status: 400 }
+        );
+      }
+      if (!plannedDate) {
+        return NextResponse.json(
+          { error: "Debe especificar la fecha planificada" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Preparar datos para el backend
     const lensRequestData = {
       requestReason: requestReason.trim(),
+      willLeaveMetaverse: Boolean(willLeaveMetaverse),
+      leaveReason: willLeaveMetaverse ? leaveReason.trim() : undefined,
+      zoneName: willLeaveMetaverse ? zoneName.trim() : undefined,
+      plannedDate: willLeaveMetaverse ? plannedDate : undefined,
     };
 
-    // Enviar solicitud al backend
+    console.log('Enviando al backend:', lensRequestData);
+
+    // Enviar solicitud al backend NestJS
     const response = await fetch(`${API_BASE_URL}/lens-requests`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${authToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(lensRequestData),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "Error al crear la solicitud");
-    }
+    const responseData = await response.json();
+    console.log('Respuesta del backend:', responseData);
 
-    const createdRequest = await response.json();
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: responseData.message || "Error al crear la solicitud" },
+        { status: response.status }
+      );
+    }
 
     return NextResponse.json({
       message: "Solicitud enviada exitosamente",
-      request: createdRequest,
+      request: responseData,
     });
   } catch (error) {
     console.error("Error en POST /api/lens-request:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error ? error.message : "Error interno del servidor",
+        error: error instanceof Error ? error.message : "Error interno del servidor",
       },
       { status: 500 }
     );

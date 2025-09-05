@@ -3,16 +3,15 @@ import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, QrCode, Info, Shield } from "lucide-react";
+import { ArrowLeft, Info, Shield } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import QRCode from "react-qr-code";
+import { UserQRDisplay } from "@/components/dashboard/user-qr-display";
 
 export const metadata: Metadata = {
   title: "Mi Código QR - CentroMundoX",
@@ -35,21 +34,8 @@ export default async function QRPage() {
   // Si el usuario no tiene código de acceso, no generar QR válido
   const hasAccessCode = user.codigo_acceso || isAdmin;
   
-  // Generar el contenido del QR con la información del usuario
-  const qrData = hasAccessCode ? JSON.stringify({
-    userId: user._id,
-    email: user.email,
-    name: `${user.name} ${user.lastName}`,
-    cedula: user.cedula,
-    role: user.role,
-    accessCode: user.codigo_acceso || (isAdmin ? "ADMIN_ACCESS" : "N/A"),
-    adminAccess: isAdmin,
-    permissions: isAdmin
-      ? ["full_access", "manage_requests", "system_admin"]
-      : ["basic_access"],
-    timestamp: new Date().toISOString(),
-    qrType: isAdmin ? "ADMIN_ACCESS" : "USER_ACCESS",
-  }) : "";
+  // El QR debe mostrar principalmente el código de acceso para facilitar la lectura
+  const qrData = hasAccessCode ? (user.codigo_acceso || (isAdmin ? "ADMIN_FULL_ACCESS" : "")) : "";
 
   return (
     <>
@@ -58,7 +44,7 @@ export default async function QRPage() {
         showAuthButtons={false}
         isAdmin={user?.role === "admin"}
       />
-      <div className="min-h-screen bg-gray-50" style={{ paddingTop: "64px" }}>
+      <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
         {/* Header */}
         <header className="bg-white shadow-sm border-b">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -118,68 +104,12 @@ export default async function QRPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* QR Code Card */}
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <QrCode className="h-5 w-5" style={{ color: "#1859A9" }} />
-                  <span>
-                    {isAdmin
-                      ? "Código QR Administrativo"
-                      : "Código QR Personal"}
-                  </span>
-                </CardTitle>
-                <CardDescription>
-                  {isAdmin
-                    ? "Presenta este código para acceso administrativo completo"
-                    : "Presenta este código en la entrada del centro"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center space-y-4">
-                {hasAccessCode ? (
-                  <div className="bg-white p-6 rounded-lg shadow-inner">
-                    <QRCode
-                      value={qrData}
-                      size={250}
-                      level="H"
-                      fgColor={isAdmin ? "#FF8200" : "#1859A9"}
-                      bgColor="#FFFFFF"
-                    />
-                  </div>
-                ) : (
-                  <div className="bg-amber-50 border-2 border-dashed border-amber-300 p-8 rounded-lg text-center">
-                    <Shield className="h-16 w-16 text-amber-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-amber-800 mb-2">
-                      Código de acceso pendiente
-                    </h3>
-                    <p className="text-amber-700 text-sm">
-                      Tu código QR se generará cuando un administrador apruebe tu solicitud de equipos
-                    </p>
-                  </div>
-                )}
-                <div className="text-center space-y-2">
-                  <p className="text-sm text-gray-600">
-                    {isAdmin ? "ID de Administrador" : "ID de Usuario"}
-                  </p>
-                  <p
-                    className="font-mono font-bold text-lg"
-                    style={{ color: "#FF8200" }}
-                  >
-                    {user._id}
-                  </p>
-                  {isAdmin && (
-                    <div className="mt-2">
-                      <span
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white"
-                        style={{ backgroundColor: "#FF8200" }}
-                      >
-                        <Shield className="h-3 w-3 mr-1" />
-                        ADMINISTRADOR
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <UserQRDisplay 
+              qrData={qrData}
+              currentCode={user.codigo_acceso}
+              userPhone={user.phone}
+              isAdmin={isAdmin}
+            />
 
             {/* Information Card */}
             <div className="space-y-4">

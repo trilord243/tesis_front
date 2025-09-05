@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import Link from "next/link";
-import { ArrowLeft, Glasses, Send, Loader2, CheckCircle } from "lucide-react";
+import { ArrowLeft, Glasses, Send, Loader2, CheckCircle, MapPin, Calendar } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -15,6 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { User } from "@/types/auth";
 
 export default function SolicitudLentesPage() {
@@ -23,6 +25,10 @@ export default function SolicitudLentesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [requestReason, setRequestReason] = useState("");
+  const [willLeaveMetaverse, setWillLeaveMetaverse] = useState(false);
+  const [leaveReason, setLeaveReason] = useState("");
+  const [zoneName, setZoneName] = useState("");
+  const [plannedDate, setPlannedDate] = useState("");
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
@@ -66,30 +72,55 @@ export default function SolicitudLentesPage() {
       return;
     }
 
+    if (willLeaveMetaverse) {
+      if (!leaveReason.trim()) {
+        setError("Por favor, proporciona una razón para sacar los lentes del laboratorio");
+        return;
+      }
+      if (!zoneName.trim()) {
+        setError("Por favor, especifica la zona donde usarás los lentes");
+        return;
+      }
+      if (!plannedDate) {
+        setError("Por favor, especifica la fecha planificada");
+        return;
+      }
+    }
+
     setSubmitting(true);
 
     try {
-      const response = await fetch("/api/lens-request", {
-        method: "POST",
+      // Llamar al backend a través de una API route más simple
+      const response = await fetch('/api/lens-request', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        credentials: "include",
+        credentials: 'include',
         body: JSON.stringify({
           requestReason: requestReason.trim(),
+          willLeaveMetaverse: Boolean(willLeaveMetaverse),
+          leaveReason: willLeaveMetaverse ? leaveReason.trim() : undefined,
+          zoneName: willLeaveMetaverse ? zoneName.trim() : undefined,
+          plannedDate: willLeaveMetaverse ? plannedDate : undefined,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Error al enviar la solicitud");
+        // Mostrar mensaje de error específico del backend
+        throw new Error(data.message || data.error || "Error al enviar la solicitud");
       }
 
       setSuccess(
         "¡Solicitud enviada exitosamente! Será revisada por los administradores."
       );
       setRequestReason("");
+      setWillLeaveMetaverse(false);
+      setLeaveReason("");
+      setZoneName("");
+      setPlannedDate("");
 
       // Redirigir después de 2 segundos
       setTimeout(() => {
@@ -113,10 +144,7 @@ export default function SolicitudLentesPage() {
           showAuthButtons={false}
           isAdmin={user?.role === "admin"}
         />
-        <div
-          className="min-h-screen bg-gray-50 flex items-center justify-center"
-          style={{ paddingTop: "64px" }}
-        >
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center pt-20 md:pt-24">
           <div className="flex items-center space-x-2">
             <Loader2
               className="h-8 w-8 animate-spin"
@@ -136,7 +164,7 @@ export default function SolicitudLentesPage() {
         showAuthButtons={false}
         isAdmin={user?.role === "admin"}
       />
-      <div className="min-h-screen bg-gray-50" style={{ paddingTop: "64px" }}>
+      <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
         {/* Header */}
         <header className="bg-white shadow-sm border-b">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -299,6 +327,103 @@ export default function SolicitudLentesPage() {
                         {requestReason.length}/500 caracteres
                       </p>
                     </div>
+
+                    {/* Checkbox para salir del metaverso */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="willLeaveMetaverse"
+                          checked={willLeaveMetaverse}
+                          onCheckedChange={(checked) => {
+                            const boolValue = Boolean(checked);
+                            setWillLeaveMetaverse(boolValue);
+                            if (!boolValue) {
+                              setLeaveReason("");
+                              setZoneName("");
+                              setPlannedDate("");
+                            }
+                          }}
+                        />
+                        <Label htmlFor="willLeaveMetaverse" className="text-sm font-medium">
+                          ¿Saldrá del laboratorio metaverso?
+                        </Label>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Marque esta opción si necesita usar los lentes fuera del laboratorio
+                      </p>
+                    </div>
+
+                    {/* Campos adicionales si saldrá del metaverso */}
+                    {willLeaveMetaverse && (
+                      <div className="space-y-4 border-l-4 border-blue-200 pl-4 bg-blue-50 p-4 rounded-r-lg">
+                        <h3 className="font-semibold text-blue-900 flex items-center space-x-2">
+                          <MapPin className="h-4 w-4" />
+                          <span>Información sobre el uso externo</span>
+                        </h3>
+
+                        {/* Razón para salir */}
+                        <div>
+                          <Label htmlFor="leaveReason" className="text-sm font-medium">
+                            Razón para sacar los lentes del laboratorio *
+                          </Label>
+                          <textarea
+                            id="leaveReason"
+                            value={leaveReason}
+                            onChange={(e) => setLeaveReason(e.target.value)}
+                            placeholder="Ejemplo: Presentación en sala de conferencias, demostración a invitados..."
+                            className="mt-1 w-full min-h-[80px] px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical"
+                            disabled={submitting}
+                            maxLength={300}
+                            required={willLeaveMetaverse}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            {leaveReason.length}/300 caracteres
+                          </p>
+                        </div>
+
+                        {/* Escribir zona */}
+                        <div>
+                          <Label htmlFor="zoneName" className="text-sm font-medium">
+                            Zona donde usará los lentes *
+                          </Label>
+                          <Input
+                            id="zoneName"
+                            type="text"
+                            value={zoneName}
+                            onChange={(e) => setZoneName(e.target.value)}
+                            placeholder="Ejemplo: Sala de Conferencias A, Laboratorio 2, Aula 101..."
+                            className="mt-1"
+                            disabled={submitting}
+                            required={willLeaveMetaverse}
+                            maxLength={100}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Especifique el nombre o ubicación de la zona donde usará los lentes
+                          </p>
+                        </div>
+
+                        {/* Fecha planificada */}
+                        <div>
+                          <Label htmlFor="plannedDate" className="text-sm font-medium flex items-center space-x-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>Fecha y hora planificada *</span>
+                          </Label>
+                          <Input
+                            id="plannedDate"
+                            type="datetime-local"
+                            value={plannedDate}
+                            onChange={(e) => setPlannedDate(e.target.value)}
+                            className="mt-1"
+                            disabled={submitting}
+                            required={willLeaveMetaverse}
+                            min={new Date().toISOString().slice(0, 16)}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Especifique cuándo planifica usar los lentes
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex items-center space-x-4">
                       <Button

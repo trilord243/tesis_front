@@ -20,7 +20,9 @@ import {
   CheckCircle,
   Clock,
   Tags,
+  QrCode,
 } from "lucide-react";
+import { getAdminDashboardStats } from "@/lib/dashboard-stats";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard - CentroMundoX",
@@ -35,10 +37,8 @@ export default async function AdminDashboardPage() {
     return <div>Error: Usuario no encontrado</div>;
   }
 
-  // Estadísticas reales disponibles
-  const stats = {
-    solicitudesPendientes: 8, // Solo la que podemos obtener realmente
-  };
+  // Obtener estadísticas reales del servidor
+  const stats = await getAdminDashboardStats();
 
   // Solo funcionalidades disponibles actualmente
   const availableFeatures = [
@@ -66,7 +66,16 @@ export default async function AdminDashboardPage() {
       icon: AlertCircle,
       href: "/admin/solicitudes",
       color: "#1859A9",
-      stats: `${stats.solicitudesPendientes} pendientes`,
+      stats: `${stats.solicitudesPendientes || 0} pendientes`,
+      available: true,
+    },
+    {
+      title: "Mi Código QR Admin",
+      description: "Visualiza tu código QR de acceso administrativo",
+      icon: QrCode,
+      href: "/admin/qr",
+      color: "#003087",
+      stats: "Acceso completo",
       available: true,
     },
   ];
@@ -118,7 +127,7 @@ export default async function AdminDashboardPage() {
   return (
     <>
       <Navbar isAuthenticated={true} showAuthButtons={false} />
-      <div className="min-h-screen bg-gray-50" style={{ paddingTop: "64px" }}>
+      <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
         {/* Header */}
         <header className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -156,7 +165,7 @@ export default async function AdminDashboardPage() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-yellow-600">
-                    {stats.solicitudesPendientes}
+                    {stats.solicitudesPendientes || 0}
                   </span>
                   <Clock className="h-8 w-8 text-yellow-400" />
                 </div>
@@ -323,7 +332,7 @@ export default async function AdminDashboardPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium text-blue-900">Ver Solicitudes Pendientes</p>
-                    <p className="text-sm text-blue-700">{stats.solicitudesPendientes} solicitudes esperan revisión</p>
+                    <p className="text-sm text-blue-700">{stats.solicitudesPendientes || 0} solicitudes esperan revisión</p>
                   </div>
                   <Clock className="h-5 w-5 text-blue-600" />
                 </div>

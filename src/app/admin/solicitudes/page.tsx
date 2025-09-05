@@ -31,7 +31,7 @@ export default async function AdminSolicitudesPage() {
   return (
     <>
       <Navbar isAuthenticated={true} showAuthButtons={false} />
-      <div className="min-h-screen bg-gray-50" style={{ paddingTop: "80px" }}>
+      <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header Section */}
           <div className="mb-8">

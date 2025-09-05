@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
         success: true,
         message: "Login exitoso",
         user: data.user, // Si el backend devuelve información del usuario
+        access_token: data.access_token, // Enviar token para uso del cliente
       },
       { status: 200 }
     );

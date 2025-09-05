@@ -4,6 +4,7 @@ export interface User {
   lastName: string;
   email: string;
   cedula: string;
+  phone?: string;
   equipos_reservados: string[];
   codigo_acceso?: string;
   expectedTags?: string[];

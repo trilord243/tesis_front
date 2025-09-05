@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Mail } from "lucide-react";
+import { Loader2, Mail, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { setClientAuthToken } from "@/lib/client-auth";
 
 export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showResendOption, setShowResendOption] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,6 +52,11 @@ export function LoginForm() {
           throw new Error(data.error || data.message || "Error de autenticación");
         }
       } else {
+        // Guardar token en localStorage para acceso desde cliente
+        if (data.access_token) {
+          setClientAuthToken(data.access_token);
+        }
+        
         // Redireccionar al dashboard
         console.log("Login exitoso, redirigiendo...");
         
@@ -173,19 +180,29 @@ export function LoginForm() {
             >
               Contraseña
             </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              required
-              disabled={loading}
-              autoComplete="current-password"
-              className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg
-                       focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none
-                       disabled:bg-gray-50 disabled:cursor-not-allowed
-                       transition-all duration-200"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                required
+                disabled={loading}
+                autoComplete="current-password"
+                className="w-full px-4 py-3 pr-12 text-base border border-gray-300 rounded-lg
+                         focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none
+                         disabled:bg-gray-50 disabled:cursor-not-allowed
+                         transition-all duration-200"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                disabled={loading}
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
           </div>
 
           {/* Submit Button */}

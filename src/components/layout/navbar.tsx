@@ -121,6 +121,11 @@ export function Navbar({
       label: "Solicitudes de Préstamo",
       icon: ClipboardList,
     },
+    {
+      href: "/admin/qr",
+      label: "Mi QR Admin",
+      icon: QrCode,
+    },
   ];
 
   const authNavItems = isAdmin ? adminNavItems : regularUserNavItems;
@@ -168,13 +173,13 @@ export function Navbar({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex items-center space-x-1 px-3 py-2 rounded-md text-xs font-medium transition-colors ${
                     pathname === item.href
                       ? "text-brand-primary bg-blue-50"
                       : "text-brand-secondary hover:text-brand-primary hover:bg-gray-50"
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-3 w-3" />
                   <span>{item.label}</span>
                 </Link>
               );
@@ -270,13 +275,13 @@ export function Navbar({
                     key={item.href}
                     href={item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium ${
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium ${
                       pathname === item.href
                         ? "text-brand-primary bg-blue-50"
                         : "text-brand-secondary hover:text-brand-primary hover:bg-gray-50"
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4" />
                     <span>{item.label}</span>
                   </Link>
                 );

@@ -197,6 +197,33 @@
 
 html {
   font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Cursor pointer para elementos interactivos */
+button,
+[role="button"],
+[type="button"],
+[type="submit"],
+[type="reset"],
+input[type="checkbox"],
+input[type="radio"],
+select,
+.cursor-pointer,
+a {
+  cursor: pointer !important;
+}
+
+/* Asegurar que los botones deshabilitados no muestren pointer */
+button:disabled,
+[role="button"]:disabled,
+[type="button"]:disabled,
+[type="submit"]:disabled,
+[type="reset"]:disabled,
+input:disabled {
+  cursor: not-allowed !important;
+}
+
+html {
   scroll-behavior: smooth;
 }
 

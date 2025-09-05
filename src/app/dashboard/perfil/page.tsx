@@ -132,10 +132,7 @@ export default function PerfilPage() {
     return (
       <>
         <Navbar isAuthenticated={true} showAuthButtons={false} />
-        <div
-          className="min-h-screen bg-gray-50 flex items-center justify-center"
-          style={{ paddingTop: "64px" }}
-        >
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center pt-20 md:pt-24">
           <div className="flex items-center space-x-2">
             <Loader2
               className="h-8 w-8 animate-spin"
@@ -156,7 +153,7 @@ export default function PerfilPage() {
           showAuthButtons={false}
           isAdmin={false}
         />
-        <div className="min-h-screen bg-gray-50" style={{ paddingTop: "64px" }}>
+        <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
           <div className="max-w-2xl mx-auto px-4 py-8">
             <Alert className="bg-red-50 border-red-200">
               <AlertDescription className="text-red-700">
@@ -176,7 +173,7 @@ export default function PerfilPage() {
         showAuthButtons={false}
         isAdmin={user?.role === "admin"}
       />
-      <div className="min-h-screen bg-gray-50" style={{ paddingTop: "64px" }}>
+      <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
         {/* Header */}
         <header className="bg-white shadow-sm border-b">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

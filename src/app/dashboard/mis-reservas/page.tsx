@@ -28,6 +28,10 @@ interface LensRequest {
   userName: string;
   userEmail: string;
   requestReason: string;
+  willLeaveMetaverse: boolean;
+  leaveReason?: string;
+  zoneName?: string;
+  plannedDate?: string;
   status: "pending" | "approved" | "rejected";
   accessCode?: string;
   expiresAt?: string;
@@ -135,10 +139,7 @@ export default function MisReservasPage() {
     return (
       <>
         <Navbar isAuthenticated={true} showAuthButtons={false} />
-        <div
-          className="min-h-screen bg-gray-50 flex items-center justify-center"
-          style={{ paddingTop: "64px" }}
-        >
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center pt-20 md:pt-24">
           <div className="flex items-center space-x-2">
             <Loader2
               className="h-8 w-8 animate-spin"
@@ -161,7 +162,7 @@ export default function MisReservasPage() {
         showAuthButtons={false}
         isAdmin={user?.role === "admin"}
       />
-      <div className="min-h-screen bg-gray-50" style={{ paddingTop: "64px" }}>
+      <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
         {/* Header */}
         <header className="bg-white shadow-sm border-b">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -326,6 +327,38 @@ export default function MisReservasPage() {
                           {request.requestReason}
                         </p>
                       </div>
+
+                      {/* Información de zona si es uso externo */}
+                      {request.willLeaveMetaverse && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <h4 className="text-sm font-medium text-blue-900 mb-2">
+                            🌐 Uso fuera del laboratorio metaverso
+                          </h4>
+                          
+                          {request.leaveReason && (
+                            <div className="mb-2">
+                              <p className="text-xs text-blue-700 font-medium">Motivo:</p>
+                              <p className="text-sm text-blue-800">{request.leaveReason}</p>
+                            </div>
+                          )}
+                          
+                          {request.zoneName && (
+                            <div className="mb-2">
+                              <p className="text-xs text-blue-700 font-medium">Zona:</p>
+                              <p className="text-sm text-blue-800">📍 {request.zoneName}</p>
+                            </div>
+                          )}
+                          
+                          {request.plannedDate && (
+                            <div>
+                              <p className="text-xs text-blue-700 font-medium">Fecha planificada:</p>
+                              <p className="text-sm text-blue-800">
+                                📅 {formatDate(request.plannedDate)}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       {request.status === "approved" && request.accessCode && (
                         <div className="bg-green-50 border border-green-200 rounded-lg p-4">

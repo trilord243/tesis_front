@@ -10,6 +10,10 @@ export interface LensRequest {
   userName: string;
   userEmail: string;
   requestReason: string;
+  willLeaveMetaverse: boolean;
+  leaveReason?: string;
+  zoneName?: string;
+  plannedDate?: string;
   status: "pending" | "approved" | "rejected";
   createdAt: string;
   updatedAt: string;

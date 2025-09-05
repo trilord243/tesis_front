@@ -111,8 +111,18 @@ export function LensRequestTable({
                       </div>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900 truncate">{request.userName}</p>
+                      <div className="flex items-center space-x-2">
+                        <p className="font-medium text-gray-900 truncate">{request.userName}</p>
+                        {request.willLeaveMetaverse && (
+                          <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full font-medium">
+                            🌐 Ext
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-500 truncate">{request.userEmail}</p>
+                      {request.willLeaveMetaverse && request.zoneName && (
+                        <p className="text-xs text-blue-600 truncate">📍 {request.zoneName}</p>
+                      )}
                     </div>
                   </div>
                 </TableCell>

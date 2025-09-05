@@ -181,6 +181,37 @@ export function LensRequestDialog({
             </div>
           </div>
 
+          {/* Zone Information (if leaving metaverse) */}
+          {request.willLeaveMetaverse && (
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <h4 className="font-medium mb-3 text-blue-800 flex items-center">
+                🌐 Uso fuera del laboratorio metaverso
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
+                {request.leaveReason && (
+                  <div className="sm:col-span-2">
+                    <span className="text-blue-700 block text-xs uppercase tracking-wide">Motivo para salir:</span>
+                    <p className="font-medium text-blue-900 bg-white px-3 py-2 rounded border">
+                      {request.leaveReason}
+                    </p>
+                  </div>
+                )}
+                {request.zoneName && (
+                  <div>
+                    <span className="text-blue-700 block text-xs uppercase tracking-wide">Zona:</span>
+                    <p className="font-medium text-blue-900">📍 {request.zoneName}</p>
+                  </div>
+                )}
+                {request.plannedDate && (
+                  <div>
+                    <span className="text-blue-700 block text-xs uppercase tracking-wide">Fecha planificada:</span>
+                    <p className="font-medium text-blue-900">📅 {formatDate(request.plannedDate)}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Access Information (if approved) */}
           {request.status === "approved" && request.accessCode && (
             <div className="bg-green-50 p-4 rounded-lg border border-green-200">

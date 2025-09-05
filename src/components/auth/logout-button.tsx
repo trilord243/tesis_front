@@ -2,10 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
+import { clearClientAuthToken } from "@/lib/client-auth";
 
 export function LogoutButton() {
   const handleLogout = async () => {
     try {
+      // Limpiar token del cliente primero
+      clearClientAuthToken();
+      
       const response = await fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
@@ -17,6 +21,9 @@ export function LogoutButton() {
       }
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
+      // Aún así limpiar token del cliente si hay error
+      clearClientAuthToken();
+      window.location.href = "/auth/login";
     }
   };
 
