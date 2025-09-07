@@ -21,6 +21,7 @@ import {
   Clock,
   Tags,
   QrCode,
+  MapPin,
 } from "lucide-react";
 import { getAdminDashboardStats } from "@/lib/dashboard-stats";
 
@@ -70,6 +71,33 @@ export default async function AdminDashboardPage() {
       available: true,
     },
     {
+      title: "Productos por Usuario",
+      description: "Busca y visualiza qué productos tiene asignado cada usuario",
+      icon: Users,
+      href: "/admin/productos-usuarios",
+      color: "#1859A9",
+      stats: "Búsqueda avanzada",
+      available: true,
+    },
+    {
+      title: "Inventario por Ubicación",
+      description: "Filtra y administra productos según su ubicación física",
+      icon: MapPin,
+      href: "/admin/inventario-ubicacion",
+      color: "#FF8200",
+      stats: "Gestión por ubicación",
+      available: true,
+    },
+    {
+      title: "Gestión de Usuarios",
+      description: "Administra todos los usuarios del sistema y visualiza sus equipos",
+      icon: Users,
+      href: "/admin/usuarios-equipos",
+      color: "#1859A9",
+      stats: "Administración completa",
+      available: true,
+    },
+    {
       title: "Mi Código QR Admin",
       description: "Visualiza tu código QR de acceso administrativo",
       icon: QrCode,
@@ -82,14 +110,6 @@ export default async function AdminDashboardPage() {
 
   // Funcionalidades futuras (mostrar como próximamente)
   const futureFeatures = [
-    {
-      title: "Gestión de Usuarios",
-      description: "Administra usuarios y permisos del sistema",
-      icon: Users,
-      color: "#6B7280",
-      stats: "Próximamente",
-      available: false,
-    },
     {
       title: "Gestión de Reservas", 
       description: "Administra reservas de equipos",
@@ -199,7 +219,7 @@ export default async function AdminDashboardPage() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold" style={{ color: "#1859A9" }}>
-                    4
+                    7
                   </span>
                   <Shield className="h-8 w-8 text-blue-400" />
                 </div>

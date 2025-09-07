@@ -19,7 +19,17 @@ import {
   ClipboardList,
   Package2,
   Tags,
+  Users,
+  MapPin,
+  MoreHorizontal,
+  ChevronDown,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 
 interface NavbarProps {
@@ -94,8 +104,8 @@ export function Navbar({
     },
   ];
 
-  // Items para administradores
-  const adminNavItems = [
+  // Items principales del admin (máximo 4)
+  const adminMainNavItems = [
     {
       href: "/",
       label: "Inicio",
@@ -103,23 +113,42 @@ export function Navbar({
     },
     {
       href: "/admin/dashboard",
-      label: "Dashboard Admin",
+      label: "Dashboard",
       icon: LayoutDashboard,
     },
     {
       href: "/admin/activos",
-      label: "Gestión de Activos",
+      label: "Activos",
       icon: Package2,
     },
+    {
+      href: "/admin/solicitudes",
+      label: "Solicitudes",
+      icon: ClipboardList,
+    },
+  ];
+
+  // Items secundarios del admin (en dropdown)
+  const adminSecondaryNavItems = [
     {
       href: "/admin/tipos-activos",
       label: "Tipos de Activos",
       icon: Tags,
     },
     {
-      href: "/admin/solicitudes",
-      label: "Solicitudes de Préstamo",
-      icon: ClipboardList,
+      href: "/admin/productos-usuarios",
+      label: "Productos por Usuario",
+      icon: Users,
+    },
+    {
+      href: "/admin/inventario-ubicacion",
+      label: "Inventario por Ubicación",
+      icon: MapPin,
+    },
+    {
+      href: "/admin/usuarios-equipos",
+      label: "Gestión de Usuarios",
+      icon: Users,
     },
     {
       href: "/admin/qr",
@@ -128,7 +157,7 @@ export function Navbar({
     },
   ];
 
-  const authNavItems = isAdmin ? adminNavItems : regularUserNavItems;
+  const authNavItems = isAdmin ? adminMainNavItems : regularUserNavItems;
 
   const navItems = isAuthenticated ? authNavItems : publicNavItems;
 
@@ -184,6 +213,43 @@ export function Navbar({
                 </Link>
               );
             })}
+            
+            {/* Dropdown Menu for Admin Secondary Items */}
+            {isAdmin && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center space-x-1 px-3 py-2 text-xs font-medium text-brand-secondary hover:text-brand-primary hover:bg-gray-50"
+                  >
+                    <MoreHorizontal className="h-3 w-3" />
+                    <span>Más opciones</span>
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {adminSecondaryNavItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <DropdownMenuItem key={item.href} asChild>
+                        <Link
+                          href={item.href}
+                          className={`flex items-center space-x-2 w-full px-2 py-2 text-sm ${
+                            pathname === item.href
+                              ? "bg-blue-50 text-brand-primary font-medium"
+                              : "text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
 
           {/* Desktop Auth Buttons */}
@@ -286,6 +352,35 @@ export function Navbar({
                   </Link>
                 );
               })}
+
+              {/* Mobile Admin Secondary Items */}
+              {isAdmin && (
+                <>
+                  <div className="border-t border-gray-200 my-2 pt-2">
+                    <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                      Más opciones
+                    </div>
+                    {adminSecondaryNavItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium ${
+                            pathname === item.href
+                              ? "text-brand-primary bg-blue-50"
+                              : "text-brand-secondary hover:text-brand-primary hover:bg-gray-50"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
 
               {/* Mobile Auth Buttons */}
               <div className="pt-4 space-y-2">
