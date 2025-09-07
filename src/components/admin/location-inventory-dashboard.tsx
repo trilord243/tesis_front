@@ -79,7 +79,7 @@ export function LocationInventoryDashboard({
       setSearchPerformed(true);
 
       // Fetch user data for each product
-      const userPromises = result.map(async (product) => {
+      const userPromises = result.map(async (product: Product) => {
         if (product.currentUser) {
           try {
             const userResponse = await getProductUser(product._id);
@@ -123,7 +123,7 @@ export function LocationInventoryDashboard({
       setProducts(result);
 
       // Fetch user data for each product
-      const userPromises = result.map(async (product) => {
+      const userPromises = result.map(async (product: Product) => {
         if (product.currentUser) {
           try {
             const userResponse = await getProductUser(product._id);

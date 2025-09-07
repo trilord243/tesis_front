@@ -359,7 +359,7 @@ export function isProductInMaintenance(product: Product): boolean {
   const lastMaintenance = product.maintenanceHistory
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
 
-  if (lastMaintenance.expectedReturn && !lastMaintenance.actualReturn) {
+  if (lastMaintenance && lastMaintenance.expectedReturn && !lastMaintenance.actualReturn) {
     const expectedReturn = new Date(lastMaintenance.expectedReturn);
     const now = new Date();
     return now <= expectedReturn;

@@ -25,12 +25,9 @@ import {
   User,
   Package,
   RefreshCw,
-  Calendar,
   MapPin,
   Phone,
   Mail,
-  IdCard,
-  Key,
   AlertTriangle,
   CheckCircle,
   Shield,
@@ -231,23 +228,23 @@ export function UsersEquipmentManager({
 
             <div className="flex gap-2 flex-wrap">
               <Button
-                variant={selectedFilter === "all" ? "default" : "outline"}
+                variant={selectedFilter === "all" ? "secondary" : "outline"}
                 size="sm"
                 onClick={() => handleFilterChange("all")}
-                style={selectedFilter === "all" ? { backgroundColor: "#1859A9" } : undefined}
+                style={selectedFilter === "all" ? { backgroundColor: "#1859A9", color: "white" } : undefined}
               >
                 Todos ({users.length})
               </Button>
               <Button
-                variant={selectedFilter === "with_equipment" ? "default" : "outline"}
+                variant={selectedFilter === "with_equipment" ? "secondary" : "outline"}
                 size="sm"
                 onClick={() => handleFilterChange("with_equipment")}
-                style={selectedFilter === "with_equipment" ? { backgroundColor: "#FF8200" } : undefined}
+                style={selectedFilter === "with_equipment" ? { backgroundColor: "#FF8200", color: "white" } : undefined}
               >
                 Con Equipos ({users.filter(u => u.equipos_reservados?.length > 0).length})
               </Button>
               <Button
-                variant={selectedFilter === "without_equipment" ? "default" : "outline"}
+                variant={selectedFilter === "without_equipment" ? "secondary" : "outline"}
                 size="sm"
                 onClick={() => handleFilterChange("without_equipment")}
               >
@@ -308,7 +305,7 @@ export function UsersEquipmentManager({
                           </div>
                           <div className="flex items-center gap-1 mt-1">
                             <Badge 
-                              variant={user.role === 'admin' ? 'default' : 'secondary'} 
+                              variant={user.role === 'admin' ? 'secondary' : 'outline'} 
                               className="text-xs"
                             >
                               {user.role === 'admin' ? 'Admin' : 'Usuario'}
@@ -439,20 +436,19 @@ export function UsersEquipmentManager({
             </Table>
           </div>
 
-            {filteredUsers.length === 0 && (
-              <div className="text-center py-12">
-                <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No se encontraron usuarios
-                </h3>
-                <p className="text-gray-500">
-                  {searchQuery 
-                    ? `No hay usuarios que coincidan con "${searchQuery}"`
-                    : "No hay usuarios que coincidan con los filtros seleccionados"}
-                </p>
-              </div>
-            )}
-          </div>
+          {filteredUsers.length === 0 && (
+            <div className="text-center py-12">
+              <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No se encontraron usuarios
+              </h3>
+              <p className="text-gray-500">
+                {searchQuery 
+                  ? `No hay usuarios que coincidan con "${searchQuery}"`
+                  : "No hay usuarios que coincidan con los filtros seleccionados"}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

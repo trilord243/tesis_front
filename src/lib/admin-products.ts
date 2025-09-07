@@ -1,6 +1,7 @@
 "use server";
 
 import { getAuthToken } from "@/lib/auth";
+import { UserWithEquipment } from "@/types/admin-products";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
@@ -170,7 +171,7 @@ export async function getAllUsersWithEquipment() {
 
     // Para cada usuario que tiene equipos reservados, obtener los detalles
     const usersWithEquipment = await Promise.all(
-      users.map(async (user: any) => {
+      users.map(async (user: UserWithEquipment) => {
         if (user.equipos_reservados && user.equipos_reservados.length > 0) {
           try {
             // Obtener los productos de este usuario usando su código de acceso
