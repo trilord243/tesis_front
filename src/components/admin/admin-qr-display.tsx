@@ -15,9 +15,11 @@ interface AdminQRDisplayProps {
   qrData: string;
   currentCode?: string | null | undefined;
   userPhone?: string | undefined;
+  userEmail?: string | undefined;
+  isEmailVerified?: boolean;
 }
 
-export function AdminQRDisplay({ qrData, currentCode, userPhone }: AdminQRDisplayProps) {
+export function AdminQRDisplay({ qrData, currentCode, userPhone, userEmail, isEmailVerified = true }: AdminQRDisplayProps) {
   return (
     <Card className="shadow-lg">
       <CardHeader>
@@ -31,7 +33,12 @@ export function AdminQRDisplay({ qrData, currentCode, userPhone }: AdminQRDispla
               Presenta este código para acceso administrativo completo
             </CardDescription>
           </div>
-          <AccessCodeManager currentCode={currentCode} userPhone={userPhone} />
+          <AccessCodeManager
+            currentCode={currentCode}
+            userPhone={userPhone}
+            userEmail={userEmail}
+            isEmailVerified={isEmailVerified}
+          />
         </div>
       </CardHeader>
       <CardContent className="flex flex-col items-center space-y-4">

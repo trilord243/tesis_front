@@ -2,6 +2,7 @@
 
 import QRCode from "react-qr-code";
 import { WhatsAppResendButton } from "@/components/ui/whatsapp-resend-button";
+import { EmailResendButton } from "@/components/ui/email-resend-button";
 import {
   Card,
   CardContent,
@@ -15,10 +16,12 @@ interface UserQRDisplayProps {
   qrData: string;
   currentCode?: string | null | undefined;
   userPhone?: string | undefined;
+  userEmail?: string | undefined;
+  isEmailVerified?: boolean;
   isAdmin?: boolean;
 }
 
-export function UserQRDisplay({ qrData, currentCode, userPhone, isAdmin = false }: UserQRDisplayProps) {
+export function UserQRDisplay({ qrData, currentCode, userPhone, userEmail, isEmailVerified = true, isAdmin = false }: UserQRDisplayProps) {
   const hasAccessCode = currentCode || isAdmin;
   
   return (
@@ -40,14 +43,22 @@ export function UserQRDisplay({ qrData, currentCode, userPhone, isAdmin = false 
                 : "Presenta este código en la entrada del centro"}
             </CardDescription>
           </div>
-          {/* Botón WhatsApp solo si hay código */}
+          {/* Botones de reenvío solo si hay código */}
           {hasAccessCode && (
-            <WhatsAppResendButton 
-              isAdmin={isAdmin}
-              userPhone={userPhone}
-              accessCode={currentCode || undefined}
-              disabled={!userPhone || !currentCode}
-            />
+            <div className="flex gap-2">
+              <WhatsAppResendButton
+                isAdmin={isAdmin}
+                userPhone={userPhone}
+                accessCode={currentCode || undefined}
+                disabled={!userPhone || !currentCode}
+              />
+              <EmailResendButton
+                userEmail={userEmail}
+                accessCode={currentCode || undefined}
+                disabled={!userEmail || !currentCode}
+                isEmailVerified={isEmailVerified}
+              />
+            </div>
           )}
         </div>
       </CardHeader>

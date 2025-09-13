@@ -13,13 +13,16 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { RefreshCcw, AlertTriangle, CheckCircle, Trash2, Plus } from "lucide-react";
 import { WhatsAppResendButton } from "@/components/ui/whatsapp-resend-button";
+import { EmailResendButton } from "@/components/ui/email-resend-button";
 
 interface AccessCodeManagerProps {
   currentCode?: string | null | undefined;
   userPhone?: string | undefined;
+  userEmail?: string | undefined;
+  isEmailVerified?: boolean;
 }
 
-export function AccessCodeManager({ currentCode, userPhone }: AccessCodeManagerProps) {
+export function AccessCodeManager({ currentCode, userPhone, userEmail, isEmailVerified = true }: AccessCodeManagerProps) {
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
   const [isRemoveOpen, setIsRemoveOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -116,14 +119,22 @@ export function AccessCodeManager({ currentCode, userPhone }: AccessCodeManagerP
 
   return (
     <div className="flex gap-2 flex-wrap">
-      {/* Botón WhatsApp (solo si hay código) */}
+      {/* Botones de reenvío (solo si hay código) */}
       {currentCode && (
-        <WhatsAppResendButton 
-          isAdmin={true}
-          userPhone={userPhone}
-          accessCode={currentCode}
-          disabled={!userPhone}
-        />
+        <>
+          <WhatsAppResendButton
+            isAdmin={true}
+            userPhone={userPhone}
+            accessCode={currentCode}
+            disabled={!userPhone}
+          />
+          <EmailResendButton
+            userEmail={userEmail}
+            accessCode={currentCode}
+            disabled={!userEmail}
+            isEmailVerified={isEmailVerified}
+          />
+        </>
       )}
       {/* Botón Generar/Regenerar */}
       <Dialog open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>

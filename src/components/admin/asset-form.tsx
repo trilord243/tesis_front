@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductTypeSelector } from "./product-type-selector";
 import { createProduct, printProductLabel } from "@/lib/products";
-import { AlertCircle, CheckCircle, Loader2, Printer, Save, RefreshCw } from "lucide-react";
+import { AlertCircle, CheckCircle, Loader2, Printer, Save, RefreshCw, Search, ArrowLeft } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface AssetFormData {
   // Identificación básica
@@ -99,6 +100,56 @@ interface AssetFormData {
   pesoGramos: number;
 }
 
+interface ExistingProduct {
+  _id: string;
+  name: string;
+  descripcion?: string;
+  marca?: string;
+  modelo?: string;
+  serialNumber: string;
+  productTypeId?: string;
+  tags: string[];
+  estado: string;
+  precioCompra?: number;
+  moneda?: string;
+  metodoDepreciacion?: string;
+  fechaCompra?: string;
+  tieneGarantia?: boolean;
+  garantiaInicio?: string;
+  garantiaFin?: string;
+  garantiaTipo?: string;
+  garantiaProveedor?: string;
+  garantiaContacto?: string;
+  garantiaTelefono?: string;
+  garantiaCobertura?: string;
+  ubicacionFisica?: string;
+  estadoUbicacion?: string;
+  edificio?: string;
+  piso?: string;
+  oficina?: string;
+  departamento?: string;
+  centroCosto?: string;
+  imagenPrincipal?: string;
+  facturaURL?: string;
+  manualURL?: string;
+  proveedor?: string;
+  numeroFactura?: string;
+  numeroOrdenCompra?: string;
+  metodoPago?: string;
+  terminos?: string;
+  tieneSeguro?: boolean;
+  aseguradora?: string;
+  numeroPoliza?: string;
+  vigenciaSeguroInicio?: string;
+  vigenciaSeguroFin?: string;
+  valorAsegurado?: number;
+  coberturaSeguro?: string;
+  resolucion?: string;
+  campoVision?: string;
+  tasaRefresco?: number;
+  pesoGramos?: number;
+}
+
 export function AssetForm() {
   const [activeTab, setActiveTab] = useState("basico");
   const [isLoading, setIsLoading] = useState(false);
@@ -114,6 +165,14 @@ export function AssetForm() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  
+  // New states for existing asset search
+  const [showExistingAssetQuestion, setShowExistingAssetQuestion] = useState(true);
+  const [showProductSearch, setShowProductSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [existingProducts, setExistingProducts] = useState<ExistingProduct[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<ExistingProduct[]>([]);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
 
   const [formData, setFormData] = useState<AssetFormData>({
     // Identificación básica
@@ -325,6 +384,110 @@ export function AssetForm() {
     setIsPrinting(false);
   };
 
+  // Fetch existing products when component mounts
+  useEffect(() => {
+    if (showProductSearch && existingProducts.length === 0) {
+      fetchExistingProducts();
+    }
+  }, [showProductSearch, existingProducts.length]);
+
+  // Filter products based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredProducts(existingProducts);
+    } else {
+      const filtered = existingProducts.filter((product) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.marca?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.modelo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.serialNumber.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    }
+  }, [searchQuery, existingProducts]);
+
+  const fetchExistingProducts = async () => {
+    setIsSearchLoading(true);
+    try {
+      const response = await fetch('/api/products');
+      if (response.ok) {
+        const data = await response.json();
+        setExistingProducts(data);
+        setFilteredProducts(data);
+      } else {
+        setMessage({
+          type: "error",
+          text: "Error al cargar productos existentes"
+        });
+      }
+    } catch {
+      setMessage({
+        type: "error",
+        text: "Error de conexión al cargar productos"
+      });
+    } finally {
+      setIsSearchLoading(false);
+    }
+  };
+
+  const selectExistingProduct = (product: ExistingProduct) => {
+    // Auto-fill form with existing product data, except serial number
+    setFormData({
+      name: product.name,
+      descripcion: product.descripcion || "",
+      marca: product.marca || "",
+      modelo: product.modelo || "",
+      serialNumber: "", // Keep empty for new serial number
+      productTypeId: product.productTypeId,
+      tags: product.tags || [],
+      estado: product.estado || "Nuevo",
+      precioCompra: product.precioCompra || 0,
+      moneda: product.moneda || "USD",
+      metodoDepreciacion: product.metodoDepreciacion || "Lineal",
+      fechaCompra: product.fechaCompra || "",
+      tieneGarantia: product.tieneGarantia || false,
+      garantiaInicio: product.garantiaInicio || "",
+      garantiaFin: product.garantiaFin || "",
+      garantiaTipo: product.garantiaTipo || "Básica",
+      garantiaProveedor: product.garantiaProveedor || "",
+      garantiaContacto: product.garantiaContacto || "",
+      garantiaTelefono: product.garantiaTelefono || "",
+      garantiaCobertura: product.garantiaCobertura || "",
+      ubicacionFisica: product.ubicacionFisica || "Laboratorio metaverso",
+      estadoUbicacion: product.estadoUbicacion || "available",
+      edificio: product.edificio || "",
+      piso: product.piso || "",
+      oficina: product.oficina || "",
+      departamento: product.departamento || "",
+      centroCosto: product.centroCosto || "",
+      imagenPrincipal: product.imagenPrincipal || "",
+      facturaURL: product.facturaURL || "",
+      manualURL: product.manualURL || "",
+      proveedor: product.proveedor || "",
+      numeroFactura: product.numeroFactura || "",
+      numeroOrdenCompra: product.numeroOrdenCompra || "",
+      metodoPago: product.metodoPago || "Transferencia",
+      terminos: product.terminos || "",
+      tieneSeguro: product.tieneSeguro || false,
+      aseguradora: product.aseguradora || "",
+      numeroPoliza: product.numeroPoliza || "",
+      vigenciaSeguroInicio: product.vigenciaSeguroInicio || "",
+      vigenciaSeguroFin: product.vigenciaSeguroFin || "",
+      valorAsegurado: product.valorAsegurado || 0,
+      coberturaSeguro: product.coberturaSeguro || "",
+      resolucion: product.resolucion || "",
+      campoVision: product.campoVision || "",
+      tasaRefresco: product.tasaRefresco || 90,
+      pesoGramos: product.pesoGramos || 0,
+    });
+    
+    setShowProductSearch(false);
+    setMessage({
+      type: "success",
+      text: `Datos de "${product.name}" cargados. Recuerde ingresar un nuevo número de serie.`
+    });
+  };
+
   const resetForm = () => {
     setFormData({
       name: "",
@@ -375,7 +538,192 @@ export function AssetForm() {
       pesoGramos: 0,
     });
     setActiveTab("basico");
+    setShowExistingAssetQuestion(true);
+    setShowProductSearch(false);
+    setSearchQuery("");
   };
+
+  // Show existing asset question first
+  if (showExistingAssetQuestion) {
+    return (
+      <Card className="border-0 shadow-md max-w-4xl mx-auto">
+        <CardHeader>
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-50">
+              <Search className="h-6 w-6" style={{ color: "#1859A9" }} />
+            </div>
+            <div>
+              <CardTitle style={{ color: "#1859A9" }}>
+                Tipo de Activo
+              </CardTitle>
+              <CardDescription>
+                Selecciona si es un activo nuevo o basado en uno existente
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-4" style={{ color: "#003087" }}>
+              ¿Este activo ya existe en el sistema?
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Si seleccionas &ldquo;Sí&rdquo;, podrás buscar un producto existente para usar como plantilla.
+              Solo necesitarás cambiar el número de serie.
+            </p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              type="button"
+              onClick={() => {
+                setShowExistingAssetQuestion(false);
+                setShowProductSearch(true);
+              }}
+              className="px-8 py-3 text-lg"
+              style={{ backgroundColor: "#1859A9" }}
+            >
+              <Search className="h-5 w-5 mr-2" />
+              Sí, buscar existente
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowExistingAssetQuestion(false);
+              }}
+              className="px-8 py-3 text-lg border-2"
+              style={{ borderColor: "#FF8200", color: "#FF8200" }}
+            >
+              No, crear nuevo
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show product search interface
+  if (showProductSearch) {
+    return (
+      <Card className="border-0 shadow-md">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-blue-50">
+                <Search className="h-6 w-6" style={{ color: "#1859A9" }} />
+              </div>
+              <div>
+                <CardTitle style={{ color: "#1859A9" }}>
+                  Buscar Activo Existente
+                </CardTitle>
+                <CardDescription>
+                  Selecciona un producto para usar como plantilla
+                </CardDescription>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowProductSearch(false);
+                setShowExistingAssetQuestion(true);
+                setSearchQuery("");
+              }}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Volver
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {message && (
+            <Alert className={message.type === "success" ? "border-green-500" : "border-red-500"}>
+              {message.type === "success" ? (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              ) : (
+                <AlertCircle className="h-4 w-4 text-red-600" />
+              )}
+              <AlertDescription className={message.type === "success" ? "text-green-800" : "text-red-800"}>
+                {message.text}
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          <div className="flex items-center space-x-2">
+            <Search className="h-5 w-5 text-gray-400" />
+            <Input
+              placeholder="Buscar por nombre, marca, modelo o número de serie..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1"
+            />
+          </div>
+          
+          {isSearchLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+              <span>Cargando productos...</span>
+            </div>
+          ) : (
+            <div className="border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Marca/Modelo</TableHead>
+                    <TableHead>Serial</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Acción</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredProducts.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-gray-500 py-8">
+                        {searchQuery ? "No se encontraron productos que coincidan con la búsqueda" : "No hay productos disponibles"}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredProducts.map((product) => (
+                      <TableRow key={product._id}>
+                        <TableCell className="font-medium">{product.name}</TableCell>
+                        <TableCell>
+                          {product.marca && product.modelo
+                            ? `${product.marca} ${product.modelo}`
+                            : product.marca || product.modelo || "-"}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">{product.serialNumber}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            product.estado === "Nuevo" ? "bg-green-100 text-green-800" :
+                            product.estado === "Usado" ? "bg-blue-100 text-blue-800" :
+                            "bg-gray-100 text-gray-800"
+                          }`}>
+                            {product.estado}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => selectExistingProduct(product)}
+                            style={{ backgroundColor: "#FF8200" }}
+                          >
+                            Seleccionar
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>

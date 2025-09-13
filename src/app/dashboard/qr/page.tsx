@@ -104,10 +104,12 @@ export default async function QRPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* QR Code Card */}
-            <UserQRDisplay 
+            <UserQRDisplay
               qrData={qrData}
               currentCode={user.codigo_acceso}
               userPhone={user.phone}
+              userEmail={user.email}
+              isEmailVerified={user.emailVerified}
               isAdmin={isAdmin}
             />
 

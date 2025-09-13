@@ -94,7 +94,7 @@ export default async function AddProductPage() {
           </Card>
 
           {/* Help Section */}
-          <Card className="mt-8 border-0 shadow-md max-w-4xl mx-auto">
+          <Card className="mt-8 border-0 shadow-md">
             <CardHeader>
               <CardTitle style={{ color: "#1859A9" }}>
                 Información del Sistema

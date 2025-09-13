@@ -85,10 +85,12 @@ export default async function AdminQRPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* QR Code Card */}
-            <AdminQRDisplay 
+            <AdminQRDisplay
               qrData={qrData}
               currentCode={user.codigo_acceso}
               userPhone={user.phone}
+              userEmail={user.email}
+              isEmailVerified={user.emailVerified}
             />
 
             {/* Information Cards */}
