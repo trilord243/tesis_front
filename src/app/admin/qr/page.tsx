@@ -90,7 +90,7 @@ export default async function AdminQRPage() {
               currentCode={user.codigo_acceso}
               userPhone={user.phone}
               userEmail={user.email}
-              isEmailVerified={user.emailVerified}
+              isEmailVerified={true}
             />
 
             {/* Information Cards */}

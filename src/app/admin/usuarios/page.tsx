@@ -13,6 +13,7 @@ import {
   Shield,
   User as UserIcon,
   Loader2,
+  Mail,
 } from "lucide-react";
 import {
   Card,
@@ -129,6 +130,30 @@ export default function AdminUsuariosPage() {
       }
     } catch (error) {
       console.error("Error eliminando usuario:", error);
+    }
+  };
+
+  const handleSendAccessCodeEmail = async (userId: string, userEmail: string) => {
+    if (!confirm(`¿Enviar código de acceso por email a ${userEmail}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/send-access-code-email`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`✅ ${data.message}\n\nDetalles:\n• Email: ${data.data.email}\n• Código: ${data.data.codigo_acceso}\n• Tipo: ${data.data.tipo_codigo}`);
+      } else {
+        const errorData = await response.json();
+        alert(`❌ Error: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error("Error enviando código por email:", error);
+      alert("❌ Error enviando código por email");
     }
   };
 
@@ -348,6 +373,18 @@ export default function AdminUsuariosPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end space-x-2">
+                            {/* Botón para enviar código por email */}
+                            {user.codigo_acceso && !user.codigo_acceso.startsWith("TEMP_") && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-blue-600 hover:text-blue-700"
+                                onClick={() => handleSendAccessCodeEmail(user._id, user.email)}
+                                title="Enviar código por email"
+                              >
+                                <Mail className="h-4 w-4" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"

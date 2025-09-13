@@ -109,7 +109,7 @@ export default async function QRPage() {
               currentCode={user.codigo_acceso}
               userPhone={user.phone}
               userEmail={user.email}
-              isEmailVerified={user.emailVerified}
+              isEmailVerified={true}
               isAdmin={isAdmin}
             />
 

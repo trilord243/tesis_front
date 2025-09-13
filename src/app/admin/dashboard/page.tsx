@@ -146,7 +146,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <>
-      <Navbar isAuthenticated={true} showAuthButtons={false} />
+      <Navbar isAuthenticated={true} showAuthButtons={true} isAdmin={true} />
       <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
         {/* Header */}
         <header className="bg-white shadow-sm border-b">
