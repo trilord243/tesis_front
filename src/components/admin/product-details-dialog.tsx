@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import type { Product } from "@/types/product";
+import { ProductHistoryDashboard } from "./product-history-dashboard";
 
 interface ProductDetailsDialogProps {
   product: Product & { 
@@ -169,6 +170,11 @@ export function ProductDetailsDialog({ product }: ProductDetailsDialogProps) {
               </p>
             </div>
           )}
+
+          {/* Botón de Historial */}
+          <div className="border-t pt-4">
+            <ProductHistoryDashboard product={product} />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { ProductPrintButton } from "@/components/admin/product-print-button";
 import { AssetLocationDialog } from "@/components/admin/asset-location-dialog";
 import { CompleteMaintenanceDialog } from "@/components/admin/complete-maintenance-dialog";
+import { ProductHistoryDashboard } from "@/components/admin/product-history-dashboard";
 import type { Product } from "@/types/product";
 
 interface AssetsListProps {
@@ -174,7 +175,8 @@ export function AssetsList({ products }: AssetsListProps) {
                       </Button>
                     </>
                   )}
-                  
+
+                  <ProductHistoryDashboard product={product} />
                   <ProductPrintButton product={product} />
                 </div>
               </div>
