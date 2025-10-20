@@ -23,6 +23,7 @@ import {
   MapPin,
   MoreHorizontal,
   ChevronDown,
+  UserCircle,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -66,7 +67,7 @@ export function Navbar({
     {
       href: "#contacto",
       label: "Contacto",
-      icon: Home,
+      icon: UserCircle,
     },
   ];
 
@@ -213,7 +214,7 @@ export function Navbar({
                 </Link>
               );
             })}
-            
+
             {/* Dropdown Menu for Admin Secondary Items */}
             {isAdmin && (
               <DropdownMenu>

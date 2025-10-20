@@ -27,21 +27,17 @@ export default function RegisterPage() {
       >
         <div className="w-full max-w-3xl">
           {/* Logo y Título */}
-          <div className="text-center mb-6 sm:mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full shadow-2xl mb-4">
-              <div
-                className="text-2xl sm:text-3xl font-black"
-                style={{
-                  color: "#1859A9",
-                  fontFamily: "Roboto Condensed, sans-serif",
-                }}
-              >
-                UM
-              </div>
+          <div className="text-center mb-6 sm:mb-8 mt-8">
+            <div className="inline-flex items-center justify-center w-40 h-24 sm:w-48 sm:h-28 bg-white rounded-2xl shadow-2xl mb-6 p-4">
+              <img
+                src="/centro-mundo-x-logo.png"
+                alt="CentroMundoX Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
 
             <h1
-              className="text-3xl sm:text-4xl font-black text-white mb-2"
+              className="text-4xl sm:text-5xl font-black text-white mb-2"
               style={{
                 fontFamily: "Roboto Condensed, sans-serif",
                 textShadow: "0 2px 4px rgba(0,0,0,0.3)",
@@ -51,7 +47,7 @@ export default function RegisterPage() {
             </h1>
 
             <p
-              className="text-lg sm:text-xl text-white/90 mx-auto"
+              className="text-xl sm:text-2xl text-white/90 mx-auto"
               style={{
                 fontFamily: "Roboto, sans-serif",
                 fontWeight: 300,
