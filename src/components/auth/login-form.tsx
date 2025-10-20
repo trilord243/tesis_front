@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { Loader2, Mail, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { setClientAuthToken } from "@/lib/client-auth";
 
 export function LoginForm() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showResendOption, setShowResendOption] = useState(false);
@@ -146,20 +148,32 @@ export function LoginForm() {
               
               {/* Botón de reenvío para usuarios no verificados */}
               {showResendOption && (
-                <div className="mt-3 pt-3 border-t border-red-100">
+                <div className="mt-3 pt-3 border-t border-red-100 space-y-2">
                   <p className="text-xs text-red-600 mb-2">
                     ¿No tienes el código de verificación?
                   </p>
-                  <button
-                    type="button"
-                    onClick={handleResendVerification}
-                    className="inline-flex items-center gap-2 px-3 py-1 text-xs font-medium 
-                             text-red-700 bg-red-100 border border-red-300 rounded-md
-                             hover:bg-red-200 transition-colors duration-200"
-                  >
-                    <Mail className="h-3 w-3" />
-                    Reenviar código de verificación
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/auth/verify-email?email=${encodeURIComponent(unverifiedEmail)}`)}
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium
+                               text-white rounded-md
+                               hover:opacity-90 transition-all duration-200"
+                      style={{ backgroundColor: "#1859A9" }}
+                    >
+                      <Mail className="h-3 w-3" />
+                      Verificar mi email
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleResendVerification}
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium
+                               text-red-700 bg-red-100 border border-red-300 rounded-md
+                               hover:bg-red-200 transition-colors duration-200"
+                    >
+                      Reenviar código
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
