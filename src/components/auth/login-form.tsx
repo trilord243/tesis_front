@@ -43,13 +43,29 @@ export function LoginForm() {
 
       if (!response.ok) {
         // Verificar si es error de email no verificado
-        if (response.status === 401 && data.message && 
-            data.message.includes("verifica tu correo")) {
+        if (response.status === 401 &&
+            (data.message?.errorCode === "EMAIL_NOT_VERIFIED" ||
+             data.errorCode === "EMAIL_NOT_VERIFIED" ||
+             (typeof data.message === 'object' && data.message.errorCode === "EMAIL_NOT_VERIFIED") ||
+             (typeof data.message === 'string' && data.message.includes("verifica tu correo")))) {
           setError("Debes verificar tu correo electrónico antes de iniciar sesión");
           setShowResendOption(true);
-          setUnverifiedEmail(email);
-        } else {
-          throw new Error(data.error || data.message || "Error de autenticación");
+          setUnverifiedEmail(data.email || data.message?.email || email);
+        }
+        // Verificar si es error de código de acceso expirado
+        else if (response.status === 401 &&
+                 (data.message?.errorCode === "ACCESS_CODE_EXPIRED" ||
+                  data.errorCode === "ACCESS_CODE_EXPIRED" ||
+                  (typeof data.message === 'object' && data.message.errorCode === "ACCESS_CODE_EXPIRED") ||
+                  (typeof data.message === 'string' && data.message.includes("código de acceso ha expirado")))) {
+          setError("Tu código de acceso ha expirado. Por favor contacta al administrador para obtener uno nuevo.");
+        }
+        else {
+          throw new Error(
+            (typeof data.message === 'string' ? data.message : data.message?.message) ||
+            data.error ||
+            "Error de autenticación"
+          );
         }
       } else {
         // Guardar token en localStorage para acceso desde cliente
