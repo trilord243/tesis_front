@@ -1,6 +1,7 @@
 import { getCurrentUser, requireAuth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { UserProfile } from "@/components/dashboard/user-profile";
+import { MyEquipment } from "@/components/dashboard/my-equipment";
 import { Navbar } from "@/components/layout/navbar";
 import {
   Card,
@@ -20,6 +21,7 @@ import {
   Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getUserProducts } from "@/lib/admin-products";
 
 export const metadata: Metadata = {
   title: "Dashboard - CentroMundoX",
@@ -43,6 +45,11 @@ export default async function DashboardPage() {
   if (user.role === "admin") {
     redirect("/admin/dashboard");
   }
+
+  // Obtener los equipos del usuario
+  const userProducts = user.codigo_acceso
+    ? await getUserProducts(user.codigo_acceso)
+    : [];
 
 
   const menuItems = [
@@ -287,6 +294,9 @@ export default async function DashboardPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Mis Equipos */}
+              <MyEquipment products={userProducts} />
             </div>
           </div>
         </main>

@@ -1,5 +1,6 @@
 import { getCurrentUser, requireAdmin } from "@/lib/auth";
 import { Navbar } from "@/components/layout/navbar";
+import { MyEquipment } from "@/components/dashboard/my-equipment";
 import {
   Card,
   CardContent,
@@ -24,6 +25,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { getAdminDashboardStats } from "@/lib/dashboard-stats";
+import { getUserProducts } from "@/lib/admin-products";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard - CentroMundoX",
@@ -40,6 +42,11 @@ export default async function AdminDashboardPage() {
 
   // Obtener estadísticas reales del servidor
   const stats = await getAdminDashboardStats();
+
+  // Obtener los equipos del administrador
+  const adminProducts = user.codigo_acceso
+    ? await getUserProducts(user.codigo_acceso)
+    : [];
 
   // Solo funcionalidades disponibles actualmente
   const availableFeatures = [
@@ -358,6 +365,11 @@ export default async function AdminDashboardPage() {
                 </div>
               </Link>
             </div>
+          </div>
+
+          {/* Mis Equipos */}
+          <div className="mt-8">
+            <MyEquipment products={adminProducts} />
           </div>
         </main>
       </div>
