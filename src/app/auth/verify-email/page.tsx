@@ -25,7 +25,7 @@ export default function VerifyEmailPage() {
           paddingBottom: "40px",
         }}
       >
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-3xl">
           {/* Logo y Título */}
           <div className="text-center mb-6 sm:mb-8 mt-8">
             <div className="inline-flex items-center justify-center w-40 h-24 sm:w-48 sm:h-28 bg-white rounded-2xl shadow-2xl mb-6 p-4">
