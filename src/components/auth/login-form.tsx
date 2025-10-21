@@ -50,9 +50,11 @@ export function LoginForm() {
              data.errorCode === "EMAIL_NOT_VERIFIED" ||
              (typeof data.message === 'object' && data.message.errorCode === "EMAIL_NOT_VERIFIED") ||
              (typeof data.message === 'string' && data.message.includes("verifica tu correo")))) {
+          console.log("Email no verificado detectado, mostrando opciones de verificación");
           setError("Debes verificar tu correo electrónico antes de iniciar sesión");
           setShowResendOption(true);
           setUnverifiedEmail(data.email || data.message?.email || email);
+          console.log("unverifiedEmail configurado:", data.email || data.message?.email || email);
         }
         // Verificar si es error de código de acceso expirado
         else if (response.status === 401 &&
@@ -137,43 +139,54 @@ export function LoginForm() {
         <div className="px-10 sm:px-12 pb-10">
           {/* Error Alert */}
           {error && (
-            <div className={`mb-5 p-3 border rounded-lg ${
+            <div className={`mb-5 p-4 border rounded-lg ${
               error.includes("enviado") ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
             }`}>
-              <p className={`text-sm ${
+              <p className={`text-sm font-medium ${
                 error.includes("enviado") ? "text-green-700" : "text-red-700"
               }`}>
                 {error}
               </p>
-              
-              {/* Botón de reenvío para usuarios no verificados */}
+
+              {/* Botones de ayuda para usuarios no verificados */}
               {showResendOption && (
-                <div className="mt-3 pt-3 border-t border-red-100 space-y-2">
-                  <p className="text-xs text-red-600 mb-2">
-                    ¿No tienes el código de verificación?
+                <div className="mt-4 pt-4 border-t border-red-200">
+                  <p className="text-sm font-semibold text-red-800 mb-3">
+                    📧 Para verificar tu cuenta, sigue estos pasos:
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-2">
+                  <ol className="text-xs text-red-700 mb-4 space-y-1 ml-4 list-decimal">
+                    <li>Haz clic en &quot;Verificar mi email&quot; abajo</li>
+                    <li>Revisa tu correo (inbox y spam)</li>
+                    <li>Ingresa el código de 6 dígitos que recibiste</li>
+                  </ol>
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       type="button"
                       onClick={() => router.push(`/auth/verify-email?email=${encodeURIComponent(unverifiedEmail)}`)}
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium
-                               text-white rounded-md
-                               hover:opacity-90 transition-all duration-200"
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold
+                               text-white rounded-lg shadow-md
+                               hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5"
                       style={{ backgroundColor: "#1859A9" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#003087")}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1859A9")}
                     >
-                      <Mail className="h-3 w-3" />
-                      Verificar mi email
+                      <Mail className="h-4 w-4" />
+                      Verificar mi email ahora
                     </button>
                     <button
                       type="button"
                       onClick={handleResendVerification}
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium
-                               text-red-700 bg-red-100 border border-red-300 rounded-md
-                               hover:bg-red-200 transition-colors duration-200"
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold
+                               text-red-700 bg-white border-2 border-red-300 rounded-lg
+                               hover:bg-red-50 transition-all duration-200"
                     >
+                      <Mail className="h-4 w-4" />
                       Reenviar código
                     </button>
                   </div>
+                  <p className="text-xs text-red-600 mt-3 text-center">
+                    ¿Te equivocaste en tus datos? Podrás corregirlos en la página de verificación
+                  </p>
                 </div>
               )}
             </div>
