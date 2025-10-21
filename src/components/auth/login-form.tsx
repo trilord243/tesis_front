@@ -43,33 +43,38 @@ export function LoginForm() {
 
       const data = await response.json();
 
+      console.log("Respuesta del servidor:", { status: response.status, data });
+
       if (!response.ok) {
-        // Verificar si es error de email no verificado
+        // Extraer el mensaje del error (puede venir en diferentes formatos)
+        const errorMessage = (typeof data.message === 'string' ? data.message : data.message?.message) ||
+                            data.error ||
+                            "";
+
+        console.log("Error message extraído:", errorMessage);
+
+        // Verificar si es error de email no verificado (detectar por texto del mensaje)
         if (response.status === 401 &&
-            (data.message?.errorCode === "EMAIL_NOT_VERIFIED" ||
-             data.errorCode === "EMAIL_NOT_VERIFIED" ||
-             (typeof data.message === 'object' && data.message.errorCode === "EMAIL_NOT_VERIFIED") ||
-             (typeof data.message === 'string' && data.message.includes("verifica tu correo")))) {
-          console.log("Email no verificado detectado, mostrando opciones de verificación");
+            (errorMessage.toLowerCase().includes("verifica tu correo") ||
+             errorMessage.toLowerCase().includes("email") && errorMessage.toLowerCase().includes("verific") ||
+             data.message?.errorCode === "EMAIL_NOT_VERIFIED" ||
+             data.errorCode === "EMAIL_NOT_VERIFIED")) {
+          console.log("✅ Email no verificado detectado, mostrando opciones de verificación");
           setError("Debes verificar tu correo electrónico antes de iniciar sesión");
           setShowResendOption(true);
           setUnverifiedEmail(data.email || data.message?.email || email);
-          console.log("unverifiedEmail configurado:", data.email || data.message?.email || email);
+          console.log("✅ showResendOption:", true);
+          console.log("✅ unverifiedEmail configurado:", data.email || data.message?.email || email);
         }
         // Verificar si es error de código de acceso expirado
         else if (response.status === 401 &&
-                 (data.message?.errorCode === "ACCESS_CODE_EXPIRED" ||
-                  data.errorCode === "ACCESS_CODE_EXPIRED" ||
-                  (typeof data.message === 'object' && data.message.errorCode === "ACCESS_CODE_EXPIRED") ||
-                  (typeof data.message === 'string' && data.message.includes("código de acceso ha expirado")))) {
+                 (errorMessage.includes("código de acceso ha expirado") ||
+                  data.message?.errorCode === "ACCESS_CODE_EXPIRED" ||
+                  data.errorCode === "ACCESS_CODE_EXPIRED")) {
           setError("Tu código de acceso ha expirado. Por favor contacta al administrador para obtener uno nuevo.");
         }
         else {
-          throw new Error(
-            (typeof data.message === 'string' ? data.message : data.message?.message) ||
-            data.error ||
-            "Error de autenticación"
-          );
+          throw new Error(errorMessage || "Error de autenticación");
         }
       } else {
         // Guardar token en localStorage para acceso desde cliente
@@ -149,7 +154,7 @@ export function LoginForm() {
               </p>
 
               {/* Botones de ayuda para usuarios no verificados */}
-              {showResendOption && (
+              {showResendOption ? (
                 <div className="mt-4 pt-4 border-t border-red-200">
                   <p className="text-sm font-semibold text-red-800 mb-3">
                     📧 Para verificar tu cuenta, sigue estos pasos:
@@ -188,6 +193,24 @@ export function LoginForm() {
                     ¿Te equivocaste en tus datos? Podrás corregirlos en la página de verificación
                   </p>
                 </div>
+              ) : (
+                /* Mensaje de ayuda genérico si no detectamos el tipo específico */
+                error.toLowerCase().includes("verifica") && (
+                  <div className="mt-3 pt-3 border-t border-red-200">
+                    <p className="text-xs text-red-700 mb-3 text-center">
+                      ¿Necesitas verificar tu correo o registrarte nuevamente?
+                    </p>
+                    <Link
+                      href="/auth/verify-email"
+                      className="block w-full py-2 px-4 text-sm font-semibold text-center
+                               text-white rounded-lg shadow-md
+                               hover:shadow-lg transition-all duration-200"
+                      style={{ backgroundColor: "#1859A9" }}
+                    >
+                      Ir a verificación de email
+                    </Link>
+                  </div>
+                )
               )}
             </div>
           )}
