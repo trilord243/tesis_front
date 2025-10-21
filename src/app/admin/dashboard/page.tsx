@@ -1,6 +1,5 @@
 import { getCurrentUser, requireAdmin } from "@/lib/auth";
 import { Navbar } from "@/components/layout/navbar";
-import { MyEquipment } from "@/components/dashboard/my-equipment";
 import {
   Card,
   CardContent,
@@ -111,6 +110,15 @@ export default async function AdminDashboardPage() {
       href: "/admin/qr",
       color: "#003087",
       stats: "Acceso completo",
+      available: true,
+    },
+    {
+      title: "Mis Equipos",
+      description: "Visualiza y gestiona los equipos que tienes asignados",
+      icon: Package,
+      href: "/admin/mis-equipos",
+      color: "#FF8200",
+      stats: `${adminProducts.length} ${adminProducts.length === 1 ? 'equipo' : 'equipos'}`,
       available: true,
     },
   ];
@@ -226,7 +234,7 @@ export default async function AdminDashboardPage() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold" style={{ color: "#1859A9" }}>
-                    7
+                    8
                   </span>
                   <Shield className="h-8 w-8 text-blue-400" />
                 </div>
@@ -365,11 +373,6 @@ export default async function AdminDashboardPage() {
                 </div>
               </Link>
             </div>
-          </div>
-
-          {/* Mis Equipos */}
-          <div className="mt-8">
-            <MyEquipment products={adminProducts} />
           </div>
         </main>
       </div>
