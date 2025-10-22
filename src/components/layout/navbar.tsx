@@ -24,6 +24,7 @@ import {
   MoreHorizontal,
   ChevronDown,
   UserCircle,
+  BarChart3,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -123,14 +124,19 @@ export function Navbar({
       icon: Package2,
     },
     {
-      href: "/admin/solicitudes",
-      label: "Solicitudes",
-      icon: ClipboardList,
+      href: "/admin/analytics",
+      label: "Analytics",
+      icon: BarChart3,
     },
   ];
 
   // Items secundarios del admin (en dropdown)
   const adminSecondaryNavItems = [
+    {
+      href: "/admin/solicitudes",
+      label: "Solicitudes",
+      icon: ClipboardList,
+    },
     {
       href: "/admin/tipos-activos",
       label: "Tipos de Activos",

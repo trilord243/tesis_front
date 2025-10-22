@@ -12,8 +12,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Product } from "@/types/product";
 import { ProductHistoryDashboard } from "./product-history-dashboard";
+import { ProductUsageLogs } from "./product-usage-logs";
 
 interface ProductDetailsDialogProps {
   product: Product & { 
@@ -171,9 +173,23 @@ export function ProductDetailsDialog({ product }: ProductDetailsDialogProps) {
             </div>
           )}
 
-          {/* Botón de Historial */}
+          {/* Tabs for History and Usage Logs */}
           <div className="border-t pt-4">
-            <ProductHistoryDashboard product={product} />
+            <Tabs defaultValue="history" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="history">Historial</TabsTrigger>
+                <TabsTrigger value="usage">Uso y Logs</TabsTrigger>
+              </TabsList>
+              <TabsContent value="history" className="mt-4">
+                <ProductHistoryDashboard product={product} />
+              </TabsContent>
+              <TabsContent value="usage" className="mt-4">
+                <ProductUsageLogs
+                  productId={product._id}
+                  productName={product.name}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </DialogContent>
