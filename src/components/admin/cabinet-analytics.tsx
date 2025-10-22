@@ -28,9 +28,23 @@ export function CabinetAnalytics() {
     try {
       setIsLoading(true);
       setError(null);
-      const status = await UsageAnalyticsService.getCabinetStatus();
+
+      // Llamar al proxy API de Next.js
+      const response = await fetch("/api/analytics/cabinet-status", {
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const status = await response.json();
       setCabinetStatus(status);
     } catch (err) {
+      console.error("Error fetching cabinet status:", err);
       setError(
         err instanceof Error
           ? err.message

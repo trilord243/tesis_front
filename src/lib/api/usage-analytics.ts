@@ -9,9 +9,8 @@ import type {
   MaintenanceAnalytics,
 } from "@/types/usage-analytics";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-
+// Usar rutas proxy de Next.js en lugar de llamar directamente al backend
+// Esto maneja la autenticación correctamente con cookies httpOnly
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
   const response = await fetch(url, {
     ...options,
@@ -23,8 +22,9 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || "API request failed");
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData.error || `Error ${response.status}`;
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -37,7 +37,8 @@ export const UsageAnalyticsService = {
   async getProductUsageStats(
     productId: string
   ): Promise<ProductUsageStatistics> {
-    const url = `${API_BASE_URL}/products/${productId}/usage-statistics`;
+    // Usar ruta proxy de Next.js
+    const url = `/api/products/${productId}/usage-statistics`;
     console.log("Fetching product usage stats from:", url);
     return fetchWithAuth(url);
   },
@@ -46,14 +47,14 @@ export const UsageAnalyticsService = {
    * Get usage statistics for all products
    */
   async getAllProductsUsageStats(): Promise<ProductUsageStatistics[]> {
-    return fetchWithAuth(`${API_BASE_URL}/products/usage-statistics/all`);
+    return fetchWithAuth("/api/products/usage-statistics/all");
   },
 
   /**
    * Get cabinet status and inventory
    */
   async getCabinetStatus(): Promise<CabinetStatus> {
-    return fetchWithAuth(`${API_BASE_URL}/api/analytics/cabinet-status`);
+    return fetchWithAuth("/api/analytics/cabinet-status");
   },
 
   /**

@@ -34,19 +34,19 @@ export function SimpleLoanFrequencyAnalytics() {
       setIsLoading(true);
       setError(null);
 
-      // Llamar al endpoint admin que devuelve todas las solicitudes
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/lens-requests/admin`,
-        {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      // Llamar al proxy API de Next.js que maneja la autenticación
+      const response = await fetch("/api/admin/lens-requests", {
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (!response.ok) {
-        throw new Error(`Error al cargar solicitudes: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error || `Error al cargar solicitudes: ${response.status}`
+        );
       }
 
       const data = await response.json();
