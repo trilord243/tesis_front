@@ -102,7 +102,7 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
       const reservationData: CreateLabReservationDto = {
         userType: userType as UserType,
         software: selectedSoftware,
-        otherSoftware: selectedSoftware.includes(Software.OTRO) ? otherSoftware : undefined,
+        ...(selectedSoftware.includes(Software.OTRO) && otherSoftware ? { otherSoftware } : {}),
         purpose: purpose as Purpose,
         description,
         requestedSlots,
@@ -125,8 +125,8 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
       if (onSuccess) {
         onSuccess();
       }
-    } catch (err: any) {
-      setError(err.message || "Error al enviar la solicitud");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al enviar la solicitud");
     } finally {
       setIsSubmitting(false);
     }

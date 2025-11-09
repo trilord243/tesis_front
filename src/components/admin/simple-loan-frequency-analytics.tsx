@@ -114,7 +114,10 @@ export function SimpleLoanFrequencyAnalytics() {
       if (!productCounts[product._id]) {
         productCounts[product._id] = { name: product.nombre, count: 0 };
       }
-      productCounts[product._id].count++;
+      const productCount = productCounts[product._id];
+      if (productCount) {
+        productCount.count++;
+      }
     });
   });
 

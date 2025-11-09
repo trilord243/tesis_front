@@ -34,8 +34,8 @@ export default function MisReservasLabPage() {
       }
 
       setReservations(Array.isArray(data) ? data : []);
-    } catch (err: any) {
-      setError(err.message || "Error al cargar las reservas");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al cargar las reservas");
     } finally {
       setLoading(false);
     }
@@ -127,7 +127,7 @@ export default function MisReservasLabPage() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <CardTitle className="text-xl">
-                        Solicitud - {formatDate(reservation.createdAt.split("T")[0])}
+                        Solicitud - {formatDate(reservation.createdAt.split("T")[0] || reservation.createdAt)}
                       </CardTitle>
                       <Badge className={STATUS_COLORS[reservation.status]}>
                         {STATUS_LABELS[reservation.status]}

@@ -47,7 +47,7 @@ export default function ReservarLabPage() {
                 <div className="mt-2 space-y-2 text-left">
                   <p>1. Un administrador revisará tu solicitud</p>
                   <p>2. Recibirás una notificación cuando sea aprobada o rechazada</p>
-                  <p>3. Podrás ver el estado de tu reserva en "Mis Reservas"</p>
+                  <p>3. Podrás ver el estado de tu reserva en &quot;Mis Reservas&quot;</p>
                 </div>
               </AlertDescription>
             </Alert>

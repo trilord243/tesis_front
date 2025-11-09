@@ -13,7 +13,6 @@ import {
   ReservationStatus,
   STATUS_LABELS,
   STATUS_COLORS,
-  TIME_BLOCKS,
 } from "@/types/lab-reservation";
 import {
   Calendar,
@@ -51,8 +50,8 @@ export default function AdminReservasLabPage() {
       }
 
       setReservations(Array.isArray(data) ? data : []);
-    } catch (err: any) {
-      setError(err.message || "Error al cargar las reservas");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al cargar las reservas");
     } finally {
       setLoading(false);
     }

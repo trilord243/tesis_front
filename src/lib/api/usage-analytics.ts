@@ -79,7 +79,7 @@ export const UsageAnalyticsService = {
     }
 
     const queryString = params.toString();
-    const url = `${API_BASE_URL}/analytics/loan-frequency${queryString ? `?${queryString}` : ""}`;
+    const url = `/api/analytics/loan-frequency${queryString ? `?${queryString}` : ""}`;
 
     return fetchWithAuth(url);
   },
@@ -98,7 +98,7 @@ export const UsageAnalyticsService = {
     }
 
     const queryString = params.toString();
-    const url = `${API_BASE_URL}/analytics/usage-patterns${queryString ? `?${queryString}` : ""}`;
+    const url = `/api/analytics/usage-patterns${queryString ? `?${queryString}` : ""}`;
 
     return fetchWithAuth(url);
   },
@@ -117,7 +117,7 @@ export const UsageAnalyticsService = {
     }
 
     const queryString = params.toString();
-    const url = `${API_BASE_URL}/analytics/system${queryString ? `?${queryString}` : ""}`;
+    const url = `/api/analytics/system${queryString ? `?${queryString}` : ""}`;
 
     return fetchWithAuth(url);
   },
@@ -129,8 +129,8 @@ export const UsageAnalyticsService = {
     productId?: string
   ): Promise<ProductUtilizationMetric | ProductUtilizationMetric[]> {
     const url = productId
-      ? `${API_BASE_URL}/analytics/utilization/${productId}`
-      : `${API_BASE_URL}/analytics/utilization`;
+      ? `/api/analytics/utilization/${productId}`
+      : `/api/analytics/utilization`;
 
     return fetchWithAuth(url);
   },
@@ -149,7 +149,7 @@ export const UsageAnalyticsService = {
     }
 
     const queryString = params.toString();
-    const url = `${API_BASE_URL}/analytics/maintenance${queryString ? `?${queryString}` : ""}`;
+    const url = `/api/analytics/maintenance${queryString ? `?${queryString}` : ""}`;
 
     return fetchWithAuth(url);
   },
@@ -158,7 +158,7 @@ export const UsageAnalyticsService = {
    * Track a product checkout
    */
   async trackCheckout(productId: string, userId: string, notes?: string): Promise<void> {
-    return fetchWithAuth(`${API_BASE_URL}/products/${productId}/track-checkout`, {
+    return fetchWithAuth(`/api/products/${productId}/track-checkout`, {
       method: "POST",
       body: JSON.stringify({ userId, notes }),
     });
@@ -168,7 +168,7 @@ export const UsageAnalyticsService = {
    * Track a product return
    */
   async trackReturn(productId: string, userId: string, notes?: string): Promise<void> {
-    return fetchWithAuth(`${API_BASE_URL}/products/${productId}/track-return`, {
+    return fetchWithAuth(`/api/products/${productId}/track-return`, {
       method: "POST",
       body: JSON.stringify({ userId, notes }),
     });
@@ -206,7 +206,7 @@ export const UsageAnalyticsService = {
     }
 
     const response = await fetch(
-      `${API_BASE_URL}/analytics/export?${params.toString()}`,
+      `/api/analytics/export?${params.toString()}`,
       {
         credentials: "include",
       }

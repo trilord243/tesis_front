@@ -79,8 +79,8 @@ export function AdminReservationDialog({
         onSuccess();
       }
       onOpenChange(false);
-    } catch (err: any) {
-      setError(err.message || "Error al aprobar la reserva");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al aprobar la reserva");
     } finally {
       setIsUpdating(false);
     }
@@ -124,8 +124,8 @@ export function AdminReservationDialog({
       }
       onOpenChange(false);
       setRejectionReason("");
-    } catch (err: any) {
-      setError(err.message || "Error al rechazar la reserva");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al rechazar la reserva");
     } finally {
       setIsUpdating(false);
     }
@@ -273,10 +273,10 @@ export function AdminReservationDialog({
                 Cancelar
               </Button>
               <Button
-                variant="destructive"
+                variant="outline"
                 onClick={handleReject}
                 disabled={isUpdating}
-                className="flex-1"
+                className="flex-1 border-red-500 text-red-500 hover:bg-red-500"
               >
                 {isUpdating ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

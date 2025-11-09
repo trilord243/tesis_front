@@ -37,7 +37,7 @@ export function LabCalendarSelector({ selectedSlots, onSlotsChange }: LabCalenda
   };
 
   // Función para obtener el nombre del día de la semana
-  const getDayOfWeek = (date: Date): DayOfWeek => {
+  const getDayOfWeek = (date: Date): DayOfWeek | undefined => {
     const dayIndex = date.getDay();
     const dayMap: Record<number, DayOfWeek> = {
       1: DayOfWeek.LUNES,
@@ -50,7 +50,7 @@ export function LabCalendarSelector({ selectedSlots, onSlotsChange }: LabCalenda
 
   // Función para formatear fecha a YYYY-MM-DD
   const formatDate = (date: Date): string => {
-    return date.toISOString().split("T")[0];
+    return date.toISOString().split("T")[0] || date.toISOString();
   };
 
   // Cargar disponibilidad cuando se selecciona una fecha
@@ -112,6 +112,10 @@ export function LabCalendarSelector({ selectedSlots, onSlotsChange }: LabCalenda
 
     const dateStr = formatDate(selectedDate);
     const dayOfWeek = getDayOfWeek(selectedDate);
+
+    if (!dayOfWeek) {
+      return; // No es un día válido
+    }
 
     // Verificar si ya existe un slot para esta fecha
     const existingSlotIndex = selectedSlots.findIndex((s) => s.date === dateStr);
