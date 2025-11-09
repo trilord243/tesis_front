@@ -154,6 +154,16 @@ export function LabCalendarSelector({ selectedSlots, onSlotsChange }: LabCalenda
 
   return (
     <div className="space-y-6">
+      {/* Alerta de días válidos */}
+      <Alert className="bg-blue-50 border-blue-200">
+        <AlertCircle className="h-4 w-4 text-blue-600" />
+        <AlertDescription className="text-blue-900">
+          <strong>Días permitidos:</strong> Solo puedes reservar los días{" "}
+          <span className="font-bold">Lunes, Martes, Jueves y Viernes</span>.
+          Los fines de semana y miércoles no están disponibles.
+        </AlertDescription>
+      </Alert>
+
       {/* Calendario */}
       <Card>
         <CardHeader>
@@ -162,10 +172,10 @@ export function LabCalendarSelector({ selectedSlots, onSlotsChange }: LabCalenda
             Selecciona un Día
           </CardTitle>
           <CardDescription>
-            Solo se pueden reservar: Lunes, Martes, Jueves y Viernes
+            Usa las flechas para navegar entre meses. Los días deshabilitados aparecen en gris.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex justify-center">
           <Calendar
             mode="single"
             selected={selectedDate}
@@ -175,7 +185,7 @@ export function LabCalendarSelector({ selectedSlots, onSlotsChange }: LabCalenda
               today.setHours(0, 0, 0, 0);
               return date < today || !isValidDay(date);
             }}
-            className="rounded-md border"
+            className="rounded-md border shadow-sm"
           />
         </CardContent>
       </Card>
