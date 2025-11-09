@@ -19,6 +19,8 @@ import {
   QrCode,
   ClipboardList,
   Shield,
+  Computer,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getUserProducts } from "@/lib/admin-products";
@@ -61,18 +63,32 @@ export default async function DashboardPage() {
       color: "#1859A9",
     },
     {
-      title: "Mis Solicitudes",
+      title: "Mis Solicitudes de Lentes",
       description: "Gestiona tus solicitudes de lentes e historial",
       icon: ClipboardList,
       href: "/dashboard/mis-reservas",
       color: "#003087",
     },
     {
+      title: "Reservar Computadoras",
+      description: "Reserva computadoras de alto rendimiento para tu proyecto",
+      icon: Computer,
+      href: "/dashboard/reservar-lab",
+      color: "#FF8200",
+    },
+    {
+      title: "Mis Reservas de Lab",
+      description: "Consulta tus reservas de computadoras del laboratorio",
+      icon: BookOpen,
+      href: "/dashboard/mis-reservas-lab",
+      color: "#F68629",
+    },
+    {
       title: "Mi Perfil",
       description: "Actualiza tu información personal",
       icon: UserIcon,
       href: "/dashboard/perfil",
-      color: "#FF8200",
+      color: "#1859A9",
     },
     {
       title: "Mi QR",
@@ -258,7 +274,7 @@ export default async function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {menuItems.map((item) => (
                       <Link
                         key={item.href}
