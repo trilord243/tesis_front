@@ -100,16 +100,16 @@ export function ComputerSelector({
           {userGroup === UserGroup.NORMAL ? (
             <>
               Como usuario <strong>{userType}</strong>, tienes acceso a{" "}
-              <strong>4 computadoras</strong> de acceso general (ubicadas en la parte superior del laboratorio).
+              <strong>5 computadoras</strong> de acceso general (ubicadas en la parte superior del laboratorio).
               <span className="block mt-2 text-sm">
-                Las computadoras del lateral izquierdo (5-9) están reservadas para uso CFD/Metaverso.
+                Las computadoras del lateral izquierdo (6-9) están reservadas para uso CFD/Metaverso.
               </span>
             </>
           ) : (
             <>
               Como miembro de <strong>{userType}</strong>, tienes acceso a{" "}
               <strong>todas las 9 computadoras</strong> del laboratorio,
-              incluyendo las 4 de acceso general (arriba) y las 5 de uso CFD/Metaverso (lateral izquierdo).
+              incluyendo las 5 de acceso general (arriba) y las 4 de uso CFD/Metaverso (lateral izquierdo).
             </>
           )}
           {availableCount < computers.length && (

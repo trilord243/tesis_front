@@ -25,10 +25,10 @@ export function LabLayoutVisual({
   const [selectedForDetails, setSelectedForDetails] = useState<Computer | null>(null);
 
   // Separar computadoras por posición
-  // Top row: computadoras 1-4 (normal access - acceso general)
-  const topComputers = computers.filter(c => c.number >= 1 && c.number <= 4).sort((a, b) => a.number - b.number);
-  // Left column: computadoras 5-9 (special access - CFD/Metaverso)
-  const leftComputers = computers.filter(c => c.number >= 5 && c.number <= 9).sort((a, b) => a.number - b.number);
+  // Top row: computadoras 1-5 (normal access - acceso general)
+  const topComputers = computers.filter(c => c.number >= 1 && c.number <= 5).sort((a, b) => a.number - b.number);
+  // Left column: computadoras 6-9 (special access - CFD/Metaverso)
+  const leftComputers = computers.filter(c => c.number >= 6 && c.number <= 9).sort((a, b) => a.number - b.number);
 
   const handleComputerClick = (computer: Computer) => {
     // Check if user has access to this computer
