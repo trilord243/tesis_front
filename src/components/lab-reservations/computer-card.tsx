@@ -10,9 +10,10 @@ interface ComputerCardProps {
   selected?: boolean;
   disabled?: boolean;
   onClick?: () => void;
+  restrictedMessage?: string;
 }
 
-export function ComputerCard({ computer, selected, disabled, onClick }: ComputerCardProps) {
+export function ComputerCard({ computer, selected, disabled, onClick, restrictedMessage }: ComputerCardProps) {
   return (
     <Card
       className={`
@@ -28,11 +29,11 @@ export function ComputerCard({ computer, selected, disabled, onClick }: Computer
             <CardTitle className="text-lg">
               {computer.name}
               {computer.accessLevel === "special" && (
-                <Badge className="ml-2 bg-orange-500">Premium</Badge>
+                <Badge className="ml-2 bg-orange-500 text-white">CFD/Metaverso</Badge>
               )}
             </CardTitle>
             <CardDescription className="mt-1">
-              {computer.specialization}
+              {restrictedMessage || computer.specialization}
             </CardDescription>
           </div>
           <div className="text-right">

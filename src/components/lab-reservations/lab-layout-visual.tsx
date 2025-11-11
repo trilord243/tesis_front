@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Computer } from "@/types/lab-reservation";
+import { Computer, UserGroup } from "@/types/lab-reservation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Cpu, HardDrive, Monitor, CheckCircle2 } from "lucide-react";
@@ -12,6 +12,7 @@ interface LabLayoutVisualProps {
   selectedComputerNumber?: number;
   onSelect: (computerNumber: number) => void;
   disabled?: boolean;
+  userGroup: UserGroup;
 }
 
 export function LabLayoutVisual({
@@ -19,6 +20,7 @@ export function LabLayoutVisual({
   selectedComputerNumber,
   onSelect,
   disabled = false,
+  userGroup,
 }: LabLayoutVisualProps) {
   const [selectedForDetails, setSelectedForDetails] = useState<Computer | null>(null);
 
@@ -29,7 +31,10 @@ export function LabLayoutVisual({
   const leftComputers = computers.filter(c => c.number >= 5 && c.number <= 9).sort((a, b) => a.number - b.number);
 
   const handleComputerClick = (computer: Computer) => {
-    if (!disabled && computer.isAvailable) {
+    // Check if user has access to this computer
+    const isRestrictedForUser = userGroup === UserGroup.NORMAL && computer.accessLevel === 'special';
+
+    if (!disabled && computer.isAvailable && !isRestrictedForUser) {
       setSelectedForDetails(computer);
     }
   };
@@ -45,12 +50,13 @@ export function LabLayoutVisual({
     const isSelected = selectedComputerNumber === computer.number;
     const isAvailable = computer.isAvailable;
     const isPremium = computer.accessLevel === "special";
+    const isRestrictedForUser = userGroup === UserGroup.NORMAL && computer.accessLevel === 'special';
 
     return (
       <div
         className={`
-          relative cursor-pointer transition-all duration-300 group
-          ${!isAvailable ? "opacity-50 cursor-not-allowed" : ""}
+          relative transition-all duration-300 group
+          ${!isAvailable || isRestrictedForUser ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
           ${disabled ? "cursor-not-allowed" : ""}
         `}
         onClick={() => handleComputerClick(computer)}
@@ -103,9 +109,17 @@ export function LabLayoutVisual({
 
         {/* Hover Info */}
         <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs py-1 px-2 rounded whitespace-nowrap z-10 pointer-events-none">
-          {computer.name}
-          <br />
-          <span className="text-gray-300">{computer.specialization}</span>
+          {isRestrictedForUser ? (
+            <span className="text-orange-300 font-semibold">
+              Solo disponible CFD/Metaverso
+            </span>
+          ) : (
+            <>
+              {computer.name}
+              <br />
+              <span className="text-gray-300">{computer.specialization}</span>
+            </>
+          )}
         </div>
       </div>
     );

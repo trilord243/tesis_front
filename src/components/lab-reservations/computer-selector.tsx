@@ -100,12 +100,15 @@ export function ComputerSelector({
           {userGroup === UserGroup.NORMAL ? (
             <>
               Como usuario <strong>{userType}</strong>, tienes acceso a{" "}
-              <strong>{computers.length} computadoras</strong> de acceso general (ubicadas en la parte superior del laboratorio).
+              <strong>4 computadoras</strong> de acceso general (ubicadas en la parte superior del laboratorio).
+              <span className="block mt-2 text-sm">
+                Las computadoras del lateral izquierdo (5-9) están reservadas para uso CFD/Metaverso.
+              </span>
             </>
           ) : (
             <>
               Como miembro de <strong>{userType}</strong>, tienes acceso a{" "}
-              <strong>todas las {computers.length} computadoras</strong> del laboratorio,
+              <strong>todas las 9 computadoras</strong> del laboratorio,
               incluyendo las 4 de acceso general (arriba) y las 5 de uso CFD/Metaverso (lateral izquierdo).
             </>
           )}
@@ -145,18 +148,26 @@ export function ComputerSelector({
           computers={computers}
           selectedComputerNumber={selectedComputerNumber}
           onSelect={onSelect}
+          userGroup={userGroup}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {computers.map((computer) => (
-            <ComputerCard
-              key={computer._id}
-              computer={computer}
-              selected={selectedComputerNumber === computer.number}
-              disabled={!computer.isAvailable}
-              onClick={() => computer.isAvailable && onSelect(computer.number)}
-            />
-          ))}
+          {computers.map((computer) => {
+            // Disable special access computers for normal users
+            const isDisabledForUser = userGroup === UserGroup.NORMAL && computer.accessLevel === 'special';
+            const isDisabled = !computer.isAvailable || isDisabledForUser;
+
+            return (
+              <ComputerCard
+                key={computer._id}
+                computer={computer}
+                selected={selectedComputerNumber === computer.number}
+                disabled={isDisabled}
+                onClick={() => !isDisabled && onSelect(computer.number)}
+                restrictedMessage={isDisabledForUser ? "Solo disponible CFD/Metaverso" : undefined}
+              />
+            );
+          })}
         </div>
       )}
 
