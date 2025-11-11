@@ -290,7 +290,7 @@ export default function MisReservasLabPage() {
                               Computadora #{reservation.computerNumber}
                             </p>
                             <p className="text-sm text-blue-600">
-                              {reservation.computerNumber >= 5 ? "Acceso Premium" : "Acceso General"}
+                              {reservation.computerNumber >= 5 ? "Uso CFD/Metaverso" : "Acceso General"}
                             </p>
                           </div>
                         </div>

@@ -100,13 +100,13 @@ export function ComputerSelector({
           {userGroup === UserGroup.NORMAL ? (
             <>
               Como usuario <strong>{userType}</strong>, tienes acceso a{" "}
-              <strong>{computers.length} computadoras</strong> de propósito general.
+              <strong>{computers.length} computadoras</strong> de acceso general (ubicadas en la parte superior del laboratorio).
             </>
           ) : (
             <>
               Como miembro de <strong>{userType}</strong>, tienes acceso a{" "}
               <strong>todas las {computers.length} computadoras</strong> del laboratorio,
-              incluyendo equipos especializados de alto rendimiento.
+              incluyendo las 4 de acceso general (arriba) y las 5 de uso CFD/Metaverso (lateral izquierdo).
             </>
           )}
           {availableCount < computers.length && (

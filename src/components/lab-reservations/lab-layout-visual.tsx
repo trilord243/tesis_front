@@ -23,10 +23,10 @@ export function LabLayoutVisual({
   const [selectedForDetails, setSelectedForDetails] = useState<Computer | null>(null);
 
   // Separar computadoras por posición
-  // Top row: computadoras 5-9 (special access)
-  const topComputers = computers.filter(c => c.number >= 5 && c.number <= 9).sort((a, b) => a.number - b.number);
-  // Left column: computadoras 1-4 (normal access)
-  const leftComputers = computers.filter(c => c.number >= 1 && c.number <= 4).sort((a, b) => a.number - b.number);
+  // Top row: computadoras 1-4 (normal access - acceso general)
+  const topComputers = computers.filter(c => c.number >= 1 && c.number <= 4).sort((a, b) => a.number - b.number);
+  // Left column: computadoras 5-9 (special access - CFD/Metaverso)
+  const leftComputers = computers.filter(c => c.number >= 5 && c.number <= 9).sort((a, b) => a.number - b.number);
 
   const handleComputerClick = (computer: Computer) => {
     if (!disabled && computer.isAvailable) {
@@ -97,11 +97,6 @@ export function LabLayoutVisual({
             )}
           </div>
 
-          {/* Desktop/Tower */}
-          <div className={`w-8 h-12 rounded ${isPremium ? "bg-orange-900" : "bg-gray-800"}`}>
-            <div className="w-full h-2 bg-blue-400 mt-1"></div>
-          </div>
-
           {/* Keyboard (decorative) */}
           <div className="w-16 h-2 bg-gray-700 rounded-sm"></div>
         </div>
@@ -127,11 +122,11 @@ export function LabLayoutVisual({
 
         {/* Lab Layout */}
         <div className="relative">
-          {/* Top Row - Premium Computers (5-9) */}
+          {/* Top Row - Normal Access Computers (1-4) */}
           <div className="mb-8">
-            <div className="flex justify-center items-center gap-8 p-6 bg-white rounded-lg border-2 border-orange-300">
-              <Badge className="absolute top-2 right-2 bg-orange-500">
-                Premium - Acceso Especial
+            <div className="flex justify-center items-center gap-8 p-6 bg-white rounded-lg border-2 border-blue-300">
+              <Badge className="absolute top-2 right-2 bg-blue-500">
+                Acceso General
               </Badge>
               {topComputers.map((computer) => (
                 <ComputerStation key={computer._id} computer={computer} />
@@ -141,10 +136,10 @@ export function LabLayoutVisual({
 
           {/* Main Area with Left Column */}
           <div className="flex gap-4">
-            {/* Left Column - Normal Access Computers (1-4) */}
-            <div className="flex flex-col gap-8 p-6 bg-white rounded-lg border-2 border-blue-300 min-w-[140px]">
-              <Badge className="bg-blue-500 text-center mb-2">
-                Acceso General
+            {/* Left Column - CFD/Metaverso Computers (5-9) */}
+            <div className="flex flex-col gap-8 p-6 bg-white rounded-lg border-2 border-orange-300 min-w-[140px]">
+              <Badge className="bg-orange-500 text-center mb-2 text-white">
+                Uso CFD/Metaverso
               </Badge>
               {leftComputers.map((computer) => (
                 <ComputerStation key={computer._id} computer={computer} />
@@ -176,11 +171,11 @@ export function LabLayoutVisual({
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-gray-200 border-2 border-gray-400"></div>
-            <span>Disponible</span>
+            <span>Acceso General</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded bg-orange-200 border-2 border-orange-400"></div>
-            <span>Premium</span>
+            <div className="w-4 h-4 rounded bg-orange-100 border-2 border-orange-400"></div>
+            <span>CFD/Metaverso</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-gray-200 border-2 border-gray-400 opacity-50"></div>
@@ -199,7 +194,7 @@ export function LabLayoutVisual({
                   <DialogTitle className="text-2xl">
                     {selectedForDetails.name}
                     {selectedForDetails.accessLevel === "special" && (
-                      <Badge className="ml-2 bg-orange-500">Premium</Badge>
+                      <Badge className="ml-2 bg-orange-500 text-white">CFD/Metaverso</Badge>
                     )}
                   </DialogTitle>
                   <div className="text-3xl font-bold text-blue-600">
