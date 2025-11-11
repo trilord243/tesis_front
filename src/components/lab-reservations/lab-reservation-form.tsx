@@ -10,12 +10,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { LabCalendarSelector } from "./lab-calendar-selector";
+import { Calendar } from "@/components/ui/calendar";
+import { ComputerSelector } from "./computer-selector";
 import {
   UserType,
   Software,
   Purpose,
-  TimeSlot,
   CreateLabReservationDto,
   USER_TYPE_LABELS,
   SOFTWARE_LABELS,
@@ -39,9 +39,10 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
   const [otherSoftware, setOtherSoftware] = useState("");
   const [purpose, setPurpose] = useState<Purpose | "">("");
   const [description, setDescription] = useState("");
-  const [requestedSlots, setRequestedSlots] = useState<TimeSlot[]>([]);
+  const [selectedComputerNumber, setSelectedComputerNumber] = useState<number | undefined>(undefined);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
-  const totalSteps = 5;
+  const totalSteps = 6;
 
   // Manejar selección de software
   const handleSoftwareToggle = (software: Software) => {
@@ -67,7 +68,9 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
       case 4:
         return description.trim().length >= 20;
       case 5:
-        return requestedSlots.length > 0;
+        return selectedComputerNumber !== undefined;
+      case 6:
+        return selectedDate !== undefined;
       default:
         return false;
     }
@@ -90,7 +93,7 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
 
   // Enviar formulario
   const handleSubmit = async () => {
-    if (!canProceed()) {
+    if (!canProceed() || !selectedComputerNumber || !selectedDate) {
       setError("Por favor completa todos los campos requeridos");
       return;
     }
@@ -99,13 +102,17 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
     setError(null);
 
     try {
+      // Format date as YYYY-MM-DD
+      const reservationDate = selectedDate.toISOString().split('T')[0] || selectedDate.toISOString();
+
       const reservationData: CreateLabReservationDto = {
         userType: userType as UserType,
         software: selectedSoftware,
         ...(selectedSoftware.includes(Software.OTRO) && otherSoftware ? { otherSoftware } : {}),
         purpose: purpose as Purpose,
         description,
-        requestedSlots,
+        computerNumber: selectedComputerNumber,
+        reservationDate,
       };
 
       const response = await fetch("/api/lab-reservations", {
@@ -133,14 +140,14 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       {/* Progress Indicator */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-2">
-          {[1, 2, 3, 4, 5].map((step) => (
+          {[1, 2, 3, 4, 5, 6].map((step) => (
             <div
               key={step}
-              className={`flex items-center ${step < 5 ? "flex-1" : ""}`}
+              className={`flex items-center ${step < 6 ? "flex-1" : ""}`}
             >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
@@ -153,7 +160,7 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
               >
                 {step < currentStep ? <CheckCircle2 className="h-5 w-5" /> : step}
               </div>
-              {step < 5 && (
+              {step < 6 && (
                 <div
                   className={`flex-1 h-1 mx-2 transition-all ${
                     step < currentStep ? "bg-green-500" : "bg-gray-200"
@@ -176,14 +183,16 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
             {currentStep === 2 && "Software Requerido"}
             {currentStep === 3 && "Propósito de Uso"}
             {currentStep === 4 && "Descripción del Proyecto"}
-            {currentStep === 5 && "Seleccionar Fechas y Horarios"}
+            {currentStep === 5 && "Seleccionar Computadora"}
+            {currentStep === 6 && "Seleccionar Fecha"}
           </CardTitle>
           <CardDescription>
             {currentStep === 1 && "Indica tu tipo de usuario"}
             {currentStep === 2 && "Selecciona el software que necesitarás usar"}
             {currentStep === 3 && "¿Para qué usarás las computadoras?"}
             {currentStep === 4 && "Describe tu proyecto o actividad (mínimo 20 caracteres)"}
-            {currentStep === 5 && "Elige los días y bloques horarios que necesitas"}
+            {currentStep === 5 && "Elige la computadora que mejor se adapte a tus necesidades"}
+            {currentStep === 6 && "Selecciona el día que deseas reservar"}
           </CardDescription>
         </CardHeader>
 
@@ -308,12 +317,53 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
             </div>
           )}
 
-          {/* Step 5: Calendar */}
-          {currentStep === 5 && (
-            <LabCalendarSelector
-              selectedSlots={requestedSlots}
-              onSlotsChange={setRequestedSlots}
+          {/* Step 5: Computer Selection */}
+          {currentStep === 5 && userType && (
+            <ComputerSelector
+              userType={userType as UserType}
+              selectedComputerNumber={selectedComputerNumber}
+              onSelect={setSelectedComputerNumber}
             />
+          )}
+
+          {/* Step 6: Date Selection */}
+          {currentStep === 6 && (
+            <div className="space-y-4">
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertDescription className="text-blue-900">
+                  Selecciona el día en que deseas usar la computadora.
+                  {selectedComputerNumber && (
+                    <span className="block mt-2 font-semibold">
+                      Computadora seleccionada: #{selectedComputerNumber}
+                    </span>
+                  )}
+                </AlertDescription>
+              </Alert>
+
+              <div className="flex justify-center">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                  className="rounded-md border"
+                />
+              </div>
+
+              {selectedDate && (
+                <div className="text-center p-4 bg-green-50 rounded-lg border-2 border-green-200">
+                  <p className="text-green-900 font-semibold">
+                    Fecha seleccionada:{" "}
+                    {selectedDate.toLocaleDateString("es-ES", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
+              )}
+            </div>
           )}
 
           {error && (

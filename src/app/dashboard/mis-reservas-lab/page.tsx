@@ -12,12 +12,11 @@ import {
   LabReservation,
   STATUS_LABELS,
   STATUS_COLORS,
-  TIME_BLOCKS,
   USER_TYPE_LABELS,
   SOFTWARE_LABELS,
   PURPOSE_LABELS,
 } from "@/types/lab-reservation";
-import { Calendar, Clock, ArrowLeft, RefreshCw, AlertCircle, Loader2 } from "lucide-react";
+import { Calendar, ArrowLeft, RefreshCw, AlertCircle, Loader2, Computer } from "lucide-react";
 import { User } from "@/types/auth";
 
 export default function MisReservasLabPage() {
@@ -275,39 +274,47 @@ export default function MisReservasLabPage() {
                     </div>
                   </div>
 
-                  {/* Slots Solicitados */}
-                  <div>
-                    <h4 className="font-semibold text-sm text-muted-foreground mb-2">
-                      Fechas y Horarios Solicitados
-                    </h4>
-                    <div className="space-y-3">
-                      {reservation.requestedSlots.map((slot, index) => (
-                        <div
-                          key={index}
-                          className="p-4 border rounded-lg bg-card space-y-2"
-                        >
-                          <div className="flex items-center gap-2 font-medium">
-                            <Calendar className="h-4 w-4" />
-                            {formatDate(slot.date)}
+                  {/* Computadora y Fecha Reservada */}
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold text-sm text-muted-foreground mb-2">
+                        Computadora Reservada
+                      </h4>
+                      <div className="p-4 border rounded-lg bg-blue-50 border-blue-200">
+                        <div className="flex items-center gap-3">
+                          <div className="p-3 bg-blue-100 rounded-lg">
+                            <Computer className="h-6 w-6 text-blue-600" />
                           </div>
-                          <div className="flex flex-wrap gap-2">
-                            {slot.blocks.map((block) => {
-                              const blockInfo = TIME_BLOCKS.find((tb) => tb.value === block);
-                              return (
-                                <Badge key={block} variant="outline" className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  {blockInfo?.label}: {blockInfo?.startTime} - {blockInfo?.endTime}
-                                </Badge>
-                              );
-                            })}
+                          <div>
+                            <p className="font-bold text-2xl text-blue-700">
+                              Computadora #{reservation.computerNumber}
+                            </p>
+                            <p className="text-sm text-blue-600">
+                              {reservation.computerNumber >= 5 ? "Acceso Premium" : "Acceso General"}
+                            </p>
                           </div>
                         </div>
-                      ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-sm text-muted-foreground mb-2">
+                        Fecha de Reserva
+                      </h4>
+                      <div className="p-4 border rounded-lg bg-card">
+                        <div className="flex items-center gap-2 font-medium text-lg">
+                          <Calendar className="h-5 w-5 text-blue-600" />
+                          {formatDate(reservation.reservationDate)}
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Toda la jornada del día seleccionado
+                        </p>
+                      </div>
                     </div>
 
                     {/* Información de Aprobación/Rechazo */}
                     {reservation.status === "approved" && reservation.approvedAt && (
-                      <Alert className="mt-4 bg-green-50 border-green-200">
+                      <Alert className="bg-green-50 border-green-200">
                         <AlertDescription className="text-green-800">
                           <strong>Aprobada el:</strong>{" "}
                           {new Date(reservation.approvedAt).toLocaleString("es-ES")}
@@ -316,9 +323,18 @@ export default function MisReservasLabPage() {
                     )}
 
                     {reservation.status === "rejected" && reservation.rejectionReason && (
-                      <Alert variant="destructive" className="mt-4">
+                      <Alert variant="destructive">
                         <AlertDescription>
                           <strong>Motivo de rechazo:</strong> {reservation.rejectionReason}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    {reservation.status === "pending" && (
+                      <Alert className="bg-yellow-50 border-yellow-200">
+                        <AlertCircle className="h-4 w-4 text-yellow-600" />
+                        <AlertDescription className="text-yellow-800">
+                          Tu solicitud está pendiente de revisión por un administrador.
                         </AlertDescription>
                       </Alert>
                     )}

@@ -13,6 +13,9 @@ import {
   ReservationStatus,
   STATUS_LABELS,
   STATUS_COLORS,
+  USER_TYPE_LABELS,
+  SOFTWARE_LABELS,
+  PURPOSE_LABELS,
 } from "@/types/lab-reservation";
 import {
   Calendar,
@@ -24,6 +27,7 @@ import {
   CheckCircle,
   XCircle,
   HourglassIcon,
+  Computer,
 } from "lucide-react";
 
 export default function AdminReservasLabPage() {
@@ -37,6 +41,7 @@ export default function AdminReservasLabPage() {
   // Filtros
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [computerFilter, setComputerFilter] = useState<string>("all");
 
   const loadReservations = async () => {
     setLoading(true);
@@ -70,6 +75,11 @@ export default function AdminReservasLabPage() {
       filtered = filtered.filter((r) => r.status === statusFilter);
     }
 
+    // Filtro por computadora
+    if (computerFilter !== "all") {
+      filtered = filtered.filter((r) => r.computerNumber === parseInt(computerFilter));
+    }
+
     // Filtro por búsqueda (nombre o email)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -81,7 +91,7 @@ export default function AdminReservasLabPage() {
     }
 
     setFilteredReservations(filtered);
-  }, [reservations, statusFilter, searchQuery]);
+  }, [reservations, statusFilter, searchQuery, computerFilter]);
 
   // Estadísticas
   const stats = {
@@ -90,6 +100,11 @@ export default function AdminReservasLabPage() {
     approved: reservations.filter((r) => r.status === ReservationStatus.APPROVED).length,
     rejected: reservations.filter((r) => r.status === ReservationStatus.REJECTED).length,
   };
+
+  // Obtener computadoras únicas
+  const uniqueComputers = Array.from(
+    new Set(reservations.map((r) => r.computerNumber))
+  ).sort((a, b) => a - b);
 
   const handleViewReservation = (reservation: LabReservation) => {
     setSelectedReservation(reservation);
@@ -103,9 +118,10 @@ export default function AdminReservasLabPage() {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString + "T12:00:00");
     return date.toLocaleDateString("es-ES", {
-      weekday: "short",
+      weekday: "long",
       day: "numeric",
-      month: "short",
+      month: "long",
+      year: "numeric",
     });
   };
 
@@ -165,33 +181,48 @@ export default function AdminReservasLabPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nombre o email..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nombre o email..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full md:w-[200px]">
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los estados</SelectItem>
+                  <SelectItem value={ReservationStatus.PENDING}>Pendientes</SelectItem>
+                  <SelectItem value={ReservationStatus.APPROVED}>Aprobadas</SelectItem>
+                  <SelectItem value={ReservationStatus.REJECTED}>Rechazadas</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={computerFilter} onValueChange={setComputerFilter}>
+                <SelectTrigger className="w-full md:w-[200px]">
+                  <SelectValue placeholder="Computadora" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las computadoras</SelectItem>
+                  {uniqueComputers.map((num) => (
+                    <SelectItem key={num} value={num.toString()}>
+                      Computadora #{num}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" onClick={loadReservations} disabled={loading}>
+                <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                Actualizar
+              </Button>
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value={ReservationStatus.PENDING}>Pendientes</SelectItem>
-                <SelectItem value={ReservationStatus.APPROVED}>Aprobadas</SelectItem>
-                <SelectItem value={ReservationStatus.REJECTED}>Rechazadas</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" onClick={loadReservations} disabled={loading}>
-              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Actualizar
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -219,7 +250,7 @@ export default function AdminReservasLabPage() {
             <Calendar className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-xl font-semibold mb-2">No se encontraron reservas</h3>
             <p className="text-muted-foreground">
-              {searchQuery || statusFilter !== "all"
+              {searchQuery || statusFilter !== "all" || computerFilter !== "all"
                 ? "Intenta ajustar los filtros"
                 : "Aún no hay solicitudes de reserva"}
             </p>
@@ -237,52 +268,71 @@ export default function AdminReservasLabPage() {
               onClick={() => handleViewReservation(reservation)}
             >
               <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-4">
+                  {/* Header Row */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <Badge className={STATUS_COLORS[reservation.status]}>
                         {STATUS_LABELS[reservation.status]}
+                      </Badge>
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">
+                        <Computer className="h-3 w-3 mr-1" />
+                        Computadora #{reservation.computerNumber}
                       </Badge>
                       <span className="font-semibold">{reservation.userName}</span>
                       <span className="text-sm text-muted-foreground">
                         {reservation.userEmail}
                       </span>
                     </div>
+                    <Button variant="outline" size="sm" onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewReservation(reservation);
+                    }}>
+                      Ver Detalles
+                    </Button>
+                  </div>
 
-                    <div className="flex flex-wrap gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>
-                          {reservation.requestedSlots.length} día(s) solicitado(s)
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>
-                          Creada el {new Date(reservation.createdAt).toLocaleDateString("es-ES")}
-                        </span>
-                      </div>
+                  {/* Info Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">
+                        {formatDate(reservation.reservationDate)}
+                      </span>
                     </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {reservation.requestedSlots.slice(0, 3).map((slot, index) => {
-                        const date = formatDate(slot.date);
-                        const blocksCount = slot.blocks.length;
-                        return (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {date} - {blocksCount} bloque{blocksCount > 1 ? "s" : ""}
-                          </Badge>
-                        );
-                      })}
-                      {reservation.requestedSlots.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{reservation.requestedSlots.length - 3} más
-                        </Badge>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span>
+                        Solicitada el {new Date(reservation.createdAt).toLocaleDateString("es-ES")}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Tipo:</span>{" "}
+                      <span className="font-medium">{USER_TYPE_LABELS[reservation.userType]}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Propósito:</span>{" "}
+                      <span className="font-medium">{PURPOSE_LABELS[reservation.purpose]}</span>
                     </div>
                   </div>
 
-                  <Button variant="outline">Ver Detalles</Button>
+                  {/* Software & Description */}
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="text-sm text-muted-foreground">Software:</span>
+                      {reservation.software.map((sw, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {SOFTWARE_LABELS[sw]}
+                          {sw === "otro" && reservation.otherSoftware && `: ${reservation.otherSoftware}`}
+                        </Badge>
+                      ))}
+                    </div>
+                    {reservation.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        <span className="font-medium">Descripción:</span> {reservation.description}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

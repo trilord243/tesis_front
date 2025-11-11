@@ -2,7 +2,15 @@
 export enum UserType {
   PROFESOR = 'profesor',
   ESTUDIANTE = 'estudiante',
+  CFD = 'cfd',
+  ESTUDIANTE_CENTRO_MUNDO_X = 'estudiante_centro_mundo_x',
   OTRO = 'otro',
+}
+
+export enum UserGroup {
+  NORMAL = 'normal',
+  CENTROMUNDOX = 'centromundox',
+  CFD = 'cfd',
 }
 
 export enum Software {
@@ -20,6 +28,7 @@ export enum Purpose {
   MINOR = 'minor',
 }
 
+/** @deprecated - Use computer-based reservations instead */
 export enum TimeBlock {
   BLOCK_1 = '07:00-08:45',
   BLOCK_2 = '08:45-10:30',
@@ -29,6 +38,7 @@ export enum TimeBlock {
   BLOCK_6 = '15:45-17:30',
 }
 
+/** @deprecated - Use computer-based reservations instead */
 export enum DayOfWeek {
   LUNES = 'lunes',
   MARTES = 'martes',
@@ -45,6 +55,25 @@ export enum ReservationStatus {
 }
 
 // Interfaces
+export interface Computer {
+  readonly _id: string;
+  readonly number: number; // 1-9
+  readonly name: string;
+  readonly cpu: string;
+  readonly gpu: string;
+  readonly ram: string;
+  readonly storage: string;
+  readonly software: readonly string[];
+  readonly specialization: string;
+  readonly description: string;
+  readonly isAvailable: boolean;
+  readonly maintenanceNotes: string;
+  readonly accessLevel: 'normal' | 'special'; // normal = first 4, special = computers 5-9
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/** @deprecated - Use computer-based reservations instead */
 export interface TimeSlot {
   readonly date: string; // ISO date string (YYYY-MM-DD)
   readonly dayOfWeek: DayOfWeek;
@@ -61,7 +90,9 @@ export interface LabReservation {
   readonly otherSoftware?: string;
   readonly purpose: Purpose;
   readonly description: string;
-  readonly requestedSlots: readonly TimeSlot[];
+  // NEW: Computer-based reservation fields
+  readonly reservationDate: string; // YYYY-MM-DD
+  readonly computerNumber: number; // 1-9
   readonly status: ReservationStatus;
   readonly approvedBy?: string;
   readonly approvedAt?: string;
@@ -79,7 +110,9 @@ export interface CreateLabReservationDto {
   readonly otherSoftware?: string;
   readonly purpose: Purpose;
   readonly description: string;
-  readonly requestedSlots: readonly TimeSlot[];
+  // NEW: Computer-based reservation fields
+  readonly reservationDate: string; // YYYY-MM-DD
+  readonly computerNumber: number; // 1-9
 }
 
 export interface UpdateLabReservationDto {
@@ -103,12 +136,11 @@ export interface LabReservationResponse {
 
 export interface AvailabilityResponse {
   readonly date: string;
-  readonly dayOfWeek: DayOfWeek;
+  readonly dayName?: string;
   readonly available: boolean;
   readonly message?: string;
-  readonly blocks?: {
-    readonly [key: string]: number; // block: count of reservations
-  };
+  readonly availableComputers?: readonly number[]; // Available computer numbers
+  readonly occupiedComputers?: readonly number[]; // Occupied computer numbers
   readonly totalReservations?: number;
 }
 
@@ -177,7 +209,15 @@ export const VALID_DAYS = [
 export const USER_TYPE_LABELS: Record<UserType, string> = {
   [UserType.PROFESOR]: 'Profesor',
   [UserType.ESTUDIANTE]: 'Estudiante',
+  [UserType.CFD]: 'CFD',
+  [UserType.ESTUDIANTE_CENTRO_MUNDO_X]: 'Estudiante Centro Mundo X',
   [UserType.OTRO]: 'Otro',
+};
+
+export const USER_GROUP_LABELS: Record<UserGroup, string> = {
+  [UserGroup.NORMAL]: 'Usuario Normal',
+  [UserGroup.CENTROMUNDOX]: 'Centro Mundo X',
+  [UserGroup.CFD]: 'CFD',
 };
 
 export const SOFTWARE_LABELS: Record<Software, string> = {
