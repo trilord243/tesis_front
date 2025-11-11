@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Navbar } from "@/components/layout/navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,12 +17,42 @@ import {
   SOFTWARE_LABELS,
   PURPOSE_LABELS,
 } from "@/types/lab-reservation";
-import { Calendar, Clock, ArrowLeft, RefreshCw, AlertCircle } from "lucide-react";
+import { Calendar, Clock, ArrowLeft, RefreshCw, AlertCircle, Loader2 } from "lucide-react";
+import { User } from "@/types/auth";
 
 export default function MisReservasLabPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [reservations, setReservations] = useState<LabReservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const checkAuthAndLoadUser = useCallback(async () => {
+    try {
+      const response = await fetch("/api/auth/user", {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        router.push("/auth/login");
+        return;
+      }
+
+      const userData = await response.json();
+      // Si es admin, redirigir a su panel
+      if (userData?.role === "admin") {
+        router.replace("/admin/dashboard");
+        return;
+      }
+      setUser(userData);
+    } catch (error) {
+      console.error("Error verificando autenticación:", error);
+      router.push("/auth/login");
+    } finally {
+      setAuthLoading(false);
+    }
+  }, [router]);
 
   const loadReservations = async () => {
     setLoading(true);
@@ -42,8 +74,14 @@ export default function MisReservasLabPage() {
   };
 
   useEffect(() => {
-    loadReservations();
-  }, []);
+    checkAuthAndLoadUser();
+  }, [checkAuthAndLoadUser]);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      loadReservations();
+    }
+  }, [authLoading, user]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString + "T12:00:00");
@@ -55,35 +93,82 @@ export default function MisReservasLabPage() {
     });
   };
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <Link href="/dashboard">
-          <Button variant="ghost" className="mb-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Volver al Dashboard
-          </Button>
-        </Link>
-
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Mis Reservas de Laboratorio</h1>
-            <p className="text-muted-foreground">
-              Historial de todas tus solicitudes de reserva
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={loadReservations} variant="outline" disabled={loading}>
-              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Actualizar
-            </Button>
-            <Link href="/dashboard/reservar-lab">
-              <Button>Nueva Reserva</Button>
-            </Link>
+  if (authLoading) {
+    return (
+      <>
+        <Navbar
+          isAuthenticated={true}
+          showAuthButtons={false}
+          isAdmin={user?.role === "admin"}
+        />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center pt-20 md:pt-24">
+          <div className="flex items-center space-x-2">
+            <Loader2
+              className="h-8 w-8 animate-spin"
+              style={{ color: "#1859A9" }}
+            />
+            <span className="text-lg">Cargando...</span>
           </div>
         </div>
-      </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Navbar
+        isAuthenticated={true}
+        showAuthButtons={false}
+        isAdmin={user?.role === "admin"}
+      />
+      <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="py-4">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-2"
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Volver al Dashboard
+              </Link>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div
+                    className="p-3 rounded-lg"
+                    style={{ backgroundColor: "#1859A920", color: "#1859A9" }}
+                  >
+                    <Calendar className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h1
+                      className="text-2xl font-bold"
+                      style={{ color: "#1859A9" }}
+                    >
+                      Mis Reservas de Laboratorio
+                    </h1>
+                    <p className="text-gray-600 mt-1">
+                      Historial de todas tus solicitudes de reserva
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={loadReservations} variant="outline" disabled={loading}>
+                    <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                    Actualizar
+                  </Button>
+                  <Link href="/dashboard/reservar-lab">
+                    <Button style={{ backgroundColor: "#FF8200" }}>Nueva Reserva</Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Content */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
       {/* Error State */}
       {error && (
@@ -244,6 +329,8 @@ export default function MisReservasLabPage() {
           ))}
         </div>
       )}
-    </div>
+        </div>
+      </div>
+    </>
   );
 }
