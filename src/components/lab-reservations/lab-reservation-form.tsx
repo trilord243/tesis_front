@@ -40,7 +40,7 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
   const [purpose, setPurpose] = useState<Purpose | "">("");
   const [description, setDescription] = useState("");
   const [selectedComputerNumber, setSelectedComputerNumber] = useState<number | undefined>(undefined);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 
   const totalSteps = 6;
 
@@ -70,7 +70,7 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
       case 5:
         return selectedComputerNumber !== undefined;
       case 6:
-        return selectedDate !== undefined;
+        return selectedDates.length > 0;
       default:
         return false;
     }
@@ -93,7 +93,7 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
 
   // Enviar formulario
   const handleSubmit = async () => {
-    if (!canProceed() || !selectedComputerNumber || !selectedDate) {
+    if (!canProceed() || !selectedComputerNumber || selectedDates.length === 0) {
       setError("Por favor completa todos los campos requeridos");
       return;
     }
@@ -102,38 +102,45 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
     setError(null);
 
     try {
-      // Format date as YYYY-MM-DD
-      const reservationDate = selectedDate.toISOString().split('T')[0] || selectedDate.toISOString();
+      // Create a reservation for each selected date
+      const reservationPromises = selectedDates.map(async (date) => {
+        const reservationDate = date.toISOString().split('T')[0];
 
-      const reservationData: CreateLabReservationDto = {
-        userType: userType as UserType,
-        software: selectedSoftware,
-        ...(selectedSoftware.includes(Software.OTRO) && otherSoftware ? { otherSoftware } : {}),
-        purpose: purpose as Purpose,
-        description,
-        computerNumber: selectedComputerNumber,
-        reservationDate,
-      };
+        const reservationData: CreateLabReservationDto = {
+          userType: userType as UserType,
+          software: selectedSoftware,
+          ...(selectedSoftware.includes(Software.OTRO) && otherSoftware ? { otherSoftware } : {}),
+          purpose: purpose as Purpose,
+          description,
+          computerNumber: selectedComputerNumber,
+          reservationDate,
+        };
 
-      const response = await fetch("/api/lab-reservations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(reservationData),
+        const response = await fetch("/api/lab-reservations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(reservationData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || data.message || "Error al crear la reserva");
+        }
+
+        return data;
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || data.message || "Error al crear la reserva");
-      }
+      // Wait for all reservations to be created
+      await Promise.all(reservationPromises);
 
       if (onSuccess) {
         onSuccess();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al enviar la solicitud");
+      setError(err instanceof Error ? err.message : "Error al enviar las solicitudes");
     } finally {
       setIsSubmitting(false);
     }
@@ -328,39 +335,96 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
 
           {/* Step 6: Date Selection */}
           {currentStep === 6 && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <Alert className="bg-blue-50 border-blue-200">
                 <AlertDescription className="text-blue-900">
-                  Selecciona el día en que deseas usar la computadora.
-                  {selectedComputerNumber && (
-                    <span className="block mt-2 font-semibold">
-                      Computadora seleccionada: #{selectedComputerNumber}
-                    </span>
-                  )}
+                  <div className="space-y-2">
+                    <p className="font-semibold">Selecciona uno o más días para tu reserva</p>
+                    <p className="text-sm">Puedes seleccionar múltiples fechas haciendo clic en los días deseados.</p>
+                    {selectedComputerNumber && (
+                      <div className="flex items-center gap-2 mt-2 pt-2 border-t border-blue-300">
+                        <span className="text-blue-700 font-semibold">Computadora:</span>
+                        <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                          #{selectedComputerNumber}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </AlertDescription>
               </Alert>
 
-              <div className="flex justify-center">
+              <div className="flex justify-center p-6 bg-gradient-to-br from-blue-50 to-white rounded-xl border-2 border-blue-200 shadow-lg">
                 <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
+                  mode="multiple"
+                  selected={selectedDates}
+                  onSelect={(dates) => setSelectedDates(dates || [])}
                   disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                  className="rounded-md border"
+                  className="rounded-xl border-0 scale-110"
+                  classNames={{
+                    months: "space-y-4",
+                    month: "space-y-4",
+                    caption: "flex justify-center pt-1 relative items-center",
+                    caption_label: "text-lg font-bold",
+                    nav: "space-x-1 flex items-center",
+                    nav_button: "h-9 w-9 bg-transparent p-0 opacity-50 hover:opacity-100",
+                    nav_button_previous: "absolute left-1",
+                    nav_button_next: "absolute right-1",
+                    table: "w-full border-collapse space-y-1",
+                    head_row: "flex",
+                    head_cell: "text-muted-foreground rounded-md w-12 font-normal text-sm",
+                    row: "flex w-full mt-2",
+                    cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                    day: "h-12 w-12 p-0 font-normal aria-selected:opacity-100 hover:bg-blue-100 rounded-md transition-colors",
+                    day_selected: "bg-blue-600 text-white hover:bg-blue-700 hover:text-white focus:bg-blue-600 focus:text-white",
+                    day_today: "bg-orange-100 text-orange-900 font-bold",
+                    day_outside: "text-muted-foreground opacity-50",
+                    day_disabled: "text-muted-foreground opacity-50",
+                    day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                    day_hidden: "invisible",
+                  }}
                 />
               </div>
 
-              {selectedDate && (
-                <div className="text-center p-4 bg-green-50 rounded-lg border-2 border-green-200">
-                  <p className="text-green-900 font-semibold">
-                    Fecha seleccionada:{" "}
-                    {selectedDate.toLocaleDateString("es-ES", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </p>
+              {selectedDates.length > 0 && (
+                <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-300 shadow-md">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-lg font-bold text-green-900">
+                        {selectedDates.length} {selectedDates.length === 1 ? 'Fecha Seleccionada' : 'Fechas Seleccionadas'}
+                      </h4>
+                      <button
+                        onClick={() => setSelectedDates([])}
+                        className="text-sm text-red-600 hover:text-red-800 underline"
+                      >
+                        Limpiar todas
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {selectedDates
+                        .sort((a, b) => a.getTime() - b.getTime())
+                        .map((date, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between bg-white p-3 rounded-lg border-2 border-green-400 shadow-sm"
+                          >
+                            <span className="text-green-900 font-medium">
+                              {date.toLocaleDateString("es-ES", {
+                                weekday: "short",
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })}
+                            </span>
+                            <button
+                              onClick={() => setSelectedDates(selectedDates.filter((_, i) => i !== index))}
+                              className="text-red-500 hover:text-red-700 font-bold text-lg"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
