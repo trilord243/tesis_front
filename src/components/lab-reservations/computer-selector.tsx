@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { Computer, UserType, UserGroup } from "@/types/lab-reservation";
 import { ComputerCard } from "./computer-card";
 import { LabLayoutVisual } from "./lab-layout-visual";
+import { UnityPlayer } from "@/components/unity/unity-player";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Loader2, LayoutGrid, Building2 } from "lucide-react";
+import { AlertCircle, Loader2, LayoutGrid, Building2, Box } from "lucide-react";
 
 interface ComputerSelectorProps {
   userType: UserType;
@@ -14,7 +15,7 @@ interface ComputerSelectorProps {
   onSelect: (computerNumber: number) => void;
 }
 
-type ViewMode = "grid" | "layout";
+type ViewMode = "grid" | "layout" | "3d";
 
 export function ComputerSelector({
   userType,
@@ -121,7 +122,7 @@ export function ComputerSelector({
       </Alert>
 
       {/* View Mode Toggle */}
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-end gap-2 flex-wrap">
         <Button
           variant={viewMode === "layout" ? "primary" : "outline"}
           size="sm"
@@ -140,6 +141,15 @@ export function ComputerSelector({
           <LayoutGrid className="h-4 w-4" />
           Vista de Tarjetas
         </Button>
+        <Button
+          variant={viewMode === "3d" ? "primary" : "outline"}
+          size="sm"
+          onClick={() => setViewMode("3d")}
+          className="flex items-center gap-2"
+        >
+          <Box className="h-4 w-4" />
+          Vista 3D
+        </Button>
       </div>
 
       {/* Computer Display */}
@@ -150,6 +160,18 @@ export function ComputerSelector({
           onSelect={onSelect}
           userGroup={userGroup}
         />
+      ) : viewMode === "3d" ? (
+        <div className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-900">
+              <strong>Vista 3D del Laboratorio:</strong> Explora el laboratorio virtualmente.
+              Usa WASD para moverte y el mouse para mirar alrededor. Haz clic en el visor para comenzar.
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <UnityPlayer width={1100} height={620} />
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {computers.map((computer) => {

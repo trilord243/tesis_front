@@ -25,6 +25,7 @@ import {
   ChevronDown,
   UserCircle,
   Computer,
+  Building2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -66,6 +67,11 @@ export function Navbar({
       icon: FileText,
     },
     {
+      href: "/metaverso",
+      label: "Mundo X 3D",
+      icon: Building2,
+    },
+    {
       href: "#contacto",
       label: "Contacto",
       icon: UserCircle,
@@ -93,6 +99,11 @@ export function Navbar({
       href: "/dashboard/mis-reservas",
       label: "Mis Solicitudes",
       icon: ClipboardList,
+    },
+    {
+      href: "/metaverso",
+      label: "Mundo X 3D",
+      icon: Building2,
     },
     {
       href: "/dashboard/perfil",
@@ -132,6 +143,11 @@ export function Navbar({
 
   // Items secundarios del admin (en dropdown)
   const adminSecondaryNavItems = [
+    {
+      href: "/metaverso",
+      label: "Mundo X 3D",
+      icon: Building2,
+    },
     {
       href: "/admin/solicitudes",
       label: "Solicitudes",
