@@ -123,7 +123,7 @@ export function ComputerSelector({
       {/* View Mode Toggle */}
       <div className="flex justify-end gap-2">
         <Button
-          variant={viewMode === "layout" ? "default" : "outline"}
+          variant={viewMode === "layout" ? "primary" : "outline"}
           size="sm"
           onClick={() => setViewMode("layout")}
           className="flex items-center gap-2"
@@ -132,7 +132,7 @@ export function ComputerSelector({
           Vista del Laboratorio
         </Button>
         <Button
-          variant={viewMode === "grid" ? "default" : "outline"}
+          variant={viewMode === "grid" ? "primary" : "outline"}
           size="sm"
           onClick={() => setViewMode("grid")}
           className="flex items-center gap-2"
@@ -146,7 +146,7 @@ export function ComputerSelector({
       {viewMode === "layout" ? (
         <LabLayoutVisual
           computers={computers}
-          selectedComputerNumber={selectedComputerNumber}
+          {...(selectedComputerNumber !== undefined && { selectedComputerNumber })}
           onSelect={onSelect}
           userGroup={userGroup}
         />
@@ -157,6 +157,8 @@ export function ComputerSelector({
             const isDisabledForUser = userGroup === UserGroup.NORMAL && computer.accessLevel === 'special';
             const isDisabled = !computer.isAvailable || isDisabledForUser;
 
+            const restrictedMessage = isDisabledForUser ? "Solo disponible CFD/Metaverso" : undefined;
+
             return (
               <ComputerCard
                 key={computer._id}
@@ -164,7 +166,7 @@ export function ComputerSelector({
                 selected={selectedComputerNumber === computer.number}
                 disabled={isDisabled}
                 onClick={() => !isDisabled && onSelect(computer.number)}
-                restrictedMessage={isDisabledForUser ? "Solo disponible CFD/Metaverso" : undefined}
+                {...(restrictedMessage && { restrictedMessage })}
               />
             );
           })}

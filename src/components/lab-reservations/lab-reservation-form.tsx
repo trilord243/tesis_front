@@ -83,7 +83,7 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
     }
 
     // Verificar si alguna fecha ya está reservada
-    const dateStrings = dates.map(d => d.toISOString().split('T')[0]);
+    const dateStrings = dates.map(d => d.toISOString().split('T')[0]!);
     const alreadyReserved = dateStrings.filter(d => existingReservations.includes(d));
 
     if (alreadyReserved.length > 0) {
@@ -101,7 +101,7 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
 
       // Remover las fechas ya reservadas de la selección
       const validDates = dates.filter(d => {
-        const dateStr = d.toISOString().split('T')[0];
+        const dateStr = d.toISOString().split('T')[0]!;
         return !existingReservations.includes(dateStr);
       });
 
@@ -174,7 +174,7 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
     try {
       // Create a reservation for each selected date
       const reservationPromises = selectedDates.map(async (date) => {
-        const reservationDate = date.toISOString().split('T')[0];
+        const reservationDate = date.toISOString().split('T')[0]!;
 
         const reservationData: CreateLabReservationDto = {
           userType: userType as UserType,
@@ -404,7 +404,7 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
           {currentStep === 5 && userType && (
             <ComputerSelector
               userType={userType as UserType}
-              selectedComputerNumber={selectedComputerNumber}
+              {...(selectedComputerNumber !== undefined && { selectedComputerNumber })}
               onSelect={setSelectedComputerNumber}
             />
           )}
@@ -479,7 +479,7 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
                         if (!validDays.includes(dayOfWeek)) return true;
 
                         // Deshabilitar fechas que el usuario ya tiene reservadas
-                        const dateStr = date.toISOString().split('T')[0];
+                        const dateStr = date.toISOString().split('T')[0]!;
                         return existingReservations.includes(dateStr);
                       }}
                       className="rounded-xl border-0 w-full"

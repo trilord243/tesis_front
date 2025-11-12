@@ -181,7 +181,7 @@ export function AdminDashboardContent({
     if (!acc[feature.category]) {
       acc[feature.category] = [];
     }
-    acc[feature.category].push(feature);
+    acc[feature.category]!.push(feature);
     return acc;
   }, {} as Record<string, Feature[]>);
 
@@ -331,8 +331,8 @@ export function AdminDashboardContent({
         ) : (
           <div className="space-y-8">
             {sortedCategories.map((category) => {
-              const features = categorizedFeatures[category];
-              const config = categoryConfig[category];
+              const features = categorizedFeatures[category]!;
+              const config = categoryConfig[category]!;
               const CategoryIcon = config.icon;
 
               return (

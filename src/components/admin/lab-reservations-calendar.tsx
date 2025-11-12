@@ -47,7 +47,7 @@ function CustomToolbar({ label, onNavigate }: CustomToolbarProps) {
       <div className="flex items-center gap-3">
         <Button
           variant="outline"
-          size="icon"
+          size="sm"
           onClick={() => onNavigate("PREV")}
           className="h-10 w-10"
         >
@@ -60,7 +60,7 @@ function CustomToolbar({ label, onNavigate }: CustomToolbarProps) {
 
         <Button
           variant="outline"
-          size="icon"
+          size="sm"
           onClick={() => onNavigate("NEXT")}
           className="h-10 w-10"
         >
@@ -173,6 +173,7 @@ export function LabReservationsCalendar({ reservations }: LabReservationsCalenda
 
     // Filtrar eventos que coincidan con la fecha seleccionada
     const eventsForDay = events.filter((event) => {
+      if (!event.start) return false;
       const eventDate = new Date(event.start);
       return (
         eventDate.getFullYear() === clickedDate.getFullYear() &&
