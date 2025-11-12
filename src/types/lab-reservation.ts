@@ -42,6 +42,7 @@ export enum TimeBlock {
 export enum DayOfWeek {
   LUNES = 'lunes',
   MARTES = 'martes',
+  MIERCOLES = 'miercoles',
   JUEVES = 'jueves',
   VIERNES = 'viernes',
 }
@@ -202,6 +203,7 @@ export const TIME_BLOCKS: readonly TimeBlockOption[] = [
 export const VALID_DAYS = [
   DayOfWeek.LUNES,
   DayOfWeek.MARTES,
+  DayOfWeek.MIERCOLES,
   DayOfWeek.JUEVES,
   DayOfWeek.VIERNES,
 ] as const;

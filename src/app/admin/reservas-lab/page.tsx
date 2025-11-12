@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Navbar } from "@/components/layout/navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminReservationDialog } from "@/components/lab-reservations/admin-reservation-dialog";
+import { LabReservationsCalendar } from "@/components/admin/lab-reservations-calendar";
 import {
   LabReservation,
   ReservationStatus,
@@ -28,6 +31,8 @@ import {
   XCircle,
   HourglassIcon,
   Computer,
+  CalendarDays,
+  List,
 } from "lucide-react";
 
 export default function AdminReservasLabPage() {
@@ -103,7 +108,7 @@ export default function AdminReservasLabPage() {
 
   // Obtener computadoras únicas
   const uniqueComputers = Array.from(
-    new Set(reservations.map((r) => r.computerNumber))
+    new Set(reservations.map((r) => r.computerNumber).filter((num): num is number => num !== undefined && num !== null))
   ).sort((a, b) => a - b);
 
   const handleViewReservation = (reservation: LabReservation) => {
@@ -126,26 +131,47 @@ export default function AdminReservasLabPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Gestión de Reservas de Laboratorio</h1>
-        <p className="text-muted-foreground">
-          Administra las solicitudes de reserva de computadoras
-        </p>
-      </div>
+    <>
+      <Navbar isAuthenticated={true} showAuthButtons={true} isAdmin={true} />
+      <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="py-4">
+              <div className="flex items-center space-x-3">
+                <div
+                  className="p-3 rounded-lg"
+                  style={{ backgroundColor: "#1859A920", color: "#1859A9" }}
+                >
+                  <Computer className="h-6 w-6" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold" style={{ color: "#1859A9" }}>
+                    Gestión de Reservas de Laboratorio
+                  </h1>
+                  <p className="text-gray-600 mt-1">
+                    Administra las solicitudes de reserva de computadoras
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animated fadeIn">
         <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Total de Solicitudes</CardDescription>
+          <CardHeader className="pb-4 pt-6">
+            <CardDescription className="mb-2">Total de Solicitudes</CardDescription>
             <CardTitle className="text-3xl">{stats.total}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
-            <CardDescription className="flex items-center gap-2">
+          <CardHeader className="pb-4 pt-6">
+            <CardDescription className="flex items-center gap-2 mb-2">
               <HourglassIcon className="h-4 w-4" />
               Pendientes
             </CardDescription>
@@ -153,8 +179,8 @@ export default function AdminReservasLabPage() {
           </CardHeader>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
-            <CardDescription className="flex items-center gap-2">
+          <CardHeader className="pb-4 pt-6">
+            <CardDescription className="flex items-center gap-2 mb-2">
               <CheckCircle className="h-4 w-4" />
               Aprobadas
             </CardDescription>
@@ -162,8 +188,8 @@ export default function AdminReservasLabPage() {
           </CardHeader>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
-            <CardDescription className="flex items-center gap-2">
+          <CardHeader className="pb-4 pt-6">
+            <CardDescription className="flex items-center gap-2 mb-2">
               <XCircle className="h-4 w-4" />
               Rechazadas
             </CardDescription>
@@ -172,56 +198,95 @@ export default function AdminReservasLabPage() {
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card className="mb-6">
+      {/* Tabs para Vista de Lista y Calendario */}
+      <Tabs defaultValue="list" className="w-full">
+        <div className="flex flex-col sm:flex-row gap-4 mb-8 max-w-4xl mx-auto">
+          <TabsList className="flex-1 grid grid-cols-2 gap-3 p-2 h-14 bg-gray-100">
+            <TabsTrigger
+              value="list"
+              className="flex items-center justify-center gap-3 h-full text-base font-semibold px-6 py-3 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md transition-all"
+            >
+              <List className="h-5 w-5" />
+              <span>Lista de Solicitudes</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="calendar"
+              className="flex items-center justify-center gap-3 h-full text-base font-semibold px-6 py-3 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md transition-all"
+            >
+              <CalendarDays className="h-5 w-5" />
+              <span>Vista de Calendario</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        {/* Tab de Lista */}
+        <TabsContent value="list" className="space-y-6">
+          {/* Filters */}
+          <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-5 w-5" />
             Filtros
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar por nombre o email..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            {/* Búsqueda - Fila completa con más padding */}
+            <div className="w-full">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre o email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 w-full"
+                />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="Estado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los estados</SelectItem>
-                  <SelectItem value={ReservationStatus.PENDING}>Pendientes</SelectItem>
-                  <SelectItem value={ReservationStatus.APPROVED}>Aprobadas</SelectItem>
-                  <SelectItem value={ReservationStatus.REJECTED}>Rechazadas</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={computerFilter} onValueChange={setComputerFilter}>
-                <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="Computadora" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas las computadoras</SelectItem>
-                  {uniqueComputers.map((num) => (
-                    <SelectItem key={num} value={num.toString()}>
-                      Computadora #{num}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button variant="outline" onClick={loadReservations} disabled={loading}>
-                <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                Actualizar
-              </Button>
+            </div>
+
+            {/* Filtros en una segunda fila con más espacio */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="w-full">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    <SelectItem value={ReservationStatus.PENDING}>Pendientes</SelectItem>
+                    <SelectItem value={ReservationStatus.APPROVED}>Aprobadas</SelectItem>
+                    <SelectItem value={ReservationStatus.REJECTED}>Rechazadas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full">
+                <Select value={computerFilter} onValueChange={setComputerFilter}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Computadora" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las computadoras</SelectItem>
+                    {uniqueComputers.map((num) => (
+                      <SelectItem key={num} value={num.toString()}>
+                        Computadora #{num}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full">
+                <Button
+                  variant="outline"
+                  onClick={loadReservations}
+                  disabled={loading}
+                  className="w-full h-10"
+                >
+                  <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                  Actualizar
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -340,13 +405,23 @@ export default function AdminReservasLabPage() {
         </div>
       )}
 
-      {/* Dialog */}
-      <AdminReservationDialog
-        reservation={selectedReservation}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSuccess={handleDialogSuccess}
-      />
-    </div>
+          {/* Dialog */}
+          <AdminReservationDialog
+            reservation={selectedReservation}
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            onSuccess={handleDialogSuccess}
+          />
+        </TabsContent>
+
+        {/* Tab de Calendario */}
+        <TabsContent value="calendar">
+          <LabReservationsCalendar reservations={reservations} />
+        </TabsContent>
+      </Tabs>
+
+        </main>
+      </div>
+    </>
   );
 }

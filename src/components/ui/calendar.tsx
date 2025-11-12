@@ -37,7 +37,7 @@ function Calendar({
         day: "h-10 w-10 p-0 font-normal rounded-md hover:bg-blue-50 transition-colors",
         day_range_end: "day-range-end",
         day_selected:
-          "bg-blue-500 text-white hover:bg-blue-600 focus:bg-blue-600",
+          "bg-blue-500 text-white hover:bg-blue-600 focus:bg-blue-600 aria-selected:bg-blue-500 aria-selected:text-white",
         day_today: "bg-orange-100 text-orange-900 font-bold ring-1 ring-orange-400",
         day_outside:
           "day-outside text-gray-400 opacity-50",

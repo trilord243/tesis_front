@@ -36,12 +36,53 @@ const nextConfig: NextConfig = {
             value: "DENY",
           },
           {
-            key: "X-Content-Type-Options", 
+            key: "X-Content-Type-Options",
             value: "nosniff",
           },
           {
             key: "Referrer-Policy",
             value: "origin-when-cross-origin",
+          },
+        ],
+      },
+      // Unity WebGL Brotli compression support
+      // Browser decompresses .br files when Content-Encoding: br is set
+      {
+        source: "/metaverse-build/:path*.data.br",
+        headers: [
+          {
+            key: "Content-Encoding",
+            value: "br",
+          },
+          {
+            key: "Content-Type",
+            value: "application/octet-stream",
+          },
+        ],
+      },
+      {
+        source: "/metaverse-build/:path*.wasm.br",
+        headers: [
+          {
+            key: "Content-Encoding",
+            value: "br",
+          },
+          {
+            key: "Content-Type",
+            value: "application/wasm",
+          },
+        ],
+      },
+      {
+        source: "/metaverse-build/:path*.js.br",
+        headers: [
+          {
+            key: "Content-Encoding",
+            value: "br",
+          },
+          {
+            key: "Content-Type",
+            value: "application/javascript",
           },
         ],
       },

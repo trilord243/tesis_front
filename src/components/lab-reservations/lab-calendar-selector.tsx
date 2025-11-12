@@ -29,11 +29,11 @@ export function LabCalendarSelector({ selectedSlots, onSlotsChange }: LabCalenda
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [selectedBlocks, setSelectedBlocks] = useState<TimeBlock[]>([]);
 
-  // Función para verificar si un día es válido (lunes, martes, jueves, viernes)
+  // Función para verificar si un día es válido (lunes, martes, miércoles, jueves, viernes)
   const isValidDay = (date: Date): boolean => {
     const dayIndex = date.getDay();
     // 0 = Domingo, 1 = Lunes, 2 = Martes, 3 = Miércoles, 4 = Jueves, 5 = Viernes, 6 = Sábado
-    return dayIndex === 1 || dayIndex === 2 || dayIndex === 4 || dayIndex === 5;
+    return dayIndex === 1 || dayIndex === 2 || dayIndex === 3 || dayIndex === 4 || dayIndex === 5;
   };
 
   // Función para obtener el nombre del día de la semana
@@ -42,6 +42,7 @@ export function LabCalendarSelector({ selectedSlots, onSlotsChange }: LabCalenda
     const dayMap: Record<number, DayOfWeek> = {
       1: DayOfWeek.LUNES,
       2: DayOfWeek.MARTES,
+      3: DayOfWeek.MIERCOLES,
       4: DayOfWeek.JUEVES,
       5: DayOfWeek.VIERNES,
     };
@@ -159,8 +160,8 @@ export function LabCalendarSelector({ selectedSlots, onSlotsChange }: LabCalenda
         <AlertCircle className="h-4 w-4 text-blue-600" />
         <AlertDescription className="text-blue-900">
           <strong>Días permitidos:</strong> Solo puedes reservar los días{" "}
-          <span className="font-bold">Lunes, Martes, Jueves y Viernes</span>.
-          Los fines de semana y miércoles no están disponibles.
+          <span className="font-bold">Lunes, Martes, Miércoles, Jueves y Viernes</span>.
+          Los fines de semana no están disponibles.
         </AlertDescription>
       </Alert>
 

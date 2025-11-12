@@ -24,7 +24,7 @@ import {
   MoreHorizontal,
   ChevronDown,
   UserCircle,
-  BarChart3,
+  Computer,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -124,9 +124,9 @@ export function Navbar({
       icon: Package2,
     },
     {
-      href: "/admin/analytics",
-      label: "Analytics",
-      icon: BarChart3,
+      href: "/admin/reservas-lab",
+      label: "Reservas Computadoras",
+      icon: Computer,
     },
   ];
 

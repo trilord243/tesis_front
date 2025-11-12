@@ -351,3 +351,154 @@ a,
     @apply bg-background text-foreground;
   }
 }
+
+/* React Big Calendar Custom Styles */
+.rbc-calendar {
+  font-family: inherit;
+}
+
+.rbc-header {
+  padding: 12px 4px;
+  font-weight: 600;
+  color: #1859A9;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.rbc-today {
+  background-color: #FFF7ED;
+}
+
+.rbc-off-range-bg {
+  background-color: #f9fafb;
+}
+
+.rbc-event {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rbc-event:hover {
+  opacity: 1 !important;
+  transform: scale(1.02);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.rbc-event-label {
+  font-size: 0.75rem;
+}
+
+.rbc-toolbar {
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.rbc-toolbar button {
+  padding: 8px 16px;
+  border: 1px solid #e5e7eb;
+  background-color: white;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rbc-toolbar button:hover {
+  background-color: #f3f4f6;
+  border-color: #1859A9;
+  color: #1859A9;
+}
+
+.rbc-toolbar button.rbc-active {
+  background-color: #1859A9;
+  color: white;
+  border-color: #1859A9;
+}
+
+.rbc-toolbar button:focus {
+  outline: 2px solid #1859A9;
+  outline-offset: 2px;
+}
+
+.rbc-toolbar-label {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1859A9;
+  text-transform: capitalize;
+}
+
+.rbc-month-view {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rbc-date-cell {
+  padding: 4px;
+  text-align: right;
+}
+
+.rbc-date-cell > a {
+  color: #374151;
+}
+
+.rbc-date-cell.rbc-now > a {
+  color: #FF8200;
+  font-weight: 700;
+}
+
+.rbc-show-more {
+  background-color: #f3f4f6;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #1859A9;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rbc-show-more:hover {
+  background-color: #1859A9;
+  color: white;
+}
+
+.rbc-overlay {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 12px;
+}
+
+.rbc-overlay-header {
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #1859A9;
+}
+
+/* Estilos para hacer las celdas de fecha clickeables */
+.rbc-day-bg {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.rbc-day-bg:hover {
+  background-color: #f0f9ff;
+}
+
+/* Resaltar fechas con eventos */
+.rbc-date-cell {
+  cursor: pointer;
+}
+
+.rbc-row-content {
+  cursor: pointer;
+}
