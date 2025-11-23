@@ -23,6 +23,7 @@ import {
   MapPin,
   Computer,
   Search,
+  Crown,
 } from "lucide-react";
 
 interface AdminDashboardContentProps {
@@ -106,7 +107,18 @@ export function AdminDashboardContent({
 
     // Gestión de Usuarios
     {
-      title: "Gestión de Usuarios",
+      title: "Roles y Usuarios",
+      description: "Crear usuarios, asignar roles (superadmin, admin, user) y gestionar permisos",
+      icon: Crown,
+      href: "/admin/usuarios",
+      color: "#DC2626",
+      stats: "Control de acceso",
+      category: "Gestión de Usuarios",
+      keywords: ["roles", "usuarios", "superadmin", "admin", "permisos", "crear"],
+      requiredRole: "superadmin",
+    },
+    {
+      title: "Usuarios y Equipos",
       description: "Administra todos los usuarios del sistema y visualiza sus equipos",
       icon: Users,
       href: "/admin/usuarios-equipos",
