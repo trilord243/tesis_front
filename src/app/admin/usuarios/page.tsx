@@ -8,12 +8,13 @@ import {
   ArrowLeft,
   Search,
   UserPlus,
-  Edit,
   Trash2,
   Shield,
   User as UserIcon,
   Loader2,
   Mail,
+  Crown,
+  ChevronDown,
 } from "lucide-react";
 import {
   Card,
@@ -25,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -33,18 +35,59 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { User } from "@/types/auth";
+
+interface UserWithRoles extends User {
+  phone?: string;
+}
 
 export default function AdminUsuariosPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
-  const loadUsers = useCallback(async () => {
+  // Create user dialog state
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newUser, setNewUser] = useState({
+    name: "",
+    lastName: "",
+    email: "",
+    password: "",
+    cedula: "",
+    phone: "",
+    role: "user" as "superadmin" | "admin" | "user",
+  });
+
+  const loadUsers = useCallback(async (userIsSuperAdmin: boolean) => {
     try {
-      const response = await fetch("/api/admin/users", {
+      // Use different endpoint based on role
+      const endpoint = userIsSuperAdmin ? "/api/admin/users/roles" : "/api/admin/users";
+      const response = await fetch(endpoint, {
         credentials: "include",
       });
 
@@ -52,7 +95,9 @@ export default function AdminUsuariosPage() {
         throw new Error("Error al cargar usuarios");
       }
 
-      const usersData = await response.json();
+      const data = await response.json();
+      // Handle different response formats
+      const usersData = userIsSuperAdmin ? data.data : data;
       setUsers(usersData);
     } catch (error) {
       console.error("Error cargando usuarios:", error);
@@ -61,7 +106,6 @@ export default function AdminUsuariosPage() {
 
   const checkAdminAndLoadUsers = useCallback(async () => {
     try {
-      // Verificar que el usuario actual es admin
       const userResponse = await fetch("/api/auth/user", {
         credentials: "include",
       });
@@ -74,13 +118,17 @@ export default function AdminUsuariosPage() {
       const userData = await userResponse.json();
       setCurrentUser(userData);
 
-      if (userData.role !== "admin") {
+      const userIsSuperAdmin = userData.role === "superadmin";
+      const userIsAdmin = userData.role === "admin" || userIsSuperAdmin;
+
+      setIsSuperAdmin(userIsSuperAdmin);
+
+      if (!userIsAdmin) {
         router.push("/dashboard");
         return;
       }
 
-      // Cargar todos los usuarios
-      await loadUsers();
+      await loadUsers(userIsSuperAdmin);
     } catch (error) {
       console.error("Error:", error);
       router.push("/auth/login");
@@ -93,12 +141,12 @@ export default function AdminUsuariosPage() {
     checkAdminAndLoadUsers();
   }, [checkAdminAndLoadUsers]);
 
-  const handleToggleRole = async (userId: string, currentRole: string) => {
-    const newRole = currentRole === "admin" ? "user" : "admin";
+  const handleChangeRole = async (userId: string, newRole: string) => {
+    if (!isSuperAdmin) return;
 
     try {
       const response = await fetch(`/api/admin/users/${userId}/role`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
@@ -107,10 +155,14 @@ export default function AdminUsuariosPage() {
       });
 
       if (response.ok) {
-        await loadUsers();
+        await loadUsers(isSuperAdmin);
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.message || "No se pudo cambiar el rol"}`);
       }
     } catch (error) {
       console.error("Error actualizando rol:", error);
+      alert("Error al actualizar el rol");
     }
   };
 
@@ -126,7 +178,7 @@ export default function AdminUsuariosPage() {
       });
 
       if (response.ok) {
-        await loadUsers();
+        await loadUsers(isSuperAdmin);
       }
     } catch (error) {
       console.error("Error eliminando usuario:", error);
@@ -146,29 +198,105 @@ export default function AdminUsuariosPage() {
 
       if (response.ok) {
         const data = await response.json();
-        alert(`✅ ${data.message}\n\nDetalles:\n• Email: ${data.data.email}\n• Código: ${data.data.codigo_acceso}\n• Tipo: ${data.data.tipo_codigo}`);
+        alert(`Código enviado exitosamente a ${data.data.email}`);
       } else {
         const errorData = await response.json();
-        alert(`❌ Error: ${errorData.error}`);
+        alert(`Error: ${errorData.message || errorData.error}`);
       }
     } catch (error) {
       console.error("Error enviando código por email:", error);
-      alert("❌ Error enviando código por email");
+      alert("Error enviando código por email");
+    }
+  };
+
+  const handleCreateUser = async () => {
+    if (!newUser.name || !newUser.lastName || !newUser.email || !newUser.password || !newUser.cedula) {
+      alert("Por favor completa todos los campos requeridos");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const response = await fetch("/api/admin/users/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(newUser),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`Usuario creado exitosamente: ${data.data.email}`);
+        setCreateDialogOpen(false);
+        setNewUser({
+          name: "",
+          lastName: "",
+          email: "",
+          password: "",
+          cedula: "",
+          phone: "",
+          role: "user",
+        });
+        await loadUsers(isSuperAdmin);
+      } else {
+        alert(`Error: ${data.message}`);
+      }
+    } catch (error) {
+      console.error("Error creando usuario:", error);
+      alert("Error al crear usuario");
+    } finally {
+      setCreating(false);
     }
   };
 
   const filteredUsers = users.filter(
     (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.cedula.includes(searchTerm)
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.cedula?.includes(searchTerm)
   );
+
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case "superadmin":
+        return "bg-red-600 hover:bg-red-700";
+      case "admin":
+        return "bg-orange-500 hover:bg-orange-600";
+      default:
+        return "bg-blue-600 hover:bg-blue-700";
+    }
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case "superadmin":
+        return <Crown className="h-3 w-3 mr-1" />;
+      case "admin":
+        return <Shield className="h-3 w-3 mr-1" />;
+      default:
+        return <UserIcon className="h-3 w-3 mr-1" />;
+    }
+  };
+
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case "superadmin":
+        return "Super Admin";
+      case "admin":
+        return "Admin";
+      default:
+        return "Usuario";
+    }
+  };
 
   if (loading) {
     return (
       <>
-        <Navbar isAuthenticated={true} showAuthButtons={false} />
+        <Navbar isAuthenticated={true} showAuthButtons={false} isAdmin={true} />
         <div
           className="min-h-screen bg-gray-50 flex items-center justify-center"
           style={{ paddingTop: "64px" }}
@@ -187,7 +315,12 @@ export default function AdminUsuariosPage() {
 
   return (
     <>
-      <Navbar isAuthenticated={true} showAuthButtons={false} />
+      <Navbar
+        isAuthenticated={true}
+        showAuthButtons={false}
+        isAdmin={true}
+        isSuperAdmin={isSuperAdmin}
+      />
       <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
         {/* Header */}
         <header className="bg-white shadow-sm border-b">
@@ -209,16 +342,20 @@ export default function AdminUsuariosPage() {
                     Gestión de Usuarios
                   </h1>
                   <p className="text-gray-600 mt-1">
-                    Administra los usuarios del sistema
+                    {isSuperAdmin
+                      ? "Administra usuarios y asigna roles"
+                      : "Administra los usuarios del sistema"}
                   </p>
                 </div>
-                <Button
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  onClick={() => router.push("/admin/usuarios/nuevo")}
-                >
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Nuevo Usuario
-                </Button>
+                {isSuperAdmin && (
+                  <Button
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => setCreateDialogOpen(true)}
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Crear Usuario
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -227,7 +364,7 @@ export default function AdminUsuariosPage() {
         {/* Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <Card className="border-0 shadow-md">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-gray-600">
@@ -240,6 +377,19 @@ export default function AdminUsuariosPage() {
                   style={{ color: "#1859A9" }}
                 >
                   {users.length}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-md">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Super Admins
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-600">
+                  {users.filter((u) => u.role === "superadmin").length}
                 </div>
               </CardContent>
             </Card>
@@ -311,7 +461,7 @@ export default function AdminUsuariosPage() {
                       <TableHead>Cédula</TableHead>
                       <TableHead>Rol</TableHead>
                       <TableHead>Código Acceso</TableHead>
-                      <TableHead>Equipos</TableHead>
+                      <TableHead>Verificado</TableHead>
                       <TableHead>Registro</TableHead>
                       <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
@@ -325,11 +475,15 @@ export default function AdminUsuariosPage() {
                               className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
                               style={{
                                 backgroundColor:
-                                  user.role === "admin" ? "#FF8200" : "#1859A9",
+                                  user.role === "superadmin"
+                                    ? "#DC2626"
+                                    : user.role === "admin"
+                                      ? "#FF8200"
+                                      : "#1859A9",
                               }}
                             >
-                              {user.name.charAt(0)}
-                              {user.lastName.charAt(0)}
+                              {user.name?.charAt(0) || "?"}
+                              {user.lastName?.charAt(0) || "?"}
                             </div>
                             <span>
                               {user.name} {user.lastName}
@@ -339,24 +493,49 @@ export default function AdminUsuariosPage() {
                         <TableCell>{user.email}</TableCell>
                         <TableCell>{user.cedula}</TableCell>
                         <TableCell>
-                          <Badge
-                            variant={
-                              user.role === "admin" ? "default" : "secondary"
-                            }
-                            className="cursor-pointer"
-                            onClick={() => {
-                              if (user._id !== currentUser?._id) {
-                                handleToggleRole(user._id, user.role);
-                              }
-                            }}
-                          >
-                            {user.role === "admin" ? (
-                              <Shield className="h-3 w-3 mr-1" />
-                            ) : (
-                              <UserIcon className="h-3 w-3 mr-1" />
-                            )}
-                            {user.role}
-                          </Badge>
+                          {isSuperAdmin && user._id !== currentUser?._id ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className={`${getRoleBadgeColor(user.role)} text-white px-2 py-1 h-auto`}
+                                >
+                                  {getRoleIcon(user.role)}
+                                  {getRoleLabel(user.role)}
+                                  <ChevronDown className="h-3 w-3 ml-1" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent>
+                                <DropdownMenuItem
+                                  onClick={() => handleChangeRole(user._id, "superadmin")}
+                                  className="text-red-600"
+                                >
+                                  <Crown className="h-4 w-4 mr-2" />
+                                  Super Admin
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleChangeRole(user._id, "admin")}
+                                  className="text-orange-600"
+                                >
+                                  <Shield className="h-4 w-4 mr-2" />
+                                  Admin
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleChangeRole(user._id, "user")}
+                                  className="text-blue-600"
+                                >
+                                  <UserIcon className="h-4 w-4 mr-2" />
+                                  Usuario
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : (
+                            <Badge className={`${getRoleBadgeColor(user.role)} text-white`}>
+                              {getRoleIcon(user.role)}
+                              {getRoleLabel(user.role)}
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell>
                           <code className="text-xs font-mono">
@@ -364,16 +543,17 @@ export default function AdminUsuariosPage() {
                           </code>
                         </TableCell>
                         <TableCell>
-                          {user.equipos_reservados?.length || 0}
+                          <Badge variant={user.emailVerified ? "default" : "secondary"}>
+                            {user.emailVerified ? "Sí" : "No"}
+                          </Badge>
                         </TableCell>
                         <TableCell>
-                          {new Date(user.registrationDate).toLocaleDateString(
-                            "es-ES"
-                          )}
+                          {user.registrationDate
+                            ? new Date(user.registrationDate).toLocaleDateString("es-ES")
+                            : "-"}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end space-x-2">
-                            {/* Botón para enviar código por email */}
                             {user.codigo_acceso && !user.codigo_acceso.startsWith("TEMP_") && (
                               <Button
                                 variant="ghost"
@@ -385,15 +565,6 @@ export default function AdminUsuariosPage() {
                                 <Mail className="h-4 w-4" />
                               </Button>
                             )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                router.push(`/admin/usuarios/${user._id}`)
-                              }
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
                             {user._id !== currentUser?._id && (
                               <Button
                                 variant="ghost"
@@ -415,6 +586,135 @@ export default function AdminUsuariosPage() {
           </Card>
         </div>
       </div>
+
+      {/* Create User Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Crear Usuario Privilegiado</DialogTitle>
+            <DialogDescription>
+              Crea un usuario sin necesidad de verificación de email
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nombre *</Label>
+                <Input
+                  id="name"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                  placeholder="Juan"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Apellido *</Label>
+                <Input
+                  id="lastName"
+                  value={newUser.lastName}
+                  onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })}
+                  placeholder="Pérez"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={newUser.email}
+                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                placeholder="usuario@ejemplo.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Contraseña *</Label>
+              <Input
+                id="password"
+                type="password"
+                value={newUser.password}
+                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                placeholder="Mínimo 6 caracteres"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="cedula">Cédula *</Label>
+                <Input
+                  id="cedula"
+                  value={newUser.cedula}
+                  onChange={(e) => setNewUser({ ...newUser, cedula: e.target.value })}
+                  placeholder="12345678"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Teléfono</Label>
+                <Input
+                  id="phone"
+                  value={newUser.phone}
+                  onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                  placeholder="+584121234567"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">Rol *</Label>
+              <Select
+                value={newUser.role}
+                onValueChange={(value: "superadmin" | "admin" | "user") =>
+                  setNewUser({ ...newUser, role: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">
+                    <div className="flex items-center">
+                      <UserIcon className="h-4 w-4 mr-2 text-blue-600" />
+                      Usuario
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="admin">
+                    <div className="flex items-center">
+                      <Shield className="h-4 w-4 mr-2 text-orange-600" />
+                      Administrador
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="superadmin">
+                    <div className="flex items-center">
+                      <Crown className="h-4 w-4 mr-2 text-red-600" />
+                      Super Administrador
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleCreateUser}
+              disabled={creating}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {creating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creando...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Crear Usuario
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
