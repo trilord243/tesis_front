@@ -80,13 +80,29 @@ export function LoginForm() {
         // Guardar token en localStorage para acceso desde cliente
         if (data.access_token) {
           setClientAuthToken(data.access_token);
+
+          // Decodificar el JWT para obtener el rol
+          try {
+            const payload = JSON.parse(atob(data.access_token.split('.')[1]));
+            const role = payload.role;
+
+            console.log("Login exitoso, rol:", role);
+
+            // Redireccionar según el rol
+            if (role === "admin" || role === "superadmin") {
+              window.location.href = "/admin/dashboard";
+            } else {
+              window.location.href = "/dashboard";
+            }
+          } catch {
+            // Si falla la decodificación, usar el middleware
+            console.log("Login exitoso, redirigiendo al dashboard...");
+            window.location.href = "/dashboard";
+          }
+        } else {
+          // Si no hay token, dejar que el middleware maneje
+          window.location.href = "/dashboard";
         }
-        
-        // Redireccionar al dashboard
-        console.log("Login exitoso, redirigiendo...");
-        
-        // Usar window.location para forzar una recarga completa
-        window.location.href = "/dashboard";
       }
     } catch (err) {
       if (!showResendOption) {
