@@ -167,7 +167,14 @@ export async function requireAuth() {
 
 export async function requireAdmin() {
   const user = await getCurrentUser();
-  if (!user || user.role !== "admin") {
+  if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
     redirect("/auth/login");
+  }
+}
+
+export async function requireSuperAdmin() {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "superadmin") {
+    redirect("/admin/dashboard");
   }
 }

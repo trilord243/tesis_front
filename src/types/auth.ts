@@ -12,7 +12,7 @@ export interface User {
   presentTags?: string[];
   registrationDate: Date;
   updatedAt: Date;
-  role: "admin" | "user";
+  role: "superadmin" | "admin" | "user";
   accessCodeExpiresAt?: Date;
 }
 

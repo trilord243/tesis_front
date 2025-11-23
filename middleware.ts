@@ -62,20 +62,20 @@ export async function middleware(request: NextRequest) {
 
   // Enrutamiento por rol cuando está autenticado
   if (isAuthenticated) {
-    // Admin no debe usar rutas de usuario
-    if (pathname.startsWith("/dashboard") && role === "admin") {
+    // Admin y superadmin no deben usar rutas de usuario normal
+    if (pathname.startsWith("/dashboard") && (role === "admin" || role === "superadmin")) {
       return NextResponse.redirect(new URL("/admin/dashboard", request.url));
     }
 
-    // Usuarios no admin no deben acceder a rutas de admin
-    if (pathname.startsWith("/admin") && role !== "admin") {
+    // Usuarios no admin/superadmin no deben acceder a rutas de admin
+    if (pathname.startsWith("/admin") && role !== "admin" && role !== "superadmin") {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
 
   // Si es una ruta de auth y ya está autenticado, redirigir adecuadamente
   if (isAuthRoute && isAuthenticated) {
-    const redirectTo = role === "admin" ? "/admin/dashboard" : "/dashboard";
+    const redirectTo = (role === "admin" || role === "superadmin") ? "/admin/dashboard" : "/dashboard";
     console.log(`[Middleware] Already authenticated, redirecting to ${redirectTo}`);
     return NextResponse.redirect(new URL(redirectTo, request.url));
   }

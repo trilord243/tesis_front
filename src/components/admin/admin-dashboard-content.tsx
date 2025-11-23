@@ -29,6 +29,7 @@ interface AdminDashboardContentProps {
   user: {
     name: string;
     lastName: string;
+    role: "superadmin" | "admin" | "user";
   };
   stats: {
     solicitudesPendientes?: number;
@@ -45,6 +46,7 @@ interface Feature {
   stats: string;
   category: string;
   keywords: string[];
+  requiredRole?: "superadmin"; // Si está definido, solo superadmin puede ver esta feature
 }
 
 export function AdminDashboardContent({
@@ -56,7 +58,7 @@ export function AdminDashboardContent({
 
   // Todas las funcionalidades organizadas por categoría
   const allFeatures: Feature[] = [
-    // Gestión de Activos
+    // Gestión de Activos (solo superadmin)
     {
       title: "Gestión de Activos",
       description: "Control completo del inventario - crear, editar y administrar activos",
@@ -66,6 +68,7 @@ export function AdminDashboardContent({
       stats: "Administración completa",
       category: "Gestión de Activos",
       keywords: ["activos", "inventario", "productos", "equipos", "crear", "editar"],
+      requiredRole: "superadmin",
     },
     {
       title: "Tipos de Activos",
@@ -76,6 +79,7 @@ export function AdminDashboardContent({
       stats: "Configurar tipos",
       category: "Gestión de Activos",
       keywords: ["tipos", "categorías", "etiquetas", "clasificación"],
+      requiredRole: "superadmin",
     },
     {
       title: "Inventario por Ubicación",
@@ -86,6 +90,7 @@ export function AdminDashboardContent({
       stats: "Gestión por ubicación",
       category: "Gestión de Activos",
       keywords: ["ubicación", "localización", "filtrar", "zona"],
+      requiredRole: "superadmin",
     },
     {
       title: "Mis Equipos",
@@ -96,6 +101,7 @@ export function AdminDashboardContent({
       stats: `${adminProductsCount} ${adminProductsCount === 1 ? "equipo" : "equipos"}`,
       category: "Gestión de Activos",
       keywords: ["equipos", "asignados", "personal"],
+      requiredRole: "superadmin",
     },
 
     // Gestión de Usuarios
@@ -163,8 +169,14 @@ export function AdminDashboardContent({
     },
   ];
 
-  // Filtrar funcionalidades basado en la búsqueda
+  // Filtrar funcionalidades basado en rol y búsqueda
   const filteredFeatures = allFeatures.filter((feature) => {
+    // Primero verificar acceso por rol
+    if (feature.requiredRole === "superadmin" && user.role !== "superadmin") {
+      return false;
+    }
+
+    // Luego filtrar por búsqueda
     if (!searchQuery.trim()) return true;
 
     const query = searchQuery.toLowerCase();
@@ -218,7 +230,7 @@ export function AdminDashboardContent({
                   Panel de Administración
                 </h1>
                 <p className="text-sm text-gray-600">
-                  Bienvenido, {user.name} {user.lastName} - Administrador
+                  Bienvenido, {user.name} {user.lastName} - {user.role === "superadmin" ? "Super Administrador" : "Administrador"}
                 </p>
               </div>
             </div>

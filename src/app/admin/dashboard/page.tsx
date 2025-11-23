@@ -28,7 +28,12 @@ export default async function AdminDashboardPage() {
 
   return (
     <>
-      <Navbar isAuthenticated={true} showAuthButtons={true} isAdmin={true} />
+      <Navbar
+        isAuthenticated={true}
+        showAuthButtons={true}
+        isAdmin={true}
+        isSuperAdmin={user.role === "superadmin"}
+      />
       <AdminDashboardContent
         user={user}
         stats={stats}

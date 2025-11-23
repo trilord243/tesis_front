@@ -39,12 +39,14 @@ interface NavbarProps {
   isAuthenticated?: boolean;
   showAuthButtons?: boolean;
   isAdmin?: boolean;
+  isSuperAdmin?: boolean;
 }
 
 export function Navbar({
   isAuthenticated = false,
   showAuthButtons = true,
   isAdmin = false,
+  isSuperAdmin = false,
 }: NavbarProps) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -129,11 +131,12 @@ export function Navbar({
       label: "Dashboard",
       icon: LayoutDashboard,
     },
-    {
+    // Activos solo visible para superadmin
+    ...(isSuperAdmin ? [{
       href: "/admin/activos",
       label: "Activos",
       icon: Package2,
-    },
+    }] : []),
     {
       href: "/admin/reservas-lab",
       label: "Reservas Computadoras",
@@ -153,21 +156,24 @@ export function Navbar({
       label: "Solicitudes",
       icon: ClipboardList,
     },
-    {
+    // Tipos de activos solo para superadmin
+    ...(isSuperAdmin ? [{
       href: "/admin/tipos-activos",
       label: "Tipos de Activos",
       icon: Tags,
-    },
-    {
+    }] : []),
+    // Productos por usuario solo para superadmin
+    ...(isSuperAdmin ? [{
       href: "/admin/productos-usuarios",
       label: "Productos por Usuario",
       icon: Users,
-    },
-    {
+    }] : []),
+    // Inventario por ubicación solo para superadmin
+    ...(isSuperAdmin ? [{
       href: "/admin/inventario-ubicacion",
       label: "Inventario por Ubicación",
       icon: MapPin,
-    },
+    }] : []),
     {
       href: "/admin/usuarios-equipos",
       label: "Gestión de Usuarios",

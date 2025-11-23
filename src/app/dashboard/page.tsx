@@ -43,8 +43,8 @@ export default async function DashboardPage() {
     return <div>Error: Usuario no encontrado</div>;
   }
 
-  // Si el usuario es administrador, redirigir al panel de admin
-  if (user.role === "admin") {
+  // Si el usuario es administrador o superadmin, redirigir al panel de admin
+  if (user.role === "admin" || user.role === "superadmin") {
     redirect("/admin/dashboard");
   }
 
@@ -104,7 +104,8 @@ export default async function DashboardPage() {
       <Navbar
         isAuthenticated={true}
         showAuthButtons={false}
-        isAdmin={(user.role as string) === "admin"}
+        isAdmin={user.role === "admin" || user.role === "superadmin"}
+        isSuperAdmin={user.role === "superadmin"}
       />
       <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
         {/* Main Content */}
@@ -242,10 +243,10 @@ export default async function DashboardPage() {
                           className="text-sm font-medium"
                           style={{
                             color:
-                              (user.role as string) === "admin" ? "#FF8200" : "#003087",
+                              user.role === "superadmin" ? "#DC2626" : user.role === "admin" ? "#FF8200" : "#003087",
                           }}
                         >
-                          {(user.role as string) === "admin" ? "Administrador" : "Usuario"}
+                          {user.role === "superadmin" ? "Super Administrador" : user.role === "admin" ? "Administrador" : "Usuario"}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">

@@ -11,11 +11,14 @@ export function UnityPlayer({
   width = 960,
   height = 600,
 }: UnityPlayerProps) {
+  // CDN URLs for faster loading (DigitalOcean Spaces CDN - NYC3)
+  const CDN_BASE_URL = "https://curriculoms.nyc3.cdn.digitaloceanspaces.com";
+
   const { unityProvider, loadingProgression, isLoaded, requestFullscreen } = useUnityContext({
-    loaderUrl: "/metaverse-build/metaverse.loader.js",
-    dataUrl: "/metaverse-build/metaverse.data.br",
-    frameworkUrl: "/metaverse-build/metaverse.framework.js.br",
-    codeUrl: "/metaverse-build/metaverse.wasm.br",
+    loaderUrl: `${CDN_BASE_URL}/metaverse.loader.js`,
+    dataUrl: `${CDN_BASE_URL}/metaverse.data.br`,
+    frameworkUrl: `${CDN_BASE_URL}/metaverse.framework.js.br`,
+    codeUrl: `${CDN_BASE_URL}/metaverse.wasm.br`,
     streamingAssetsUrl: "/metaverse-assets",
     companyName: "DefaultCompany",
     productName: "CampuUnimetWebLimpio",
