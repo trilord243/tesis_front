@@ -111,7 +111,7 @@ export function AdminDashboardContent({
       description: "Crear usuarios, asignar roles (superadmin, admin, user) y gestionar permisos",
       icon: Crown,
       href: "/admin/usuarios",
-      color: "#DC2626",
+      color: "#1859A9",
       stats: "Control de acceso",
       category: "Gestión de Usuarios",
       keywords: ["roles", "usuarios", "superadmin", "admin", "permisos", "crear"],
