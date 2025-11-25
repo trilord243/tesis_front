@@ -1,6 +1,5 @@
 import { getCurrentUser, requireAuth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { UserProfile } from "@/components/dashboard/user-profile";
 import { MyEquipment } from "@/components/dashboard/my-equipment";
 import { Navbar } from "@/components/layout/navbar";
 import {
@@ -54,48 +53,73 @@ export default async function DashboardPage() {
     : [];
 
 
-  const menuItems = [
+  // Funcionalidades organizadas por categoría
+  const menuSections = [
     {
-      title: "Solicitar Lentes VR/AR",
-      description: "Solicita acceso a lentes de realidad virtual y aumentada",
+      category: "Solicitudes",
+      description: "Solicita acceso a equipos del centro",
       icon: Calendar,
-      href: "/dashboard/reservas",
       color: "#1859A9",
+      items: [
+        {
+          title: "Solicitar Lentes VR/AR",
+          description: "Solicita acceso a lentes de realidad virtual y aumentada",
+          icon: Calendar,
+          href: "/dashboard/reservas",
+          color: "#1859A9",
+        },
+        {
+          title: "Solicitar Computadoras",
+          description: "Solicita acceso a computadoras de alto rendimiento",
+          icon: Computer,
+          href: "/dashboard/reservar-lab",
+          color: "#FF8200",
+        },
+      ],
     },
     {
-      title: "Mis Solicitudes de Lentes",
-      description: "Gestiona tus solicitudes de lentes e historial",
+      category: "Mis Solicitudes",
+      description: "Consulta y gestiona tus solicitudes activas",
       icon: ClipboardList,
-      href: "/dashboard/mis-reservas",
       color: "#003087",
+      items: [
+        {
+          title: "Mis Solicitudes de Lentes",
+          description: "Gestiona tus solicitudes de lentes e historial",
+          icon: ClipboardList,
+          href: "/dashboard/mis-reservas",
+          color: "#003087",
+        },
+        {
+          title: "Mis Solicitudes de Computadoras",
+          description: "Gestiona tus solicitudes de computadoras e historial",
+          icon: BookOpen,
+          href: "/dashboard/mis-reservas-lab",
+          color: "#F68629",
+        },
+      ],
     },
     {
-      title: "Reservar Computadoras",
-      description: "Reserva computadoras de alto rendimiento para tu proyecto",
-      icon: Computer,
-      href: "/dashboard/reservar-lab",
-      color: "#FF8200",
-    },
-    {
-      title: "Mis Reservas de Lab",
-      description: "Consulta tus reservas de computadoras del laboratorio",
-      icon: BookOpen,
-      href: "/dashboard/mis-reservas-lab",
-      color: "#F68629",
-    },
-    {
-      title: "Mi Perfil",
-      description: "Actualiza tu información personal",
+      category: "Mi Cuenta",
+      description: "Información personal y acceso",
       icon: UserIcon,
-      href: "/dashboard/perfil",
       color: "#1859A9",
-    },
-    {
-      title: "Mi QR",
-      description: "Visualiza tu código QR de acceso",
-      icon: QrCode,
-      href: "/dashboard/qr",
-      color: "#FF8200",
+      items: [
+        {
+          title: "Mi Perfil",
+          description: "Actualiza tu información personal",
+          icon: UserIcon,
+          href: "/dashboard/perfil",
+          color: "#1859A9",
+        },
+        {
+          title: "Mi QR",
+          description: "Visualiza tu código QR de acceso",
+          icon: QrCode,
+          href: "/dashboard/qr",
+          color: "#FF8200",
+        },
+      ],
     },
   ];
 
@@ -181,140 +205,81 @@ export default async function DashboardPage() {
             </Alert>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Perfil de Usuario */}
-            <div className="lg:col-span-1">
-              <UserProfile user={user} />
-            </div>
-
-            {/* Contenido Principal */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Estadísticas Rápidas */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="border-0 shadow-md">
-                  <CardHeader className="pb-2">
-                    <CardTitle
-                      className="text-base"
-                      style={{ color: "#1859A9" }}
-                    >
-                      Equipos Reservados
-                    </CardTitle>
-                    <CardDescription>
-                      Equipos actualmente en tu posesión
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div
-                      className="text-2xl font-bold"
-                      style={{ color: "#FF8200" }}
-                    >
-                      {user.equipos_reservados?.length || 0}
-                    </div>
-                    {user.equipos_reservados &&
-                      user.equipos_reservados.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-xs text-gray-500">
-                            Últimos equipos:
-                          </p>
-                          <div className="text-sm text-gray-700">
-                            {user.equipos_reservados.slice(0, 2).join(", ")}
-                            {user.equipos_reservados.length > 2 && "..."}
-                          </div>
-                        </div>
-                      )}
-                  </CardContent>
-                </Card>
-
-                <Card className="border-0 shadow-md">
-                  <CardHeader className="pb-2">
-                    <CardTitle
-                      className="text-base"
-                      style={{ color: "#1859A9" }}
-                    >
-                      Estado de Cuenta
-                    </CardTitle>
-                    <CardDescription>Información de tu cuenta</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Rol:</span>
-                        <span
-                          className="text-sm font-medium"
-                          style={{
-                            color:
-                              user.role === "superadmin" ? "#DC2626" : user.role === "admin" ? "#FF8200" : "#003087",
-                          }}
-                        >
-                          {user.role === "superadmin" ? "Super Administrador" : user.role === "admin" ? "Administrador" : "Usuario"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">
-                          Miembro desde:
-                        </span>
-                        <span className="text-sm font-medium">
-                          {new Date(user.registrationDate).toLocaleDateString(
-                            "es-ES"
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Menu de Navegación */}
-              <Card className="border-0 shadow-md">
-                <CardHeader>
-                  <CardTitle style={{ color: "#1859A9" }}>
-                    Acciones Disponibles
-                  </CardTitle>
-                  <CardDescription>
-                    Accede a todas las funcionalidades del sistema
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {menuItems.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className="block group"
+          <div className="space-y-8">
+            {/* Funcionalidades por Categoría */}
+            {menuSections.map((section) => {
+              const SectionIcon = section.icon;
+              return (
+                <Card key={section.category} className="border-0 shadow-md">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="p-2 rounded-lg"
+                        style={{
+                          backgroundColor: `${section.color}20`,
+                          color: section.color,
+                        }}
                       >
-                        <div className="p-4 border rounded-lg hover:shadow-md transition-all hover:border-brand-primary group-hover:scale-[1.02]">
-                          <div className="flex items-start space-x-3">
-                            <div
-                              className="p-2 rounded-lg bg-opacity-10"
-                              style={{
-                                backgroundColor: `${item.color}20`,
-                                color: item.color,
-                              }}
-                            >
-                              <item.icon className="h-5 w-5" />
+                        <SectionIcon className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <CardTitle style={{ color: "#1859A9" }}>
+                          {section.category}
+                        </CardTitle>
+                        <CardDescription>
+                          {section.description}
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {section.items.map((item) => {
+                        const ItemIcon = item.icon;
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className="block group"
+                          >
+                            <div className="p-4 border rounded-lg hover:shadow-lg transition-all hover:border-brand-primary group-hover:scale-[1.02] bg-gradient-to-r from-blue-50 to-indigo-50 h-full">
+                              <div className="flex items-start space-x-3">
+                                <div
+                                  className="p-2 rounded-lg bg-opacity-20 flex-shrink-0"
+                                  style={{
+                                    backgroundColor: `${item.color}40`,
+                                    color: item.color,
+                                  }}
+                                >
+                                  <ItemIcon className="h-6 w-6" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h3
+                                    className="font-semibold text-base mb-1"
+                                    style={{ color: item.color }}
+                                  >
+                                    {item.title}
+                                  </h3>
+                                  <p className="text-sm text-gray-700 mb-2">
+                                    {item.description}
+                                  </p>
+                                  <span className="text-xs text-blue-600 font-medium">
+                                    Acceder →
+                                  </span>
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex-1">
-                              <h3
-                                className="font-semibold"
-                                style={{ color: item.color }}
-                              >
-                                {item.title}
-                              </h3>
-                              <p className="text-sm text-gray-600 mt-1">
-                                {item.description}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
 
-              {/* Mis Equipos */}
-              <MyEquipment products={userProducts} />
-            </div>
+            {/* Mis Equipos */}
+            <MyEquipment products={userProducts} />
           </div>
         </main>
       </div>

@@ -419,19 +419,23 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
             >
               <Alert className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 shadow-lg">
                 <div className="flex items-start gap-3">
-                  <CalendarDays className="h-6 w-6 text-blue-600 mt-1" />
-                  <AlertDescription className="text-blue-900">
-                    <div className="space-y-2">
-                      <p className="font-bold text-lg">Selecciona uno o más días para tu reserva</p>
-                      <p className="text-sm">Haz clic en los días deseados. Puedes seleccionar múltiples fechas para tu reserva.</p>
+                  <CalendarDays className="h-6 w-6 text-blue-600 mt-1 flex-shrink-0" />
+                  <AlertDescription className="text-blue-900 flex-1">
+                    <div className="space-y-3">
+                      <p className="font-bold text-lg leading-relaxed">
+                        Selecciona uno o más días para tu reserva
+                      </p>
+                      <p className="text-sm leading-relaxed">
+                        Haz clic en los días deseados. Puedes seleccionar múltiples fechas para tu reserva.
+                      </p>
                       {loadingReservations && (
-                        <p className="text-sm text-blue-600 flex items-center gap-2">
+                        <p className="text-sm text-blue-600 flex items-center gap-2 mt-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
                           Cargando tus reservas existentes...
                         </p>
                       )}
                       {!loadingReservations && existingReservations.length > 0 && (
-                        <p className="text-sm text-orange-600 font-semibold">
+                        <p className="text-sm text-orange-600 font-semibold mt-2">
                           ⚠️ Tienes {existingReservations.length} fecha(s) ya reservada(s). Estas fechas aparecen deshabilitadas en el calendario.
                         </p>
                       )}
@@ -439,7 +443,7 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
                         <motion.div
                           initial={{ scale: 0.9, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
-                          className="flex items-center gap-2 mt-3 pt-3 border-t border-blue-300"
+                          className="flex items-center gap-2 mt-4 pt-3 border-t border-blue-300"
                         >
                           <span className="text-blue-700 font-semibold">Computadora seleccionada:</span>
                           <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-md">
