@@ -86,15 +86,20 @@ export default function PublicCalendarPage() {
 
   const calendarDays = generateCalendarDays();
 
-  const getReservationForDate = (date: Date): MetaverseReservation | undefined => {
+  // Obtener todas las reservas para una fecha (puede haber múltiples)
+  const getReservationsForDate = (date: Date): MetaverseReservation[] => {
     const dateStr = format(date, "yyyy-MM-dd");
-    return reservations.find((r) => r.reservationDate === dateStr);
+    return reservations.filter((r) => r.reservationDate === dateStr);
   };
 
   const handleDayClick = (date: Date) => {
-    const reservation = getReservationForDate(date);
-    if (reservation) {
-      setSelectedEvent(reservation);
+    const dateReservations = getReservationsForDate(date);
+    if (dateReservations.length === 1) {
+      setSelectedEvent(dateReservations[0] ?? null);
+      setShowEventDialog(true);
+    } else if (dateReservations.length > 1) {
+      // Si hay múltiples, mostrar el primero (podría mejorarse con un modal de lista)
+      setSelectedEvent(dateReservations[0] ?? null);
       setShowEventDialog(true);
     }
   };
@@ -202,30 +207,33 @@ export default function PublicCalendarPage() {
                         {calendarDays.map((date, index) => {
                           const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
                           const isToday = isSameDay(date, new Date());
-                          const reservation = getReservationForDate(date);
+                          const dateReservations = getReservationsForDate(date);
+                          const hasReservations = dateReservations.length > 0;
                           const weekend = isWeekend(date);
 
                           return (
                             <button
                               key={index}
                               onClick={() => handleDayClick(date)}
-                              disabled={!isCurrentMonth || !reservation}
+                              disabled={!isCurrentMonth || !hasReservations}
                               className={`
                                 p-2 h-20 text-sm rounded-lg border transition-all
                                 ${!isCurrentMonth ? "bg-gray-50 text-gray-300" : ""}
                                 ${isToday ? "ring-2 ring-blue-500" : ""}
-                                ${reservation && isCurrentMonth ? "bg-orange-100 border-orange-300 hover:bg-orange-200 cursor-pointer" : ""}
-                                ${!reservation && isCurrentMonth ? "bg-white" : ""}
-                                ${weekend && isCurrentMonth && !reservation ? "bg-gray-50" : ""}
+                                ${hasReservations && isCurrentMonth ? "bg-orange-100 border-orange-300 hover:bg-orange-200 cursor-pointer" : ""}
+                                ${!hasReservations && isCurrentMonth ? "bg-white" : ""}
+                                ${weekend && isCurrentMonth && !hasReservations ? "bg-gray-50" : ""}
                               `}
                             >
                               <div className="flex flex-col h-full">
                                 <span className={`font-medium ${isToday ? "text-blue-600" : ""}`}>
                                   {format(date, "d")}
                                 </span>
-                                {reservation && isCurrentMonth && (
+                                {hasReservations && isCurrentMonth && (
                                   <div className="mt-1 text-xs text-orange-700 truncate font-medium">
-                                    {reservation.eventTitle}
+                                    {dateReservations.length === 1
+                                      ? dateReservations[0]?.eventTitle
+                                      : `${dateReservations.length} eventos`}
                                   </div>
                                 )}
                               </div>

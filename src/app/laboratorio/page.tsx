@@ -54,10 +54,17 @@ import {
 } from "lucide-react";
 
 export default function LaboratorioPage() {
+  // Interface para disponibilidad por fecha
+  interface DateAvailability {
+    available: boolean;
+    occupiedBlocks: string[];
+    availableBlocks: string[];
+  }
+
   // Estado del calendario
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [availability, setAvailability] = useState<Record<string, boolean>>({});
+  const [availability, setAvailability] = useState<Record<string, DateAvailability>>({});
   const [reservations, setReservations] = useState<MetaverseReservation[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -165,13 +172,7 @@ export default function LaboratorioPage() {
 
   const calendarDays = generateCalendarDays();
 
-  // Obtener reserva de un día
-  const getReservationForDate = (date: Date): MetaverseReservation | undefined => {
-    const dateStr = format(date, "yyyy-MM-dd");
-    return reservations.find((r) => r.reservationDate === dateStr);
-  };
-
-  // Verificar si un día está disponible
+  // Verificar si un día está disponible (tiene al menos un bloque libre)
   const isDateAvailable = (date: Date): boolean => {
     const dateStr = format(date, "yyyy-MM-dd");
     const today = startOfDay(new Date());
@@ -179,21 +180,42 @@ export default function LaboratorioPage() {
     if (isBefore(date, today)) return false;
     if (isWeekend(date)) return false;
 
-    return availability[dateStr] !== false;
+    const dateAvail = availability[dateStr];
+    if (!dateAvail) return true; // Si no hay datos, asumimos disponible
+    return dateAvail.available;
+  };
+
+  // Verificar si un día tiene todos los bloques ocupados
+  const isDateFullyOccupied = (date: Date): boolean => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    const dateAvail = availability[dateStr];
+    if (!dateAvail) return false;
+    return dateAvail.occupiedBlocks.length === METAVERSE_TIME_BLOCKS.length;
+  };
+
+  // Verificar si un día tiene algunos bloques ocupados
+  const isDatePartiallyOccupied = (date: Date): boolean => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    const dateAvail = availability[dateStr];
+    if (!dateAvail) return false;
+    return dateAvail.occupiedBlocks.length > 0 && dateAvail.occupiedBlocks.length < METAVERSE_TIME_BLOCKS.length;
+  };
+
+  // Obtener bloques ocupados para una fecha
+  const getOccupiedBlocksForDate = (date: Date): string[] => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    return availability[dateStr]?.occupiedBlocks || [];
   };
 
   // Manejar click en día
   const handleDayClick = (date: Date) => {
-    const reservation = getReservationForDate(date);
-
-    if (reservation) {
-      setSelectedEvent(reservation);
-      setShowEventDialog(true);
-    } else if (isDateAvailable(date)) {
+    // Si el día está disponible (tiene al menos un bloque libre), abrir formulario
+    if (isDateAvailable(date)) {
       setSelectedDate(date);
       setFormData((prev) => ({
         ...prev,
         reservationDate: format(date, "yyyy-MM-dd"),
+        timeBlocks: [], // Reset time blocks when selecting new date
       }));
       setShowForm(true);
     }
@@ -321,9 +343,9 @@ export default function LaboratorioPage() {
           <Alert className="mb-6 bg-blue-50 border-blue-200">
             <Info className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800">
-              <strong>Cómo reservar:</strong> Selecciona un día disponible (verde) en el calendario
-              para solicitar una reserva del laboratorio. Los días con eventos aprobados aparecen en naranja.
-              Solo se permite una reserva por día.
+              <strong>Cómo reservar:</strong> Selecciona un día disponible en el calendario
+              para solicitar una reserva del laboratorio. Puedes reservar múltiples bloques horarios por día.
+              Los días amarillos tienen algunos bloques ocupados pero otros disponibles.
             </AlertDescription>
           </Alert>
 
@@ -376,36 +398,41 @@ export default function LaboratorioPage() {
                     {calendarDays.map((date, index) => {
                       const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
                       const isToday = isSameDay(date, new Date());
-                      const reservation = getReservationForDate(date);
                       const available = isDateAvailable(date);
                       const isPast = isBefore(date, startOfDay(new Date()));
                       const weekend = isWeekend(date);
+                      const partiallyOccupied = isDatePartiallyOccupied(date);
+                      const fullyOccupied = isDateFullyOccupied(date);
+                      const occupiedBlocks = getOccupiedBlocksForDate(date);
 
                       return (
                         <button
                           key={index}
                           onClick={() => handleDayClick(date)}
-                          disabled={!isCurrentMonth || isPast || weekend}
+                          disabled={!isCurrentMonth || isPast || weekend || fullyOccupied}
                           className={`
                             p-2 h-20 text-sm rounded-lg border transition-all
                             ${!isCurrentMonth ? "bg-gray-50 text-gray-300" : ""}
                             ${isToday ? "ring-2 ring-blue-500" : ""}
-                            ${reservation && isCurrentMonth ? "bg-orange-100 border-orange-300 hover:bg-orange-200" : ""}
-                            ${!reservation && available && isCurrentMonth && !isPast ? "bg-green-50 border-green-200 hover:bg-green-100 cursor-pointer" : ""}
+                            ${partiallyOccupied && isCurrentMonth && !isPast ? "bg-yellow-50 border-yellow-300 hover:bg-yellow-100 cursor-pointer" : ""}
+                            ${fullyOccupied && isCurrentMonth && !isPast && !weekend ? "bg-orange-100 border-orange-300 cursor-not-allowed" : ""}
+                            ${available && !partiallyOccupied && isCurrentMonth && !isPast && !weekend ? "bg-green-50 border-green-200 hover:bg-green-100 cursor-pointer" : ""}
                             ${(isPast || weekend) && isCurrentMonth ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
-                            ${!reservation && !available && isCurrentMonth && !isPast && !weekend ? "bg-red-50 border-red-200" : ""}
                           `}
                         >
                           <div className="flex flex-col h-full">
                             <span className={`font-medium ${isToday ? "text-blue-600" : ""}`}>
                               {format(date, "d")}
                             </span>
-                            {reservation && isCurrentMonth && (
-                              <div className="mt-1 text-xs text-orange-700 truncate">
-                                {reservation.eventTitle}
+                            {fullyOccupied && isCurrentMonth && !isPast && !weekend && (
+                              <div className="mt-1 text-xs text-orange-700">Ocupado</div>
+                            )}
+                            {partiallyOccupied && isCurrentMonth && !isPast && !weekend && (
+                              <div className="mt-1 text-xs text-yellow-700">
+                                {METAVERSE_TIME_BLOCKS.length - occupiedBlocks.length} bloques
                               </div>
                             )}
-                            {!reservation && available && isCurrentMonth && !isPast && !weekend && (
+                            {available && !partiallyOccupied && isCurrentMonth && !isPast && !weekend && (
                               <div className="mt-1 text-xs text-green-600">Disponible</div>
                             )}
                           </div>
@@ -418,11 +445,15 @@ export default function LaboratorioPage() {
                   <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t">
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded bg-green-100 border border-green-300" />
-                      <span className="text-sm">Disponible</span>
+                      <span className="text-sm">Todos los bloques libres</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-yellow-100 border border-yellow-300" />
+                      <span className="text-sm">Algunos bloques ocupados</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded bg-orange-100 border border-orange-300" />
-                      <span className="text-sm">Evento programado</span>
+                      <span className="text-sm">Todos los bloques ocupados</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded bg-gray-100 border border-gray-300" />
@@ -681,28 +712,46 @@ export default function LaboratorioPage() {
 
                 <div className="space-y-2">
                   <Label>Selecciona los bloques horarios *</Label>
+                  {selectedDate && getOccupiedBlocksForDate(selectedDate).length > 0 && (
+                    <p className="text-sm text-yellow-600">
+                      Algunos bloques ya están ocupados para esta fecha y no pueden seleccionarse.
+                    </p>
+                  )}
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
                     {METAVERSE_TIME_BLOCKS.map((block) => {
                       const isSelected = formData.timeBlocks.includes(block.value);
+                      const isOccupied = selectedDate ? getOccupiedBlocksForDate(selectedDate).includes(block.value) : false;
                       return (
                         <div
                           key={block.value}
-                          className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                            isSelected
-                              ? "bg-blue-100 border-blue-500"
-                              : "bg-white hover:bg-gray-50"
+                          className={`p-3 border rounded-lg transition-all ${
+                            isOccupied
+                              ? "bg-gray-100 border-gray-300 cursor-not-allowed opacity-60"
+                              : isSelected
+                                ? "bg-blue-100 border-blue-500 cursor-pointer"
+                                : "bg-white hover:bg-gray-50 cursor-pointer"
                           }`}
-                          onClick={() => handleBlockToggle(block.value)}
+                          onClick={() => !isOccupied && handleBlockToggle(block.value)}
                         >
                           <div className="flex items-center gap-2">
                             <div
                               className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                                isSelected
-                                  ? "bg-blue-600 border-blue-600"
-                                  : "border-gray-300"
+                                isOccupied
+                                  ? "bg-gray-400 border-gray-400"
+                                  : isSelected
+                                    ? "bg-blue-600 border-blue-600"
+                                    : "border-gray-300"
                               }`}
                             >
-                              {isSelected && (
+                              {isOccupied ? (
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              ) : isSelected ? (
                                 <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                                   <path
                                     fillRule="evenodd"
@@ -710,12 +759,14 @@ export default function LaboratorioPage() {
                                     clipRule="evenodd"
                                   />
                                 </svg>
-                              )}
+                              ) : null}
                             </div>
                             <div>
-                              <div className="font-medium text-sm">{block.label}</div>
-                              <div className="text-xs text-gray-500">
-                                {block.startTime} - {block.endTime}
+                              <div className={`font-medium text-sm ${isOccupied ? "text-gray-500" : ""}`}>
+                                {block.label}
+                              </div>
+                              <div className={`text-xs ${isOccupied ? "text-gray-400" : "text-gray-500"}`}>
+                                {isOccupied ? "Ocupado" : `${block.startTime} - ${block.endTime}`}
                               </div>
                             </div>
                           </div>

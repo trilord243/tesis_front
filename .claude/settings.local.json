@@ -21,7 +21,9 @@
       "WebFetch(domain:www.npmjs.com)",
       "WebSearch",
       "WebFetch(domain:jquense.github.io)",
-      "WebFetch(domain:reactlibs.dev)"
+      "WebFetch(domain:reactlibs.dev)",
+      "Bash(npm run format:*)",
+      "Bash(npx prettier:*)"
     ],
     "deny": [],
     "ask": []
