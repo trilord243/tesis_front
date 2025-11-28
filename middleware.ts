@@ -8,7 +8,7 @@ const JWT_SECRET = new TextEncoder().encode(
 const COOKIE_NAME = "auth-token";
 
 // Rutas que requieren autenticación
-const protectedRoutes = ["/dashboard", "/admin"];
+const protectedRoutes = ["/dashboard", "/admin", "/laboratorio"];
 
 // Rutas que solo pueden acceder usuarios no autenticados (excepto la raíz)
 const authRoutes = ["/auth/login", "/auth/register"];

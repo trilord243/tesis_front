@@ -186,9 +186,19 @@ export function AdminDashboardContent({
       icon: Globe,
       href: "/laboratorio",
       color: "#8B5CF6",
-      stats: "Eventos del metaverso",
+      stats: "Crear reserva",
       category: "Préstamos y Reservas",
       keywords: ["laboratorio", "metaverso", "eventos", "reservar", "inmersivo"],
+    },
+    {
+      title: "Gestionar Reservas Metaverso",
+      description: "Aprueba o rechaza las solicitudes de reserva del laboratorio de metaverso",
+      icon: Globe,
+      href: "/admin/reservas-metaverso",
+      color: "#7C3AED",
+      stats: "Aprobar solicitudes",
+      category: "Préstamos y Reservas",
+      keywords: ["aprobar", "rechazar", "metaverso", "solicitudes", "gestionar"],
     },
   ];
 
