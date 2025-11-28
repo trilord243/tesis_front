@@ -21,6 +21,7 @@ import {
   Computer,
   BookOpen,
   CalendarDays,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getUserProducts } from "@/lib/admin-products";
@@ -82,6 +83,13 @@ export default async function DashboardPage() {
           icon: CalendarDays,
           href: "/dashboard/disponibilidad-lab",
           color: "#22c55e",
+        },
+        {
+          title: "Reservar Laboratorio Metaverso",
+          description: "Solicita el uso del laboratorio completo para eventos y experiencias inmersivas",
+          icon: Globe,
+          href: "/laboratorio",
+          color: "#8B5CF6",
         },
       ],
     },

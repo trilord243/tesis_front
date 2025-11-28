@@ -24,6 +24,7 @@ import {
   Computer,
   Search,
   Crown,
+  Globe,
 } from "lucide-react";
 
 interface AdminDashboardContentProps {
@@ -178,6 +179,16 @@ export function AdminDashboardContent({
       stats: "Vista completa",
       category: "Préstamos y Reservas",
       keywords: ["calendario", "reservas", "mensual", "vista", "aprobadas"],
+    },
+    {
+      title: "Reservar Laboratorio Metaverso",
+      description: "Solicita el uso del laboratorio completo para eventos y experiencias inmersivas",
+      icon: Globe,
+      href: "/laboratorio",
+      color: "#8B5CF6",
+      stats: "Eventos del metaverso",
+      category: "Préstamos y Reservas",
+      keywords: ["laboratorio", "metaverso", "eventos", "reservar", "inmersivo"],
     },
   ];
 
