@@ -59,8 +59,8 @@ export default function DisponibilidadLabPage() {
     setLoading(true);
     setError(null);
     try {
-      // Cargar todas las reservas aprobadas para mostrar disponibilidad
-      const response = await fetch("/api/lab-reservations?status=approved");
+      // Cargar reservas aprobadas usando el endpoint público
+      const response = await fetch("/api/lab-reservations/public");
       const data = await response.json();
 
       if (!response.ok) {

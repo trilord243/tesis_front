@@ -321,9 +321,15 @@ export function LabResourceCalendar({
               next: "Siguiente",
               month: "Mes",
               week: "Semana",
+              work_week: "Semana laboral",
               day: "Día",
               agenda: "Agenda",
+              date: "Fecha",
+              time: "Hora",
+              event: "Evento",
+              allDay: "Todo el día",
               noEventsInRange: "No hay reservas en este rango",
+              showMore: (total: number) => `+ ${total} más`,
             }}
           />
         </div>
