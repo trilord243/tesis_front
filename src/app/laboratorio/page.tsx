@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -683,30 +682,46 @@ export default function LaboratorioPage() {
                 <div className="space-y-2">
                   <Label>Selecciona los bloques horarios *</Label>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {METAVERSE_TIME_BLOCKS.map((block) => (
-                      <div
-                        key={block.value}
-                        className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                          formData.timeBlocks?.includes(block.value)
-                            ? "bg-blue-100 border-blue-500"
-                            : "bg-white hover:bg-gray-50"
-                        }`}
-                        onClick={() => handleBlockToggle(block.value)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            checked={formData.timeBlocks?.includes(block.value)}
-                            onCheckedChange={() => handleBlockToggle(block.value)}
-                          />
-                          <div>
-                            <div className="font-medium text-sm">{block.label}</div>
-                            <div className="text-xs text-gray-500">
-                              {block.startTime} - {block.endTime}
+                    {METAVERSE_TIME_BLOCKS.map((block) => {
+                      const isSelected = formData.timeBlocks.includes(block.value);
+                      return (
+                        <div
+                          key={block.value}
+                          className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                            isSelected
+                              ? "bg-blue-100 border-blue-500"
+                              : "bg-white hover:bg-gray-50"
+                          }`}
+                          onClick={() => handleBlockToggle(block.value)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                                isSelected
+                                  ? "bg-blue-600 border-blue-600"
+                                  : "border-gray-300"
+                              }`}
+                            >
+                              {isSelected && (
+                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-medium text-sm">{block.label}</div>
+                              <div className="text-xs text-gray-500">
+                                {block.startTime} - {block.endTime}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -715,15 +730,28 @@ export default function LaboratorioPage() {
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg border-b pb-2">Recurrencia (Opcional)</h3>
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="isRecurring"
-                    checked={formData.isRecurring}
-                    onCheckedChange={(checked) =>
-                      setFormData((prev) => ({ ...prev, isRecurring: checked as boolean }))
-                    }
-                  />
-                  <Label htmlFor="isRecurring">
+                <div
+                  className="flex items-center space-x-2 cursor-pointer"
+                  onClick={() => setFormData((prev) => ({ ...prev, isRecurring: !prev.isRecurring }))}
+                >
+                  <div
+                    className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                      formData.isRecurring
+                        ? "bg-blue-600 border-blue-600"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    {formData.isRecurring && (
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                  <Label className="cursor-pointer">
                     Reserva recurrente (repetir semanalmente)
                   </Label>
                 </div>
@@ -754,25 +782,41 @@ export default function LaboratorioPage() {
                     <div className="space-y-2">
                       <Label>Días de la semana</Label>
                       <div className="flex flex-wrap gap-2">
-                        {METAVERSE_DAY_OPTIONS.map((day) => (
-                          <div
-                            key={day.value}
-                            className={`px-3 py-2 border rounded-lg cursor-pointer transition-all ${
-                              formData.recurrenceDays?.includes(day.value)
-                                ? "bg-blue-100 border-blue-500"
-                                : "bg-white hover:bg-gray-50"
-                            }`}
-                            onClick={() => handleRecurrenceDayToggle(day.value)}
-                          >
-                            <div className="flex items-center gap-2">
-                              <Checkbox
-                                checked={formData.recurrenceDays?.includes(day.value)}
-                                onCheckedChange={() => handleRecurrenceDayToggle(day.value)}
-                              />
-                              <span className="text-sm">{day.label}</span>
+                        {METAVERSE_DAY_OPTIONS.map((day) => {
+                          const isDaySelected = formData.recurrenceDays.includes(day.value);
+                          return (
+                            <div
+                              key={day.value}
+                              className={`px-3 py-2 border rounded-lg cursor-pointer transition-all ${
+                                isDaySelected
+                                  ? "bg-blue-100 border-blue-500"
+                                  : "bg-white hover:bg-gray-50"
+                              }`}
+                              onClick={() => handleRecurrenceDayToggle(day.value)}
+                            >
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                                    isDaySelected
+                                      ? "bg-blue-600 border-blue-600"
+                                      : "border-gray-300"
+                                  }`}
+                                >
+                                  {isDaySelected && (
+                                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                      <path
+                                        fillRule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clipRule="evenodd"
+                                      />
+                                    </svg>
+                                  )}
+                                </div>
+                                <span className="text-sm">{day.label}</span>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
