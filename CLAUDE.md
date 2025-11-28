@@ -13,7 +13,8 @@ Connects to NestJS backend at `../centromundox-api-reservas` (port 3000).
 ```bash
 # Development (use PORT=3001 to avoid conflict with backend on 3000)
 npm run dev                  # Start with Turbopack
-set PORT=3001 && npm run dev # Windows - recommended for local dev
+PORT=3001 npm run dev        # Linux/macOS
+set PORT=3001 && npm run dev # Windows
 
 # Production
 npm run build               # Build for production
@@ -82,12 +83,25 @@ Strict mode with extra checks enabled:
 - `noUncheckedIndexedAccess` - array/object access may be undefined
 - `exactOptionalPropertyTypes` - undefined must be explicit
 - `noImplicitReturns` - all code paths must return
+- `noFallthroughCasesInSwitch` - switch cases must break/return
 
 ### Path Aliases
 ```typescript
 import { Button } from "@/components/ui/button";  // @/* → ./src/*
 import { User } from "@/types";                    // @/types/*
 import { cn } from "@/lib/utils";                  // @/lib/*
+```
+
+### Type Safety Patterns
+```typescript
+// Use satisfies for type validation without widening
+const config = { key: 'value' } satisfies ConfigType;
+
+// Prefer interfaces over types for object shapes
+interface User { id: string; name: string; }
+
+// Use const maps instead of enums
+const STATUS = { PENDING: 'pending', APPROVED: 'approved' } as const;
 ```
 
 ## Code Style
@@ -108,20 +122,28 @@ Lowercase with dashes: `components/auth-wizard`
 
 ## Key Directories
 
-- `src/app/api/*` - API route proxies (auth, products, lab-reservations, computers, zones, users, analytics)
-- `src/app/admin/*` - Admin pages (activos, analytics, solicitudes, usuarios)
-- `src/app/dashboard/*` - User pages (reservas, perfil, qr)
+- `src/app/api/*` - API route proxies (auth, products, lab-reservations, lab-config, computers, zones, users, analytics)
+- `src/app/admin/*` - Admin pages (activos, analytics, solicitudes, usuarios, config-laboratorio)
+- `src/app/dashboard/*` - User pages (reservas, perfil, qr, reservar-lab, mis-reservas-lab)
 - `src/lib/actions/*` - Server actions by feature
 - `src/lib/api/*` - API client services
 - `src/components/admin/*` - Admin components (30+ specialized)
+- `src/components/lab-reservations/*` - Lab booking components
 - `src/components/ui/*` - Shadcn UI components
-- `src/types/*` - TypeScript interfaces (auth, product, lab-reservation, usage-analytics)
+- `src/types/*` - TypeScript interfaces (auth, product, lab-reservation, lab-config, usage-analytics)
 
 ## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
-| Port conflict | Use `set PORT=3001 && npm run dev` on Windows |
+| Port conflict | Use `PORT=3001 npm run dev` (Linux/macOS) or `set PORT=3001 && npm run dev` (Windows) |
 | CORS errors | Check backend `FRONTEND_URL` env var |
 | Auth issues | Clear cookies, verify JWT_SECRET matches backend |
 | Type errors with array access | Use optional chaining: `arr[0]?.prop` (noUncheckedIndexedAccess) |
+
+## Brand Colors
+
+- Primary Blue: `#1859A9`
+- Primary Orange: `#FF8200`
+- Secondary Blue: `#003087`
+- Secondary Orange: `#F68629`

@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { format } from "date-fns";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,46 +19,74 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
 import { ComputerSelector } from "./computer-selector";
+import { TimeBlockSelector } from "./time-block-selector";
+import { RecurrenceSelector } from "./recurrence-selector";
+import { ReservationPreview } from "./reservation-preview";
 import {
   UserType,
   Software,
   Purpose,
   CreateLabReservationDto,
+  RecurrencePattern,
   USER_TYPE_LABELS,
   SOFTWARE_LABELS,
   PURPOSE_LABELS,
 } from "@/types/lab-reservation";
-import { CheckCircle2, ChevronLeft, ChevronRight, Loader2, CalendarDays } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Clock,
+  CalendarDays,
+} from "lucide-react";
 
 interface LabReservationFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormProps) {
+type ReservationMode = "single" | "recurring";
+
+export function LabReservationForm({
+  onSuccess,
+  onCancel,
+}: LabReservationFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Form data
+  // Form data - Basic info
   const [userType, setUserType] = useState<UserType | "">("");
   const [selectedSoftware, setSelectedSoftware] = useState<Software[]>([]);
   const [otherSoftware, setOtherSoftware] = useState("");
   const [purpose, setPurpose] = useState<Purpose | "">("");
   const [description, setDescription] = useState("");
-  const [selectedComputerNumber, setSelectedComputerNumber] = useState<number | undefined>(undefined);
+
+  // Form data - Reservation details
+  const [selectedComputerNumber, setSelectedComputerNumber] = useState<
+    number | undefined
+  >(undefined);
+  const [selectedTimeBlocks, setSelectedTimeBlocks] = useState<string[]>([]);
+
+  // Form data - Dates/Recurrence
+  const [reservationMode, setReservationMode] =
+    useState<ReservationMode>("single");
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-  const [calendarKey, setCalendarKey] = useState(0);
-  const [existingReservations, setExistingReservations] = useState<string[]>([]);
+  const [recurrence, setRecurrence] = useState<RecurrencePattern | null>(null);
+
+  // Existing reservations
+  const [existingReservations, setExistingReservations] = useState<string[]>(
+    []
+  );
   const [loadingReservations, setLoadingReservations] = useState(false);
 
-  const totalSteps = 6;
+  const totalSteps = 7;
 
-  // Cargar reservas existentes del usuario cuando llegue al paso 6
+  // Load user's existing reservations when reaching step 7
   useEffect(() => {
-    if (currentStep === 6) {
+    if (currentStep === 7) {
       loadUserReservations();
     }
   }, [currentStep]);
@@ -58,63 +94,24 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
   const loadUserReservations = async () => {
     setLoadingReservations(true);
     try {
-      const response = await fetch('/api/lab-reservations/user');
+      const response = await fetch("/api/lab-reservations/user");
       if (response.ok) {
         const reservations = await response.json();
-        // Obtener solo las fechas de reservas pendientes o aprobadas
-        const reservedDates = (reservations as Array<{ status: string; reservationDate: string }>)
-          .filter((r) => r.status === 'pending' || r.status === 'approved')
+        const reservedDates = (
+          reservations as Array<{ status: string; reservationDate: string }>
+        )
+          .filter((r) => r.status === "pending" || r.status === "approved")
           .map((r) => r.reservationDate);
         setExistingReservations(reservedDates);
       }
     } catch (err) {
-      console.error('Error al cargar reservas:', err);
+      console.error("Error al cargar reservas:", err);
     } finally {
       setLoadingReservations(false);
     }
   };
 
-  // Force calendar re-render when dates change and validate
-  const handleDateSelect = (dates: Date[] | undefined) => {
-    if (!dates) {
-      setSelectedDates([]);
-      setCalendarKey(prev => prev + 1);
-      return;
-    }
-
-    // Verificar si alguna fecha ya está reservada
-    const dateStrings = dates.map(d => d.toISOString().split('T')[0]!);
-    const alreadyReserved = dateStrings.filter(d => existingReservations.includes(d));
-
-    if (alreadyReserved.length > 0) {
-      const formattedDates = alreadyReserved.map(d => {
-        const date = new Date(d + 'T12:00:00');
-        return date.toLocaleDateString('es-ES', {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
-        });
-      }).join(', ');
-
-      setError(`Ya tienes una reserva para: ${formattedDates}. Por favor selecciona otra fecha.`);
-
-      // Remover las fechas ya reservadas de la selección
-      const validDates = dates.filter(d => {
-        const dateStr = d.toISOString().split('T')[0]!;
-        return !existingReservations.includes(dateStr);
-      });
-
-      setSelectedDates(validDates);
-    } else {
-      setSelectedDates(dates);
-      setError(null);
-    }
-
-    setCalendarKey(prev => prev + 1);
-  };
-
-  // Manejar selección de software
+  // Handle software toggle
   const handleSoftwareToggle = (software: Software) => {
     setSelectedSoftware((prev) => {
       if (prev.includes(software)) {
@@ -125,14 +122,24 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
     });
   };
 
-  // Validar paso actual
+  // Handle date removal in preview
+  const handleRemoveDate = (dateStr: string) => {
+    setSelectedDates((prev) =>
+      prev.filter((d) => format(d, "yyyy-MM-dd") !== dateStr)
+    );
+  };
+
+  // Validate current step
   const canProceed = () => {
     switch (currentStep) {
       case 1:
         return userType !== "";
       case 2:
-        return selectedSoftware.length > 0 &&
-               (!selectedSoftware.includes(Software.OTRO) || otherSoftware.trim().length > 0);
+        return (
+          selectedSoftware.length > 0 &&
+          (!selectedSoftware.includes(Software.OTRO) ||
+            otherSoftware.trim().length > 0)
+        );
       case 3:
         return purpose !== "";
       case 4:
@@ -140,13 +147,23 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
       case 5:
         return selectedComputerNumber !== undefined;
       case 6:
-        return selectedDates.length > 0;
+        return selectedTimeBlocks.length > 0;
+      case 7:
+        if (reservationMode === "single") {
+          return selectedDates.length > 0;
+        } else {
+          return (
+            recurrence !== null &&
+            recurrence.startDate !== "" &&
+            recurrence.daysOfWeek.length > 0
+          );
+        }
       default:
         return false;
     }
   };
 
-  // Navegar entre pasos
+  // Navigation
   const goToNextStep = () => {
     if (canProceed() && currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
@@ -161,9 +178,9 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
     }
   };
 
-  // Enviar formulario
+  // Submit form
   const handleSubmit = async () => {
-    if (!canProceed() || !selectedComputerNumber || selectedDates.length === 0) {
+    if (!canProceed() || !selectedComputerNumber) {
       setError("Por favor completa todos los campos requeridos");
       return;
     }
@@ -172,78 +189,100 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
     setError(null);
 
     try {
-      // Create a reservation for each selected date
-      const reservationPromises = selectedDates.map(async (date) => {
-        const reservationDate = date.toISOString().split('T')[0]!;
+      const reservationData: CreateLabReservationDto = {
+        userType: userType as UserType,
+        software: selectedSoftware,
+        ...(selectedSoftware.includes(Software.OTRO) && otherSoftware
+          ? { otherSoftware }
+          : {}),
+        purpose: purpose as Purpose,
+        description,
+        computerNumber: selectedComputerNumber,
+        timeBlocks: selectedTimeBlocks,
+        ...(reservationMode === "single"
+          ? { dates: selectedDates.map((d) => format(d, "yyyy-MM-dd")) }
+          : { recurrence: recurrence as RecurrencePattern }),
+      };
 
-        const reservationData: CreateLabReservationDto = {
-          userType: userType as UserType,
-          software: selectedSoftware,
-          ...(selectedSoftware.includes(Software.OTRO) && otherSoftware ? { otherSoftware } : {}),
-          purpose: purpose as Purpose,
-          description,
-          computerNumber: selectedComputerNumber,
-          reservationDate,
-        };
+      console.log("Enviando reserva:", reservationData);
 
-        console.log('Enviando reserva:', reservationData);
-
-        const response = await fetch("/api/lab-reservations", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(reservationData),
-        });
-
-        const data = await response.json();
-        console.log('Respuesta del servidor:', { status: response.status, data });
-
-        if (!response.ok) {
-          const errorMessage = data.message || data.error || `Error ${response.status}`;
-          console.error('Error en reserva:', errorMessage, data);
-          throw new Error(errorMessage);
-        }
-
-        return data;
+      const response = await fetch("/api/lab-reservations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reservationData),
       });
 
-      // Wait for all reservations to be created
-      await Promise.all(reservationPromises);
+      const data = await response.json();
+      console.log("Respuesta del servidor:", { status: response.status, data });
+
+      if (!response.ok) {
+        const errorMessage =
+          data.message || data.error || `Error ${response.status}`;
+        console.error("Error en reserva:", errorMessage, data);
+        throw new Error(errorMessage);
+      }
 
       if (onSuccess) {
         onSuccess();
       }
     } catch (err) {
-      console.error('Error completo:', err);
-      setError(err instanceof Error ? err.message : "Error al enviar las solicitudes");
+      console.error("Error completo:", err);
+      setError(
+        err instanceof Error ? err.message : "Error al enviar las solicitudes"
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const stepTitles = [
+    "Tipo de Usuario",
+    "Software Requerido",
+    "Propósito de Uso",
+    "Descripción del Proyecto",
+    "Seleccionar Computadora",
+    "Bloques Horarios",
+    "Fechas de Reserva",
+  ];
+
+  const stepDescriptions = [
+    "Indica tu tipo de usuario",
+    "Selecciona el software que necesitarás usar",
+    "¿Para qué usarás las computadoras?",
+    "Describe tu proyecto o actividad (mínimo 20 caracteres)",
+    "Elige la computadora que mejor se adapte a tus necesidades",
+    "Selecciona hasta 3 bloques horarios (máximo 5h 15min por día)",
+    "Configura las fechas para tu reserva",
+  ];
 
   return (
     <div className="max-w-6xl mx-auto">
       {/* Progress Indicator */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-2">
-          {[1, 2, 3, 4, 5, 6].map((step) => (
+          {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
             <div
               key={step}
-              className={`flex items-center ${step < 6 ? "flex-1" : ""}`}
+              className={`flex items-center ${step < totalSteps ? "flex-1" : ""}`}
             >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
                   step < currentStep
                     ? "bg-green-500 text-white"
                     : step === currentStep
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-600"
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-600"
                 }`}
               >
-                {step < currentStep ? <CheckCircle2 className="h-5 w-5" /> : step}
+                {step < currentStep ? (
+                  <CheckCircle2 className="h-5 w-5" />
+                ) : (
+                  step
+                )}
               </div>
-              {step < 6 && (
+              {step < totalSteps && (
                 <div
                   className={`flex-1 h-1 mx-2 transition-all ${
                     step < currentStep ? "bg-green-500" : "bg-gray-200"
@@ -261,411 +300,278 @@ export function LabReservationForm({ onSuccess, onCancel }: LabReservationFormPr
       {/* Step Content */}
       <Card>
         <CardHeader>
-          <CardTitle>
-            {currentStep === 1 && "Tipo de Usuario"}
-            {currentStep === 2 && "Software Requerido"}
-            {currentStep === 3 && "Propósito de Uso"}
-            {currentStep === 4 && "Descripción del Proyecto"}
-            {currentStep === 5 && "Seleccionar Computadora"}
-            {currentStep === 6 && "Seleccionar Fecha"}
+          <CardTitle className="flex items-center gap-2">
+            {currentStep === 6 && <Clock className="h-5 w-5 text-blue-600" />}
+            {currentStep === 7 && (
+              <CalendarDays className="h-5 w-5 text-blue-600" />
+            )}
+            {stepTitles[currentStep - 1]}
           </CardTitle>
-          <CardDescription>
-            {currentStep === 1 && "Indica tu tipo de usuario"}
-            {currentStep === 2 && "Selecciona el software que necesitarás usar"}
-            {currentStep === 3 && "¿Para qué usarás las computadoras?"}
-            {currentStep === 4 && "Describe tu proyecto o actividad (mínimo 20 caracteres)"}
-            {currentStep === 5 && "Elige la computadora que mejor se adapte a tus necesidades"}
-            {currentStep === 6 && "Selecciona el día que deseas reservar"}
-          </CardDescription>
+          <CardDescription>{stepDescriptions[currentStep - 1]}</CardDescription>
         </CardHeader>
 
         <CardContent className="min-h-[400px]">
-          {/* Step 1: User Type */}
-          {currentStep === 1 && (
-            <RadioGroup value={userType} onValueChange={(value) => setUserType(value as UserType)}>
-              <div className="space-y-3">
-                {Object.values(UserType).map((type) => (
-                  <div
-                    key={type}
-                    className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                      userType === type ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300"
-                    }`}
-                    onClick={() => setUserType(type)}
-                  >
-                    <RadioGroupItem value={type} id={type} />
-                    <Label htmlFor={type} className="flex-1 cursor-pointer font-medium">
-                      {USER_TYPE_LABELS[type]}
-                    </Label>
+          <AnimatePresence mode="wait">
+            {/* Step 1: User Type */}
+            {currentStep === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <RadioGroup
+                  value={userType}
+                  onValueChange={(value) => setUserType(value as UserType)}
+                >
+                  <div className="space-y-3">
+                    {Object.values(UserType).map((type) => (
+                      <div
+                        key={type}
+                        className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                          userType === type
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 hover:border-blue-300"
+                        }`}
+                        onClick={() => setUserType(type)}
+                      >
+                        <RadioGroupItem value={type} id={type} />
+                        <Label
+                          htmlFor={type}
+                          className="flex-1 cursor-pointer font-medium"
+                        >
+                          {USER_TYPE_LABELS[type]}
+                        </Label>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </RadioGroup>
-          )}
+                </RadioGroup>
+              </motion.div>
+            )}
 
-          {/* Step 2: Software */}
-          {currentStep === 2 && (
-            <div className="space-y-4">
-              <div className="grid gap-3">
-                {Object.values(Software).map((software) => (
-                  <div
-                    key={software}
-                    className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                      selectedSoftware.includes(software) ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300"
-                    }`}
-                    onClick={() => handleSoftwareToggle(software)}
-                  >
-                    <Checkbox
-                      checked={selectedSoftware.includes(software)}
-                      onCheckedChange={() => handleSoftwareToggle(software)}
-                    />
-                    <Label className="flex-1 cursor-pointer font-medium">
-                      {SOFTWARE_LABELS[software]}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-
-              {selectedSoftware.includes(Software.OTRO) && (
-                <div className="space-y-2">
-                  <Label htmlFor="otherSoftware">Especifica el software que necesitas</Label>
-                  <Input
-                    id="otherSoftware"
-                    value={otherSoftware}
-                    onChange={(e) => setOtherSoftware(e.target.value)}
-                    placeholder="Ej: MATLAB, AutoCAD, etc."
-                  />
-                </div>
-              )}
-
-              {selectedSoftware.length > 0 && (
-                <div className="flex flex-wrap gap-2 p-4 bg-blue-50 rounded-lg">
-                  <span className="font-medium">Seleccionados:</span>
-                  {selectedSoftware.map((software) => (
-                    <Badge key={software} variant="secondary">
-                      {SOFTWARE_LABELS[software]}
-                      {software === Software.OTRO && otherSoftware && `: ${otherSoftware}`}
-                    </Badge>
+            {/* Step 2: Software */}
+            {currentStep === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-4"
+              >
+                <div className="grid gap-3">
+                  {Object.values(Software).map((software) => (
+                    <div
+                      key={software}
+                      className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                        selectedSoftware.includes(software)
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200 hover:border-blue-300"
+                      }`}
+                      onClick={() => handleSoftwareToggle(software)}
+                    >
+                      <Checkbox
+                        checked={selectedSoftware.includes(software)}
+                        onCheckedChange={() => handleSoftwareToggle(software)}
+                      />
+                      <Label className="flex-1 cursor-pointer font-medium">
+                        {SOFTWARE_LABELS[software]}
+                      </Label>
+                    </div>
                   ))}
                 </div>
-              )}
-            </div>
-          )}
 
-          {/* Step 3: Purpose */}
-          {currentStep === 3 && (
-            <RadioGroup value={purpose} onValueChange={(value) => setPurpose(value as Purpose)}>
-              <div className="space-y-3">
-                {Object.values(Purpose).map((p) => (
-                  <div
-                    key={p}
-                    className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                      purpose === p ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-blue-300"
-                    }`}
-                    onClick={() => setPurpose(p)}
-                  >
-                    <RadioGroupItem value={p} id={p} />
-                    <Label htmlFor={p} className="flex-1 cursor-pointer font-medium">
-                      {PURPOSE_LABELS[p]}
+                {selectedSoftware.includes(Software.OTRO) && (
+                  <div className="space-y-2">
+                    <Label htmlFor="otherSoftware">
+                      Especifica el software que necesitas
                     </Label>
-                  </div>
-                ))}
-              </div>
-            </RadioGroup>
-          )}
-
-          {/* Step 4: Description */}
-          {currentStep === 4 && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="description">
-                  Descripción detallada de tu proyecto o actividad
-                </Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe para qué necesitas usar las computadoras del laboratorio. Incluye detalles sobre tu proyecto, investigación o trabajo..."
-                  rows={8}
-                  className="resize-none"
-                />
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    Mínimo 20 caracteres
-                  </span>
-                  <span className={description.length >= 20 ? "text-green-600" : "text-red-600"}>
-                    {description.length} / 20
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 5: Computer Selection */}
-          {currentStep === 5 && userType && (
-            <ComputerSelector
-              userType={userType as UserType}
-              {...(selectedComputerNumber !== undefined && { selectedComputerNumber })}
-              onSelect={setSelectedComputerNumber}
-            />
-          )}
-
-          {/* Step 6: Date Selection */}
-          {currentStep === 6 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-6"
-            >
-              <Alert className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 shadow-lg">
-                <div className="flex items-start gap-3">
-                  <CalendarDays className="h-6 w-6 text-blue-600 mt-1 flex-shrink-0" />
-                  <AlertDescription className="text-blue-900 flex-1">
-                    <div className="space-y-3">
-                      <p className="font-bold text-lg leading-relaxed">
-                        Selecciona uno o más días para tu reserva
-                      </p>
-                      <p className="text-sm leading-relaxed">
-                        Haz clic en los días deseados. Puedes seleccionar múltiples fechas para tu reserva.
-                      </p>
-                      {loadingReservations && (
-                        <p className="text-sm text-blue-600 flex items-center gap-2 mt-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Cargando tus reservas existentes...
-                        </p>
-                      )}
-                      {!loadingReservations && existingReservations.length > 0 && (
-                        <p className="text-sm text-orange-600 font-semibold mt-2">
-                          ⚠️ Tienes {existingReservations.length} fecha(s) ya reservada(s). Estas fechas aparecen deshabilitadas en el calendario.
-                        </p>
-                      )}
-                      {selectedComputerNumber && (
-                        <motion.div
-                          initial={{ scale: 0.9, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className="flex items-center gap-2 mt-4 pt-3 border-t border-blue-300"
-                        >
-                          <span className="text-blue-700 font-semibold">Computadora seleccionada:</span>
-                          <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-md">
-                            #{selectedComputerNumber}
-                          </span>
-                        </motion.div>
-                      )}
-                    </div>
-                  </AlertDescription>
-                </div>
-              </Alert>
-
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.1 }}
-                className="relative w-full flex justify-center"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-2xl blur-xl" />
-                <div className="relative flex justify-center p-8 md:p-12 bg-gradient-to-br from-blue-50 via-white to-indigo-50 rounded-2xl border-2 border-blue-300 shadow-2xl w-full max-w-4xl">
-                  <div className="lab-reservation-calendar w-full flex justify-center">
-                    <div className="inline-block">
-                    <Calendar
-                      key={calendarKey}
-                      mode="multiple"
-                      selected={selectedDates}
-                      onSelect={handleDateSelect}
-                      disabled={(date) => {
-                        // Deshabilitar fechas pasadas
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
-                        if (date < today) return true;
-
-                        // Deshabilitar días que no son Lunes (1), Martes (2), Miércoles (3), Jueves (4), Viernes (5)
-                        const dayOfWeek = date.getDay(); // 0=Domingo, 1=Lunes, 2=Martes, etc.
-                        const validDays = [1, 2, 3, 4, 5]; // Lunes, Martes, Miércoles, Jueves, Viernes
-                        if (!validDays.includes(dayOfWeek)) return true;
-
-                        // Deshabilitar fechas que el usuario ya tiene reservadas
-                        const dateStr = date.toISOString().split('T')[0]!;
-                        return existingReservations.includes(dateStr);
-                      }}
-                      className="rounded-xl border-0 w-full"
-                      classNames={{
-                        months: "w-full",
-                        month: "w-full space-y-6",
-                        caption: "flex justify-center pt-2 relative items-center mb-6",
-                        caption_label: "text-2xl font-bold text-gray-800",
-                        nav: "space-x-1 flex items-center",
-                        nav_button: "h-12 w-12 bg-white hover:bg-blue-100 rounded-lg shadow-md p-0 opacity-80 hover:opacity-100 transition-all duration-200 border border-gray-300",
-                        nav_button_previous: "absolute left-2",
-                        nav_button_next: "absolute right-2",
-                        table: "w-full border-separate",
-                        head_row: "",
-                        head_cell: "text-gray-700 font-bold text-base uppercase text-center p-3",
-                        row: "",
-                        cell: "text-center p-0",
-                        day: "h-16 w-16 p-0 font-semibold text-lg hover:bg-blue-100 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-lg border-2 border-transparent hover:border-blue-300 cursor-pointer",
-                        day_selected: "",
-                        day_today: "bg-gradient-to-br from-orange-100 to-orange-200 text-orange-900 font-bold border-2 border-orange-400",
-                        day_outside: "text-gray-400 opacity-30",
-                        day_disabled: "text-gray-300 opacity-20 cursor-not-allowed hover:bg-transparent hover:scale-100 hover:border-transparent line-through",
-                        day_range_middle: "",
-                        day_range_start: "",
-                        day_range_end: "",
-                        day_hidden: "invisible",
-                      }}
+                    <Input
+                      id="otherSoftware"
+                      value={otherSoftware}
+                      onChange={(e) => setOtherSoftware(e.target.value)}
+                      placeholder="Ej: MATLAB, AutoCAD, etc."
                     />
-                    </div>
-                    <style jsx global>{`
-                      /* Remove all table borders */
-                      .lab-reservation-calendar table,
-                      .lab-reservation-calendar thead,
-                      .lab-reservation-calendar tbody,
-                      .lab-reservation-calendar tr,
-                      .lab-reservation-calendar th,
-                      .lab-reservation-calendar td {
-                        border: none !important;
-                      }
+                  </div>
+                )}
 
-                      /* Table styling */
-                      .lab-reservation-calendar table {
-                        border-spacing: 10px !important;
-                        border-collapse: separate !important;
-                      }
+                {selectedSoftware.length > 0 && (
+                  <div className="flex flex-wrap gap-2 p-4 bg-blue-50 rounded-lg">
+                    <span className="font-medium">Seleccionados:</span>
+                    {selectedSoftware.map((software) => (
+                      <Badge key={software} variant="secondary">
+                        {SOFTWARE_LABELS[software]}
+                        {software === Software.OTRO &&
+                          otherSoftware &&
+                          `: ${otherSoftware}`}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
 
-                      /* Center content in cells */
-                      .lab-reservation-calendar td,
-                      .lab-reservation-calendar th {
-                        text-align: center !important;
-                        vertical-align: middle !important;
-                        padding: 0 !important;
-                      }
+            {/* Step 3: Purpose */}
+            {currentStep === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <RadioGroup
+                  value={purpose}
+                  onValueChange={(value) => setPurpose(value as Purpose)}
+                >
+                  <div className="space-y-3">
+                    {Object.values(Purpose).map((p) => (
+                      <div
+                        key={p}
+                        className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                          purpose === p
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 hover:border-blue-300"
+                        }`}
+                        onClick={() => setPurpose(p)}
+                      >
+                        <RadioGroupItem value={p} id={p} />
+                        <Label
+                          htmlFor={p}
+                          className="flex-1 cursor-pointer font-medium"
+                        >
+                          {PURPOSE_LABELS[p]}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </RadioGroup>
+              </motion.div>
+            )}
 
-                      /* Day buttons */
-                      .lab-reservation-calendar button[name="day"] {
-                        display: flex !important;
-                        align-items: center !important;
-                        justify-content: center !important;
-                        margin: 0 auto !important;
-                        position: relative !important;
+            {/* Step 4: Description */}
+            {currentStep === 4 && (
+              <motion.div
+                key="step4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-4"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="description">
+                    Descripción detallada de tu proyecto o actividad
+                  </Label>
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe para qué necesitas usar las computadoras del laboratorio. Incluye detalles sobre tu proyecto, investigación o trabajo..."
+                    rows={8}
+                    className="resize-none"
+                  />
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      Mínimo 20 caracteres
+                    </span>
+                    <span
+                      className={
+                        description.length >= 20
+                          ? "text-green-600"
+                          : "text-red-600"
                       }
-
-                      /* Make entire button area clickable with pseudo-element */
-                      .lab-reservation-calendar button[name="day"]::after {
-                        content: '';
-                        position: absolute;
-                        top: -8px;
-                        left: -8px;
-                        right: -8px;
-                        bottom: -8px;
-                        cursor: pointer;
-                      }
-
-                      /* Remove any range selection styling that causes expansion */
-                      .lab-reservation-calendar .rdp-day_range_start::before,
-                      .lab-reservation-calendar .rdp-day_range_end::before,
-                      .lab-reservation-calendar .rdp-day_range_middle::before,
-                      .lab-reservation-calendar [aria-selected]::before,
-                      .lab-reservation-calendar [aria-selected]::after {
-                        display: none !important;
-                      }
-
-                      /* Selected dates - GREEN */
-                      .lab-reservation-calendar button[name="day"][aria-selected="true"],
-                      .lab-reservation-calendar button[aria-selected="true"],
-                      .lab-reservation-calendar .rdp-day_selected,
-                      .lab-reservation-calendar [aria-selected="true"],
-                      .lab-reservation-calendar .rdp-button[aria-selected="true"] {
-                        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-                        color: white !important;
-                        font-weight: 700 !important;
-                        box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4), 0 4px 6px -2px rgba(16, 185, 129, 0.3) !important;
-                        border: 3px solid #34d399 !important;
-                        transform: scale(1.05) !important;
-                        border-radius: 8px !important;
-                      }
-
-                      /* Hover state for selected dates */
-                      .lab-reservation-calendar button[name="day"][aria-selected="true"]:hover,
-                      .lab-reservation-calendar button[aria-selected="true"]:hover,
-                      .lab-reservation-calendar .rdp-day_selected:hover,
-                      .lab-reservation-calendar [aria-selected="true"]:hover {
-                        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
-                        transform: scale(1.08) !important;
-                      }
-                    `}</style>
+                    >
+                      {description.length} / 20
+                    </span>
                   </div>
                 </div>
               </motion.div>
+            )}
 
-              <AnimatePresence>
-                {selectedDates.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="p-6 bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-2xl border-2 border-green-400 shadow-xl">
-                      <div className="space-y-4">
-                        <motion.div
-                          initial={{ x: -20, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          className="flex items-center justify-between"
-                        >
-                          <h4 className="text-xl font-bold text-green-900 flex items-center gap-2">
-                            <CheckCircle2 className="h-6 w-6 text-green-600" />
-                            {selectedDates.length} {selectedDates.length === 1 ? 'Fecha Seleccionada' : 'Fechas Seleccionadas'}
-                          </h4>
-                          <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setSelectedDates([])}
-                            className="text-sm text-red-600 hover:text-red-800 font-semibold underline px-3 py-1 rounded-lg hover:bg-red-50 transition-colors"
-                          >
-                            Limpiar todas
-                          </motion.button>
-                        </motion.div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                          <AnimatePresence>
-                            {selectedDates
-                              .sort((a, b) => a.getTime() - b.getTime())
-                              .map((date, index) => (
-                                <motion.div
-                                  key={index}
-                                  initial={{ scale: 0, opacity: 0 }}
-                                  animate={{ scale: 1, opacity: 1 }}
-                                  exit={{ scale: 0, opacity: 0 }}
-                                  transition={{ duration: 0.2, delay: index * 0.05 }}
-                                  whileHover={{ scale: 1.03, y: -2 }}
-                                  className="flex items-center justify-between bg-white p-4 rounded-xl border-2 border-green-500 shadow-md hover:shadow-lg transition-shadow"
-                                >
-                                  <span className="text-green-900 font-semibold flex items-center gap-2">
-                                    <CalendarDays className="h-4 w-4 text-green-600" />
-                                    {date.toLocaleDateString("es-ES", {
-                                      weekday: "short",
-                                      day: "numeric",
-                                      month: "short",
-                                      year: "numeric",
-                                    })}
-                                  </span>
-                                  <motion.button
-                                    whileHover={{ scale: 1.2, rotate: 90 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => setSelectedDates(selectedDates.filter((_, i) => i !== index))}
-                                    className="text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full w-7 h-7 flex items-center justify-center font-bold text-xl transition-colors"
-                                  >
-                                    ×
-                                  </motion.button>
-                                </motion.div>
-                              ))}
-                          </AnimatePresence>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+            {/* Step 5: Computer Selection */}
+            {currentStep === 5 && userType && (
+              <motion.div
+                key="step5"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <ComputerSelector
+                  userType={userType as UserType}
+                  {...(selectedComputerNumber !== undefined && {
+                    selectedComputerNumber,
+                  })}
+                  onSelect={setSelectedComputerNumber}
+                />
+              </motion.div>
+            )}
+
+            {/* Step 6: Time Block Selection */}
+            {currentStep === 6 && (
+              <motion.div
+                key="step6"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <TimeBlockSelector
+                  selectedBlocks={selectedTimeBlocks}
+                  onBlocksChange={setSelectedTimeBlocks}
+                  maxBlocks={3}
+                />
+              </motion.div>
+            )}
+
+            {/* Step 7: Dates/Recurrence */}
+            {currentStep === 7 && (
+              <motion.div
+                key="step7"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                {loadingReservations && (
+                  <div className="flex items-center gap-2 text-sm text-blue-600">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Cargando tus reservas existentes...
+                  </div>
                 )}
-              </AnimatePresence>
-            </motion.div>
-          )}
+
+                <RecurrenceSelector
+                  mode={reservationMode}
+                  onModeChange={setReservationMode}
+                  selectedDates={selectedDates}
+                  onDatesChange={setSelectedDates}
+                  recurrence={recurrence}
+                  onRecurrenceChange={setRecurrence}
+                  disabledDates={existingReservations.map(
+                    (d) => new Date(d + "T12:00:00")
+                  )}
+                />
+
+                {/* Preview */}
+                {(selectedDates.length > 0 ||
+                  (recurrence &&
+                    recurrence.startDate &&
+                    recurrence.daysOfWeek.length > 0)) &&
+                  selectedComputerNumber && (
+                    <div className="mt-6 pt-6 border-t">
+                      <h4 className="font-semibold mb-4 flex items-center gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        Vista previa de tu reserva
+                      </h4>
+                      <ReservationPreview
+                        mode={reservationMode}
+                        selectedDates={selectedDates}
+                        recurrence={recurrence}
+                        computerNumber={selectedComputerNumber}
+                        timeBlocks={selectedTimeBlocks}
+                        onRemoveDate={handleRemoveDate}
+                      />
+                    </div>
+                  )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {error && (
             <Alert variant="destructive" className="mt-4">

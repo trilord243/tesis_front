@@ -28,7 +28,7 @@ export enum Purpose {
   MINOR = 'minor',
 }
 
-/** @deprecated - Use computer-based reservations instead */
+// Bloques horarios disponibles (1h 45min cada uno)
 export enum TimeBlock {
   BLOCK_1 = '07:00-08:45',
   BLOCK_2 = '08:45-10:30',
@@ -38,13 +38,23 @@ export enum TimeBlock {
   BLOCK_6 = '15:45-17:30',
 }
 
-/** @deprecated - Use computer-based reservations instead */
+export const VALID_TIME_BLOCKS = Object.values(TimeBlock);
+
 export enum DayOfWeek {
-  LUNES = 'lunes',
-  MARTES = 'martes',
-  MIERCOLES = 'miercoles',
-  JUEVES = 'jueves',
-  VIERNES = 'viernes',
+  LUNES = 1,
+  MARTES = 2,
+  MIERCOLES = 3,
+  JUEVES = 4,
+  VIERNES = 5,
+}
+
+export const VALID_DAYS = [DayOfWeek.LUNES, DayOfWeek.MARTES, DayOfWeek.MIERCOLES, DayOfWeek.JUEVES, DayOfWeek.VIERNES] as const;
+
+// TimeSlot represents a specific date with selected time blocks
+export interface TimeSlot {
+  readonly date: string; // YYYY-MM-DD
+  readonly dayOfWeek: DayOfWeek;
+  readonly blocks: TimeBlock[];
 }
 
 export enum ReservationStatus {
@@ -74,11 +84,11 @@ export interface Computer {
   readonly updatedAt: string;
 }
 
-/** @deprecated - Use computer-based reservations instead */
-export interface TimeSlot {
-  readonly date: string; // ISO date string (YYYY-MM-DD)
-  readonly dayOfWeek: DayOfWeek;
-  readonly blocks: readonly TimeBlock[]; // Array de bloques (máximo 2)
+// Patrón de recurrencia para reservas semanales
+export interface RecurrencePattern {
+  readonly startDate: string; // YYYY-MM-DD - Fecha de inicio
+  readonly daysOfWeek: readonly number[]; // [1, 3, 5] = Lunes, Miércoles, Viernes (1=Lun, 5=Vie)
+  readonly numberOfWeeks: number; // Máximo 4 semanas
 }
 
 export interface LabReservation {
@@ -91,9 +101,12 @@ export interface LabReservation {
   readonly otherSoftware?: string;
   readonly purpose: Purpose;
   readonly description: string;
-  // NEW: Computer-based reservation fields
+  // Campos de reserva
   readonly reservationDate: string; // YYYY-MM-DD
   readonly computerNumber: number; // 1-9
+  readonly timeBlocks: readonly string[]; // ["07:00-08:45", "08:45-10:30"] - máx 3
+  readonly recurrenceGroupId?: string; // UUID para agrupar reservas del mismo patrón
+  // Estado
   readonly status: ReservationStatus;
   readonly approvedBy?: string;
   readonly approvedAt?: string;
@@ -111,9 +124,12 @@ export interface CreateLabReservationDto {
   readonly otherSoftware?: string;
   readonly purpose: Purpose;
   readonly description: string;
-  // NEW: Computer-based reservation fields
-  readonly reservationDate: string; // YYYY-MM-DD
   readonly computerNumber: number; // 1-9
+  readonly timeBlocks: readonly string[]; // Bloques seleccionados (máx 3)
+  // Opción A: Fechas específicas (para reservas puntuales o múltiples fechas)
+  readonly dates?: readonly string[]; // ["2025-12-02", "2025-12-04"]
+  // Opción B: Patrón recurrente (para reservas semanales)
+  readonly recurrence?: RecurrencePattern;
 }
 
 export interface UpdateLabReservationDto {
@@ -135,14 +151,23 @@ export interface LabReservationResponse {
   readonly message?: string;
 }
 
+// Disponibilidad por bloque horario
+export interface BlockAvailability {
+  readonly block: string; // "07:00-08:45"
+  readonly availableComputers: readonly number[]; // [1,2,3,4,5,6,7,8,9] - computadoras disponibles
+  readonly occupiedComputers: readonly number[]; // [3] - computadoras ocupadas
+}
+
 export interface AvailabilityResponse {
   readonly date: string;
-  readonly dayName?: string;
-  readonly available: boolean;
-  readonly message?: string;
-  readonly availableComputers?: readonly number[]; // Available computer numbers
-  readonly occupiedComputers?: readonly number[]; // Occupied computer numbers
-  readonly totalReservations?: number;
+  readonly dayName: string;
+  readonly dayOfWeek: number; // 1-5 (Lun-Vie)
+  readonly isValidDay: boolean;
+  readonly blocks: readonly BlockAvailability[];
+}
+
+export interface BulkAvailabilityResponse {
+  readonly [date: string]: AvailabilityResponse;
 }
 
 // Helper types for UI
@@ -151,13 +176,21 @@ export interface TimeBlockOption {
   readonly label: string;
   readonly startTime: string;
   readonly endTime: string;
+  readonly duration: string;
 }
 
-export interface DayReservation {
-  readonly date: string;
-  readonly dayOfWeek: DayOfWeek;
-  readonly selectedBlocks: TimeBlock[];
-  readonly availableBlocks: TimeBlock[];
+export interface DayOption {
+  readonly value: DayOfWeek;
+  readonly label: string;
+  readonly shortLabel: string;
+}
+
+// Para el preview de fechas generadas
+export interface GeneratedDatePreview {
+  readonly date: string; // YYYY-MM-DD
+  readonly dayName: string; // "Lunes"
+  readonly formattedDate: string; // "2 Dic 2025"
+  readonly timeBlocksLabel: string; // "08:45 - 12:15 (2 bloques)"
 }
 
 // Constants
@@ -167,45 +200,58 @@ export const TIME_BLOCKS: readonly TimeBlockOption[] = [
     label: 'Bloque 1',
     startTime: '07:00',
     endTime: '08:45',
+    duration: '1h 45min',
   },
   {
     value: TimeBlock.BLOCK_2,
     label: 'Bloque 2',
     startTime: '08:45',
     endTime: '10:30',
+    duration: '1h 45min',
   },
   {
     value: TimeBlock.BLOCK_3,
     label: 'Bloque 3',
     startTime: '10:30',
     endTime: '12:15',
+    duration: '1h 45min',
   },
   {
     value: TimeBlock.BLOCK_4,
     label: 'Bloque 4',
     startTime: '12:15',
     endTime: '14:00',
+    duration: '1h 45min',
   },
   {
     value: TimeBlock.BLOCK_5,
     label: 'Bloque 5',
     startTime: '14:00',
     endTime: '15:45',
+    duration: '1h 45min',
   },
   {
     value: TimeBlock.BLOCK_6,
     label: 'Bloque 6',
     startTime: '15:45',
     endTime: '17:30',
+    duration: '1h 45min',
   },
 ] as const;
 
-export const VALID_DAYS = [
-  DayOfWeek.LUNES,
-  DayOfWeek.MARTES,
-  DayOfWeek.MIERCOLES,
-  DayOfWeek.JUEVES,
-  DayOfWeek.VIERNES,
+export const DAY_OPTIONS: readonly DayOption[] = [
+  { value: DayOfWeek.LUNES, label: 'Lunes', shortLabel: 'Lun' },
+  { value: DayOfWeek.MARTES, label: 'Martes', shortLabel: 'Mar' },
+  { value: DayOfWeek.MIERCOLES, label: 'Miércoles', shortLabel: 'Mié' },
+  { value: DayOfWeek.JUEVES, label: 'Jueves', shortLabel: 'Jue' },
+  { value: DayOfWeek.VIERNES, label: 'Viernes', shortLabel: 'Vie' },
+] as const;
+
+export const WEEKS_OPTIONS = [
+  { value: 1, label: '1 semana' },
+  { value: 2, label: '2 semanas' },
+  { value: 3, label: '3 semanas' },
+  { value: 4, label: '4 semanas' },
 ] as const;
 
 export const USER_TYPE_LABELS: Record<UserType, string> = {
@@ -252,3 +298,37 @@ export const STATUS_COLORS: Record<ReservationStatus, string> = {
   [ReservationStatus.COMPLETED]: 'bg-blue-100 text-blue-800',
   [ReservationStatus.CANCELLED]: 'bg-gray-100 text-gray-800',
 };
+
+// Utility functions
+export function getTimeBlockLabel(block: string): string {
+  const found = TIME_BLOCKS.find((b) => b.value === block);
+  return found ? `${found.startTime} - ${found.endTime}` : block;
+}
+
+export function getDayLabel(dayOfWeek: number): string {
+  const found = DAY_OPTIONS.find((d) => d.value === dayOfWeek);
+  return found ? found.label : `Día ${dayOfWeek}`;
+}
+
+export function formatTimeBlocksRange(blocks: readonly string[]): string {
+  if (blocks.length === 0) return '';
+
+  const sortedBlocks = [...blocks].sort();
+  const first = TIME_BLOCKS.find((b) => b.value === sortedBlocks[0]);
+  const last = TIME_BLOCKS.find((b) => b.value === sortedBlocks[sortedBlocks.length - 1]);
+
+  if (!first || !last) return blocks.join(', ');
+
+  return `${first.startTime} - ${last.endTime}`;
+}
+
+export function calculateTotalDuration(blocks: readonly string[]): string {
+  const minutes = blocks.length * 105; // 1h 45min = 105 minutes
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (remainingMinutes === 0) {
+    return `${hours}h`;
+  }
+  return `${hours}h ${remainingMinutes}min`;
+}

@@ -661,8 +661,8 @@ export default function AdminUsuariosPage() {
               <Label htmlFor="role">Rol *</Label>
               <Select
                 value={newUser.role}
-                onValueChange={(value: "superadmin" | "admin" | "user") =>
-                  setNewUser({ ...newUser, role: value })
+                onValueChange={(value) =>
+                  setNewUser({ ...newUser, role: value as "superadmin" | "admin" | "user" })
                 }
               >
                 <SelectTrigger>

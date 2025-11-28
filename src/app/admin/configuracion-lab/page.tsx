@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Settings, Users, Code, Target, Computer, Plus, Trash2, Edit, Save, X, Loader2 } from "lucide-react";
+import { Settings, Users, Code, Target, Plus, Trash2, Edit, Save, X, Loader2 } from "lucide-react";
 import { UserTypeConfig, SoftwareConfig, PurposeConfig } from "@/types/lab-config";
 
 export default function LabConfigPage() {
@@ -86,8 +86,8 @@ export default function LabConfigPage() {
       setIsCreating(false);
       setFormData({ key: "", label: "", order: 0 });
       await loadData();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setLoading(false);
     }
@@ -118,8 +118,8 @@ export default function LabConfigPage() {
       setSuccess("Actualizado exitosamente");
       setEditingId(null);
       await loadData();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setLoading(false);
     }
@@ -152,14 +152,14 @@ export default function LabConfigPage() {
 
       setSuccess("Eliminado exitosamente");
       await loadData();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setLoading(false);
     }
   };
 
-  const startEdit = (item: any) => {
+  const startEdit = (item: UserTypeConfig | SoftwareConfig | PurposeConfig) => {
     setEditingId(item._id);
     setFormData({ key: item.key, label: item.label, order: item.order });
   };
@@ -168,6 +168,10 @@ export default function LabConfigPage() {
     setEditingId(null);
     setIsCreating(false);
     setFormData({ key: "", label: "", order: 0 });
+  };
+
+  const isSoftwareConfig = (item: UserTypeConfig | SoftwareConfig | PurposeConfig): item is SoftwareConfig => {
+    return "isFixed" in item;
   };
 
   const renderList = () => {
@@ -219,7 +223,7 @@ export default function LabConfigPage() {
           </Card>
         )}
 
-        {items.map((item: any) => (
+        {items.map((item) => (
           <Card key={item._id}>
             <CardContent className="pt-6">
               {editingId === item._id ? (
@@ -260,7 +264,7 @@ export default function LabConfigPage() {
                     <h3 className="font-semibold text-lg">{item.label}</h3>
                     <p className="text-sm text-gray-600">Key: {item.key}</p>
                     <p className="text-xs text-gray-500">Orden: {item.order}</p>
-                    {item.isFixed && (
+                    {isSoftwareConfig(item) && item.isFixed && (
                       <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded mt-1 inline-block">
                         Fijo - No eliminable
                       </span>
@@ -271,10 +275,11 @@ export default function LabConfigPage() {
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="destructive"
+                      variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(item._id, item.isFixed)}
-                      disabled={item.isFixed}
+                      className="text-red-600 border-red-300 hover:bg-red-50"
+                      onClick={() => handleDelete(item._id, isSoftwareConfig(item) ? item.isFixed : false)}
+                      disabled={isSoftwareConfig(item) && item.isFixed}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

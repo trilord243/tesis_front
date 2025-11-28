@@ -14,6 +14,7 @@ export interface User {
   updatedAt: Date;
   role: "superadmin" | "admin" | "user";
   accessCodeExpiresAt?: Date;
+  emailVerified?: boolean;
 }
 
 export interface LoginCredentials {

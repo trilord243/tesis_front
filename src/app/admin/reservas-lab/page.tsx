@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminReservationDialog } from "@/components/lab-reservations/admin-reservation-dialog";
-import { LabReservationsCalendar } from "@/components/admin/lab-reservations-calendar";
+import { LabResourceCalendar } from "@/components/lab-reservations/lab-resource-calendar";
+import "@/styles/calendar.css";
 import {
   LabReservation,
   ReservationStatus,
@@ -19,6 +20,7 @@ import {
   USER_TYPE_LABELS,
   SOFTWARE_LABELS,
   PURPOSE_LABELS,
+  formatTimeBlocksRange,
 } from "@/types/lab-reservation";
 import {
   Calendar,
@@ -33,6 +35,7 @@ import {
   Computer,
   CalendarDays,
   List,
+  Repeat,
 } from "lucide-react";
 
 export default function AdminReservasLabPage() {
@@ -367,17 +370,29 @@ export default function AdminReservasLabPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span>
-                        Solicitada el {new Date(reservation.createdAt).toLocaleDateString("es-ES")}
-                      </span>
+                      {reservation.timeBlocks && reservation.timeBlocks.length > 0 ? (
+                        <span className="font-medium text-blue-700">
+                          {formatTimeBlocksRange(reservation.timeBlocks)}
+                        </span>
+                      ) : (
+                        <span>
+                          Solicitada el {new Date(reservation.createdAt).toLocaleDateString("es-ES")}
+                        </span>
+                      )}
                     </div>
                     <div>
                       <span className="text-muted-foreground">Tipo:</span>{" "}
                       <span className="font-medium">{USER_TYPE_LABELS[reservation.userType]}</span>
                     </div>
-                    <div>
+                    <div className="flex items-center gap-2">
                       <span className="text-muted-foreground">Propósito:</span>{" "}
                       <span className="font-medium">{PURPOSE_LABELS[reservation.purpose]}</span>
+                      {reservation.recurrenceGroupId && (
+                        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 ml-2">
+                          <Repeat className="h-3 w-3 mr-1" />
+                          Recurrente
+                        </Badge>
+                      )}
                     </div>
                   </div>
 
@@ -416,7 +431,11 @@ export default function AdminReservasLabPage() {
 
         {/* Tab de Calendario */}
         <TabsContent value="calendar">
-          <LabReservationsCalendar reservations={reservations} />
+          <LabResourceCalendar
+            reservations={reservations}
+            isAdmin={true}
+            onSelectReservation={handleViewReservation}
+          />
         </TabsContent>
       </Tabs>
 

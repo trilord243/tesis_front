@@ -12,7 +12,16 @@
       "Bash(find:*)",
       "Bash(curl:*)",
       "Bash(time curl -I https://centromundox.net/metaverse-build/metaverse.data.br)",
-      "Bash(time curl:*)"
+      "Bash(time curl:*)",
+      "Bash(git push:*)",
+      "Bash(gh run list:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(heroku releases:*)",
+      "Bash(heroku ps:*)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebSearch",
+      "WebFetch(domain:jquense.github.io)",
+      "WebFetch(domain:reactlibs.dev)"
     ],
     "deny": [],
     "ask": []

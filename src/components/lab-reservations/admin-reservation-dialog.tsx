@@ -20,8 +20,11 @@ import {
   USER_TYPE_LABELS,
   SOFTWARE_LABELS,
   PURPOSE_LABELS,
+  TIME_BLOCKS,
+  formatTimeBlocksRange,
+  calculateTotalDuration,
 } from "@/types/lab-reservation";
-import { Calendar, Computer, User, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Calendar, Computer, User, CheckCircle, XCircle, Loader2, Clock, Repeat } from "lucide-react";
 
 interface AdminReservationDialogProps {
   reservation: LabReservation | null;
@@ -210,6 +213,40 @@ export function AdminReservationDialog({
                   </Badge>
                 </div>
               </div>
+
+              {/* Time Blocks */}
+              {reservation.timeBlocks && reservation.timeBlocks.length > 0 && (
+                <div className="pt-3 border-t">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm text-muted-foreground">Bloques horarios:</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {reservation.timeBlocks.map((block) => {
+                      const blockInfo = TIME_BLOCKS.find(b => b.value === block);
+                      return (
+                        <Badge key={block} variant="secondary" className="bg-blue-100 text-blue-800">
+                          {blockInfo ? `${blockInfo.startTime} - ${blockInfo.endTime}` : block}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                  <p className="text-sm text-blue-600 mt-2">
+                    Duración total: <strong>{calculateTotalDuration(reservation.timeBlocks)}</strong>
+                  </p>
+                </div>
+              )}
+
+              {/* Recurrence Info */}
+              {reservation.recurrenceGroupId && (
+                <div className="pt-3 border-t">
+                  <div className="flex items-center gap-2 text-purple-600">
+                    <Repeat className="h-4 w-4" />
+                    <span className="text-sm font-medium">Parte de una reserva recurrente</span>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <span className="text-sm text-muted-foreground">Solicitada el:</span>
                 <p className="text-sm">{new Date(reservation.createdAt).toLocaleDateString("es-ES", {
@@ -255,7 +292,10 @@ export function AdminReservationDialog({
           {reservation.status === ReservationStatus.PENDING && (
             <Alert>
               <AlertDescription>
-                <strong>Importante:</strong> Al aprobar esta solicitud, la Computadora #{reservation.computerNumber} quedará reservada para el día {formatDate(reservation.reservationDate)} y no estará disponible para otros usuarios en esa fecha.
+                <strong>Importante:</strong> Al aprobar esta solicitud, la Computadora #{reservation.computerNumber} quedará reservada para el día {formatDate(reservation.reservationDate)}
+                {reservation.timeBlocks && reservation.timeBlocks.length > 0
+                  ? ` durante los bloques ${formatTimeBlocksRange(reservation.timeBlocks)}`
+                  : ""} y no estará disponible para otros usuarios en ese horario.
               </AlertDescription>
             </Alert>
           )}

@@ -20,6 +20,7 @@ import {
   Shield,
   Computer,
   BookOpen,
+  CalendarDays,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getUserProducts } from "@/lib/admin-products";
@@ -75,6 +76,13 @@ export default async function DashboardPage() {
           href: "/dashboard/reservar-lab",
           color: "#FF8200",
         },
+        {
+          title: "Ver Disponibilidad Lab",
+          description: "Consulta el calendario de disponibilidad de computadoras",
+          icon: CalendarDays,
+          href: "/dashboard/disponibilidad-lab",
+          color: "#22c55e",
+        },
       ],
     },
     {
@@ -128,8 +136,8 @@ export default async function DashboardPage() {
       <Navbar
         isAuthenticated={true}
         showAuthButtons={false}
-        isAdmin={user.role === "admin" || user.role === "superadmin"}
-        isSuperAdmin={user.role === "superadmin"}
+        isAdmin={false}
+        isSuperAdmin={false}
       />
       <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
         {/* Main Content */}

@@ -79,11 +79,13 @@ export function LabCalendarSelector({ selectedSlots, onSlotsChange }: LabCalenda
   };
 
   // Verificar si un bloque está disponible
-  const isBlockAvailable = (_block: TimeBlock): boolean => {
+  const isBlockAvailable = (block: TimeBlock): boolean => {
     // If no availability data, assume available
     if (!availability) return true;
-    // Use the general availability flag
-    return availability.available;
+    // Find the block in the availability data
+    const blockInfo = availability.blocks.find(b => b.block === block);
+    // If block not found or has available computers, it's available
+    return !blockInfo || blockInfo.availableComputers.length > 0;
   };
 
   // Manejar selección de bloque

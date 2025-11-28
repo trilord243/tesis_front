@@ -15,8 +15,10 @@ import {
   USER_TYPE_LABELS,
   SOFTWARE_LABELS,
   PURPOSE_LABELS,
+  calculateTotalDuration,
+  TIME_BLOCKS,
 } from "@/types/lab-reservation";
-import { Calendar, ArrowLeft, RefreshCw, AlertCircle, Loader2, Computer } from "lucide-react";
+import { Calendar, ArrowLeft, RefreshCw, AlertCircle, Loader2, Computer, Clock, Repeat, X } from "lucide-react";
 import { User } from "@/types/auth";
 
 export default function MisReservasLabPage() {
@@ -26,6 +28,7 @@ export default function MisReservasLabPage() {
   const [reservations, setReservations] = useState<LabReservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   const checkAuthAndLoadUser = useCallback(async () => {
     try {
@@ -90,6 +93,28 @@ export default function MisReservasLabPage() {
       month: "long",
       day: "numeric",
     });
+  };
+
+  const handleCancelReservation = async (reservationId: string) => {
+    if (!confirm("¿Estás seguro de que deseas cancelar esta reserva?")) return;
+
+    setCancellingId(reservationId);
+    try {
+      const response = await fetch(`/api/lab-reservations/${reservationId}/cancel`, {
+        method: "PATCH",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Error al cancelar la reserva");
+      }
+
+      await loadReservations();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al cancelar la reserva");
+    } finally {
+      setCancellingId(null);
+    }
   };
 
   if (authLoading) {
@@ -274,7 +299,7 @@ export default function MisReservasLabPage() {
                     </div>
                   </div>
 
-                  {/* Computadora y Fecha Reservada */}
+                  {/* Computadora, Fecha y Bloques Horarios */}
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-semibold text-sm text-muted-foreground mb-2">
@@ -299,18 +324,72 @@ export default function MisReservasLabPage() {
 
                     <div>
                       <h4 className="font-semibold text-sm text-muted-foreground mb-2">
-                        Fecha de Reserva
+                        Fecha y Horario
                       </h4>
                       <div className="p-4 border rounded-lg bg-card">
-                        <div className="flex items-center gap-2 font-medium text-lg">
+                        <div className="flex items-center gap-2 font-medium text-lg mb-3">
                           <Calendar className="h-5 w-5 text-blue-600" />
                           {formatDate(reservation.reservationDate)}
                         </div>
-                        <p className="text-sm text-muted-foreground mt-2">
-                          Toda la jornada del día seleccionado
-                        </p>
+
+                        {/* Bloques Horarios */}
+                        {reservation.timeBlocks && reservation.timeBlocks.length > 0 ? (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Clock className="h-4 w-4" />
+                              <span>Bloques horarios:</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {reservation.timeBlocks.map((block) => {
+                                const blockInfo = TIME_BLOCKS.find(b => b.value === block);
+                                return (
+                                  <Badge key={block} variant="secondary" className="bg-blue-100 text-blue-800">
+                                    {blockInfo ? `${blockInfo.startTime} - ${blockInfo.endTime}` : block}
+                                  </Badge>
+                                );
+                              })}
+                            </div>
+                            <p className="text-sm text-blue-600 font-medium">
+                              Duración total: {calculateTotalDuration(reservation.timeBlocks)}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            Toda la jornada del día seleccionado
+                          </p>
+                        )}
+
+                        {/* Indicador de reserva recurrente */}
+                        {reservation.recurrenceGroupId && (
+                          <div className="mt-3 pt-3 border-t flex items-center gap-2 text-sm text-purple-600">
+                            <Repeat className="h-4 w-4" />
+                            <span>Parte de una reserva recurrente</span>
+                          </div>
+                        )}
                       </div>
                     </div>
+
+                    {/* Botón de cancelar para reservas pendientes */}
+                    {reservation.status === "pending" && (
+                      <Button
+                        variant="outline"
+                        className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                        onClick={() => handleCancelReservation(reservation._id)}
+                        disabled={cancellingId === reservation._id}
+                      >
+                        {cancellingId === reservation._id ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Cancelando...
+                          </>
+                        ) : (
+                          <>
+                            <X className="mr-2 h-4 w-4" />
+                            Cancelar Reserva
+                          </>
+                        )}
+                      </Button>
+                    )}
 
                     {/* Información de Aprobación/Rechazo */}
                     {reservation.status === "approved" && reservation.approvedAt && (
