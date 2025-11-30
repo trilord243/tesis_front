@@ -23,7 +23,8 @@
       "WebFetch(domain:jquense.github.io)",
       "WebFetch(domain:reactlibs.dev)",
       "Bash(npm run format:*)",
-      "Bash(npx prettier:*)"
+      "Bash(npx prettier:*)",
+      "Bash(heroku logs:*)"
     ],
     "deny": [],
     "ask": []
