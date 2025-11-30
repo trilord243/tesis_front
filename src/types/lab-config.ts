@@ -45,7 +45,10 @@ export interface ComputerConfig {
   description: string;
   isAvailable: boolean;
   maintenanceNotes: string;
-  accessLevel: "normal" | "special";
+  accessLevel: "normal" | "special"; // DEPRECATED: Use allowedUserTypes instead
+  allowedUserTypes: string[]; // Lista de tipos de usuario permitidos. Si está vacío, todos pueden acceder
+  gridRow: number;
+  gridCol: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -87,6 +90,9 @@ export interface CreateComputerDto {
   isAvailable?: boolean;
   maintenanceNotes?: string;
   accessLevel?: "normal" | "special";
+  allowedUserTypes?: string[];
+  gridRow?: number;
+  gridCol?: number;
 }
 
 export type UpdateUserTypeDto = Partial<CreateUserTypeDto>;
