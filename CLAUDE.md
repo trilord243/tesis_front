@@ -554,3 +554,158 @@ Para verificar el deploy:
 heroku releases --app centromundox-backend
 heroku ps --app centromundox-backend
 ```
+
+---
+
+## Computer Lab Reservation System - Dynamic User Type Access Control
+
+Sistema de control de acceso dinámico para computadoras del laboratorio. Implementado en Noviembre 2025.
+
+### Overview
+
+El superadmin puede configurar qué tipos de usuario tienen acceso a cada computadora del laboratorio, en lugar de usar los niveles de acceso fijos "normal" y "special".
+
+### Access Control Logic
+
+```typescript
+// Función helper para verificar acceso (lab-layout-visual.tsx, computer-selector.tsx)
+function userHasAccess(computer: Computer, userType: string): boolean {
+  // Si es acceso "normal", todos pueden usar la computadora
+  if (computer.accessLevel === "normal") return true;
+
+  // Si es "special", verificar si el tipo de usuario está en allowedUserTypes
+  if (!computer.allowedUserTypes || computer.allowedUserTypes.length === 0) {
+    return false; // Sin tipos permitidos = nadie tiene acceso
+  }
+
+  return computer.allowedUserTypes.includes(userType);
+}
+```
+
+### Computer Entity Fields
+
+```typescript
+interface Computer {
+  // ... otros campos
+  accessLevel: "normal" | "special";  // DEPRECATED: Solo para compatibilidad
+  allowedUserTypes: string[];          // Lista de tipos de usuario permitidos
+}
+```
+
+### Frontend Components
+
+#### Lab Layout Editor (`src/components/admin/lab-layout-editor.tsx`)
+
+El editor visual para superadmins incluye:
+- Selector multi-select de tipos de usuario cuando `accessLevel === "special"`
+- Los tipos de usuario vienen de la configuración "Tipos de Usuario" del sistema
+- UI con checkboxes personalizados para seleccionar múltiples tipos
+
+```tsx
+// Cuando el accessLevel es "special", mostrar selector de tipos
+{newComputerForm.accessLevel === "special" && userTypes.length > 0 && (
+  <div className="space-y-2">
+    <Label>Tipos de Usuario Permitidos</Label>
+    <div className="grid grid-cols-2 gap-2">
+      {userTypes.filter((ut) => ut.isActive).map((userType) => (
+        <div key={userType._id} onClick={() => toggleUserType(userType.value)}>
+          {/* Checkbox + label */}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+```
+
+#### Lab Layout Visual (`src/components/lab-reservations/lab-layout-visual.tsx`)
+
+- Recibe `userType: string` prop en lugar del antiguo `userGroup`
+- Usa `userHasAccess()` para determinar si mostrar computadora como disponible
+- Computadoras sin acceso se muestran en gris con tooltip explicativo
+
+#### Computer Selector (`src/components/lab-reservations/computer-selector.tsx`)
+
+- Vista de tarjetas también usa `userHasAccess()` para filtrar
+- Muestra alerta informativa sobre acceso restringido
+- Pasa `userType` al componente `LabLayoutVisual`
+
+### Configuration Page (`src/app/admin/config-laboratorio/page.tsx`)
+
+- Obtiene los tipos de usuario de la configuración del sistema
+- Pasa los tipos activos al `LabLayoutEditor`:
+
+```typescript
+<LabLayoutEditor
+  computers={computers}
+  userTypes={configs
+    .filter((c) => c.type === "user_type")
+    .map((c) => ({
+      _id: c._id,
+      value: c.value,
+      label: c.label,
+      isActive: c.isActive,
+    }))}
+  // ...
+/>
+```
+
+### Types
+
+**File**: `src/types/lab-reservation.ts`
+
+```typescript
+interface Computer {
+  readonly _id: string;
+  readonly name: string;
+  readonly labConfigId: string;
+  readonly status: 'available' | 'occupied' | 'maintenance';
+  readonly accessLevel: 'normal' | 'special'; // DEPRECATED
+  readonly allowedUserTypes: readonly string[]; // Tipos de usuario permitidos
+  readonly gridRow?: number;
+  readonly gridColumn?: number;
+  readonly currentUserId?: string;
+  readonly currentReservationId?: string;
+}
+```
+
+**File**: `src/types/lab-config.ts`
+
+```typescript
+interface ComputerConfig {
+  // ... otros campos
+  accessLevel: "normal" | "special";
+  allowedUserTypes?: string[];
+  gridRow?: number;
+  gridColumn?: number;
+}
+
+interface CreateComputerDto {
+  // ... otros campos
+  accessLevel?: "normal" | "special";
+  allowedUserTypes?: string[];
+  gridRow?: number;
+  gridColumn?: number;
+}
+```
+
+### User Flow
+
+1. **Superadmin** va a `/admin/config-laboratorio`
+2. En el editor visual, selecciona una computadora para editar o crea una nueva
+3. Si establece `accessLevel = "special"`, aparece el selector de tipos de usuario
+4. Selecciona los tipos que pueden acceder (ej: "Estudiante", "Profesor", "Investigador")
+5. Guarda la configuración
+
+6. **Usuario** va a `/dashboard/reservar-lab`
+7. Selecciona su tipo de usuario en el formulario
+8. Solo ve como disponibles las computadoras donde su tipo está en `allowedUserTypes`
+9. Computadoras restringidas aparecen en gris y no se pueden seleccionar
+
+### Backend Support
+
+El backend (`../centromundox-api-reservas`) tiene:
+
+- **Entity**: Campo `allowedUserTypes: string[]` con `@Column("simple-array")`
+- **DTOs**: Validación con `@IsArray()` y `@IsString({ each: true })`
+- **Service**: Seed data incluye `allowedUserTypes: []` para todas las computadoras
+- **Migration**: Método `migrateAllowedUserTypes()` para computadoras existentes

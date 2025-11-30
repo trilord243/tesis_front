@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+// Note: Table y Select se usan solo para Computadoras
 import {
   ArrowLeft,
   Plus,
@@ -50,7 +51,9 @@ import {
   Target,
   Monitor,
   RefreshCw,
+  LayoutGrid,
 } from "lucide-react";
+import { LabLayoutEditor } from "@/components/admin/lab-layout-editor";
 import Link from "next/link";
 
 interface LabConfig {
@@ -76,6 +79,9 @@ interface Computer {
   isAvailable: boolean;
   maintenanceNotes: string;
   accessLevel: "normal" | "special";
+  allowedUserTypes: string[];
+  gridRow: number;
+  gridCol: number;
 }
 
 type ConfigType = "user_type" | "software" | "purpose";
@@ -373,6 +379,10 @@ export default function ConfigLaboratorioPage() {
                 <Monitor className="h-4 w-4 mr-2" />
                 Computadoras
               </TabsTrigger>
+              <TabsTrigger value="layout">
+                <LayoutGrid className="h-4 w-4 mr-2" />
+                Plano
+              </TabsTrigger>
             </TabsList>
 
             {/* Config Tabs */}
@@ -394,56 +404,52 @@ export default function ConfigLaboratorioPage() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Orden</TableHead>
-                          <TableHead>Valor</TableHead>
-                          <TableHead>Etiqueta</TableHead>
-                          <TableHead>Estado</TableHead>
-                          <TableHead className="text-right">Acciones</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {getConfigsByType(type).map((config) => (
-                          <TableRow key={config._id}>
-                            <TableCell>{config.order}</TableCell>
-                            <TableCell className="font-mono text-sm">
-                              {config.value}
-                            </TableCell>
-                            <TableCell>{config.label}</TableCell>
-                            <TableCell>
-                              <Badge variant={config.isActive ? "default" : "secondary"}>
-                                {config.isActive ? "Activo" : "Inactivo"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
+                    {getConfigsByType(type).length === 0 ? (
+                      <div className="text-center text-gray-500 py-12">
+                        <p className="mb-4">No hay opciones configuradas</p>
+                        <Button onClick={() => handleOpenConfigDialog()}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Agregar primera opción
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {getConfigsByType(type).map((config, index) => (
+                          <div
+                            key={config._id}
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-gray-400 text-sm w-6">{index + 1}.</span>
+                              <span className="font-medium">{config.label}</span>
+                              {!config.isActive && (
+                                <Badge variant="secondary" className="text-xs">
+                                  Inactivo
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1">
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleOpenConfigDialog(config)}
+                                title="Editar"
                               >
-                                <Pencil className="h-4 w-4" />
+                                <Pencil className="h-4 w-4 text-gray-500" />
                               </Button>
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleDeleteConfig(config._id)}
+                                title="Eliminar"
                               >
                                 <Trash2 className="h-4 w-4 text-red-500" />
                               </Button>
-                            </TableCell>
-                          </TableRow>
+                            </div>
+                          </div>
                         ))}
-                        {getConfigsByType(type).length === 0 && (
-                          <TableRow>
-                            <TableCell colSpan={5} className="text-center text-gray-500 py-8">
-                              No hay opciones configuradas
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -526,66 +532,107 @@ export default function ConfigLaboratorioPage() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            {/* Layout Tab */}
+            <TabsContent value="layout">
+              <Card>
+                <CardHeader>
+                  <div>
+                    <CardTitle>Plano del Laboratorio</CardTitle>
+                    <CardDescription>
+                      Organiza visualmente la distribución de las computadoras en el laboratorio
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <LabLayoutEditor
+                    computers={computers}
+                    userTypes={configs.filter((c) => c.type === "user_type").map((c) => ({
+                      _id: c._id,
+                      value: c.value,
+                      label: c.label,
+                      isActive: c.isActive,
+                    }))}
+                    onSave={async (computer) => {
+                      const response = await fetch(`/api/computers/${computer.number}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          gridRow: computer.gridRow,
+                          gridCol: computer.gridCol,
+                        }),
+                      });
+                      if (response.ok) {
+                        await fetchData();
+                      }
+                    }}
+                    onAdd={async (computer) => {
+                      const response = await fetch("/api/computers", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(computer),
+                      });
+                      if (response.ok) {
+                        await fetchData();
+                      }
+                    }}
+                    onDelete={async (computerNumber) => {
+                      const response = await fetch(`/api/computers/${computerNumber}`, {
+                        method: "DELETE",
+                      });
+                      if (response.ok) {
+                        await fetchData();
+                      }
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
         </main>
 
-        {/* Config Dialog */}
+        {/* Config Dialog - Simplificado */}
         <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>
-                {editingConfig ? "Editar Opción" : "Nueva Opción"}
+                {editingConfig ? "Editar" : "Agregar"} {CONFIG_LABELS[activeTab as ConfigType]?.title.slice(0, -1) || "Opción"}
               </DialogTitle>
               <DialogDescription>
                 {editingConfig
-                  ? "Modifica la etiqueta de la opción"
-                  : "Agrega una nueva opción al formulario"}
+                  ? "Modifica el nombre de esta opción"
+                  : `Escribe el nombre que verán los usuarios`}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              {!editingConfig && (
-                <>
-                  <div className="space-y-2">
-                    <Label>Tipo</Label>
-                    <Select
-                      value={configForm.type}
-                      onValueChange={(v) =>
-                        setConfigForm({ ...configForm, type: v as ConfigType })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="user_type">Tipo de Usuario</SelectItem>
-                        <SelectItem value="software">Software</SelectItem>
-                        <SelectItem value="purpose">Propósito</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Valor (interno, sin espacios)</Label>
-                    <Input
-                      value={configForm.value}
-                      onChange={(e) =>
-                        setConfigForm({
-                          ...configForm,
-                          value: e.target.value.toLowerCase().replace(/\s+/g, "_"),
-                        })
-                      }
-                      placeholder="ej: matlab_r2024"
-                    />
-                  </div>
-                </>
-              )}
+            <div className="py-4">
               <div className="space-y-2">
-                <Label>Etiqueta (visible al usuario)</Label>
+                <Label>Nombre</Label>
                 <Input
                   value={configForm.label}
-                  onChange={(e) =>
-                    setConfigForm({ ...configForm, label: e.target.value })
+                  onChange={(e) => {
+                    const label = e.target.value;
+                    // Generar valor automático del label
+                    const value = label
+                      .toLowerCase()
+                      .normalize("NFD")
+                      .replace(/[\u0300-\u036f]/g, "") // Quitar acentos
+                      .replace(/[^a-z0-9\s]/g, "") // Solo letras, números y espacios
+                      .trim()
+                      .replace(/\s+/g, "_"); // Espacios a guiones bajos
+                    setConfigForm({
+                      ...configForm,
+                      label,
+                      value: editingConfig ? configForm.value : value,
+                    });
+                  }}
+                  placeholder={
+                    activeTab === "user_type"
+                      ? "Ej: Profesor, Estudiante, Investigador..."
+                      : activeTab === "software"
+                        ? "Ej: Unity, Blender, MATLAB..."
+                        : "Ej: Tesis, Clases, Investigación..."
                   }
-                  placeholder="ej: MATLAB R2024"
+                  autoFocus
                 />
               </div>
             </div>
@@ -593,9 +640,12 @@ export default function ConfigLaboratorioPage() {
               <Button variant="outline" onClick={() => setConfigDialogOpen(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleSaveConfig} disabled={saving}>
+              <Button
+                onClick={handleSaveConfig}
+                disabled={saving || !configForm.label.trim()}
+              >
                 {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Guardar
+                {editingConfig ? "Guardar" : "Agregar"}
               </Button>
             </DialogFooter>
           </DialogContent>

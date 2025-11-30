@@ -1,13 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Computer, UserType, UserGroup } from "@/types/lab-reservation";
+import { Computer, UserType } from "@/types/lab-reservation";
 import { ComputerCard } from "./computer-card";
 import { LabLayoutVisual } from "./lab-layout-visual";
 import { UnityPlayer } from "@/components/unity/unity-player";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Loader2, LayoutGrid, Building2, Box } from "lucide-react";
+
+// Helper function to check if user has access to a computer (same logic as lab-layout-visual)
+function userHasAccessToComputer(computer: Computer, userTypeValue: string): boolean {
+  if (computer.accessLevel === "normal") return true;
+  if (!computer.allowedUserTypes || computer.allowedUserTypes.length === 0) return false;
+  return computer.allowedUserTypes.includes(userTypeValue);
+}
 
 interface ComputerSelectorProps {
   userType: UserType;
@@ -27,22 +34,14 @@ export function ComputerSelector({
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("layout"); // Default to visual layout
 
-  // Determine user group based on user type
-  const getUserGroup = (): UserGroup => {
-    if (userType === UserType.CFD || userType === UserType.ESTUDIANTE_CENTRO_MUNDO_X) {
-      return UserGroup.CFD;
-    }
-    return UserGroup.NORMAL;
-  };
-
   useEffect(() => {
     const fetchComputers = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const userGroup = getUserGroup();
-        const response = await fetch(`/api/computers?userGroup=${userGroup}`);
+        // Fetch all computers - access control is done on the frontend based on allowedUserTypes
+        const response = await fetch(`/api/computers`);
 
         if (!response.ok) {
           throw new Error("Error al cargar las computadoras");
@@ -89,8 +88,11 @@ export function ComputerSelector({
     );
   }
 
-  const userGroup = getUserGroup();
-  const availableCount = computers.filter((c) => c.isAvailable).length;
+  // Count computers the user has access to
+  const accessibleComputers = computers.filter((c) => userHasAccessToComputer(c, userType));
+  const availableAndAccessibleCount = accessibleComputers.filter((c) => c.isAvailable).length;
+  const totalAccessibleCount = accessibleComputers.length;
+  const maintenanceCount = accessibleComputers.filter((c) => !c.isAvailable).length;
 
   return (
     <div className="space-y-4">
@@ -98,24 +100,16 @@ export function ComputerSelector({
       <Alert className="bg-blue-50 border-blue-200">
         <AlertCircle className="h-4 w-4 text-blue-600" />
         <AlertDescription className="text-blue-900">
-          {userGroup === UserGroup.NORMAL ? (
-            <>
-              Como usuario <strong>{userType}</strong>, tienes acceso a{" "}
-              <strong>5 computadoras</strong> de acceso general (ubicadas en la parte superior del laboratorio).
-              <span className="block mt-2 text-sm">
-                Las computadoras del lateral izquierdo (6-9) están reservadas para uso CFD/Metaverso.
-              </span>
-            </>
-          ) : (
-            <>
-              Como miembro de <strong>{userType}</strong>, tienes acceso a{" "}
-              <strong>todas las 9 computadoras</strong> del laboratorio,
-              incluyendo las 5 de acceso general (arriba) y las 4 de uso CFD/Metaverso (lateral izquierdo).
-            </>
+          Como usuario <strong>{userType}</strong>, tienes acceso a{" "}
+          <strong>{totalAccessibleCount} computadora(s)</strong> del laboratorio.
+          {totalAccessibleCount < computers.length && (
+            <span className="block mt-2 text-sm">
+              Algunas computadoras tienen acceso restringido a ciertos tipos de usuario.
+            </span>
           )}
-          {availableCount < computers.length && (
+          {maintenanceCount > 0 && (
             <span className="block mt-2">
-              {computers.length - availableCount} computadora(s) en mantenimiento.
+              {maintenanceCount} computadora(s) en mantenimiento.
             </span>
           )}
         </AlertDescription>
@@ -158,7 +152,7 @@ export function ComputerSelector({
           computers={computers}
           {...(selectedComputerNumber !== undefined && { selectedComputerNumber })}
           onSelect={onSelect}
-          userGroup={userGroup}
+          userType={userType}
         />
       ) : viewMode === "3d" ? (
         <div className="space-y-4">
@@ -175,11 +169,11 @@ export function ComputerSelector({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {computers.map((computer) => {
-            // Disable special access computers for normal users
-            const isDisabledForUser = userGroup === UserGroup.NORMAL && computer.accessLevel === 'special';
-            const isDisabled = !computer.isAvailable || isDisabledForUser;
+            // Check access using the new allowedUserTypes system
+            const hasAccess = userHasAccessToComputer(computer, userType);
+            const isDisabled = !computer.isAvailable || !hasAccess;
 
-            const restrictedMessage = isDisabledForUser ? "Solo disponible CFD/Metaverso" : undefined;
+            const restrictedMessage = !hasAccess ? "Acceso restringido" : undefined;
 
             return (
               <ComputerCard

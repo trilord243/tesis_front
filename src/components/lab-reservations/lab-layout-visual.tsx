@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Computer, UserGroup } from "@/types/lab-reservation";
+import { useState, useMemo } from "react";
+import { Computer } from "@/types/lab-reservation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Cpu, HardDrive, Monitor, CheckCircle2 } from "lucide-react";
@@ -12,7 +12,19 @@ interface LabLayoutVisualProps {
   selectedComputerNumber?: number;
   onSelect: (computerNumber: number) => void;
   disabled?: boolean;
-  userGroup: UserGroup;
+  userType: string; // The user's type from the form (e.g., "estudiante", "profesor", etc.)
+}
+
+// Helper function to check if user has access to a computer
+function userHasAccess(computer: Computer, userType: string): boolean {
+  // If accessLevel is "normal" or allowedUserTypes is empty, everyone has access
+  if (computer.accessLevel === "normal") return true;
+  if (!computer.allowedUserTypes || computer.allowedUserTypes.length === 0) {
+    // If special but no allowed types, nobody has access (except admin)
+    return false;
+  }
+  // Check if user's type is in the allowed list
+  return computer.allowedUserTypes.includes(userType);
 }
 
 export function LabLayoutVisual({
@@ -20,21 +32,49 @@ export function LabLayoutVisual({
   selectedComputerNumber,
   onSelect,
   disabled = false,
-  userGroup,
+  userType,
 }: LabLayoutVisualProps) {
   const [selectedForDetails, setSelectedForDetails] = useState<Computer | null>(null);
 
-  // Separar computadoras por posición
-  // Top row: computadoras 1-5 (normal access - acceso general)
-  const topComputers = computers.filter(c => c.number >= 1 && c.number <= 5).sort((a, b) => a.number - b.number);
-  // Left column: computadoras 6-9 (special access - CFD/Metaverso)
-  const leftComputers = computers.filter(c => c.number >= 6 && c.number <= 9).sort((a, b) => a.number - b.number);
+  // Calcular las dimensiones de la grilla basándose en las posiciones de las computadoras
+  const gridDimensions = useMemo(() => {
+    if (computers.length === 0) {
+      return { rows: 4, cols: 6 };
+    }
+    const maxRow = Math.max(...computers.map((c) => c.gridRow ?? 0));
+    const maxCol = Math.max(...computers.map((c) => c.gridCol ?? 0));
+    return {
+      rows: Math.max(maxRow + 1, 4),
+      cols: Math.max(maxCol + 1, 6),
+    };
+  }, [computers]);
+
+  // Obtener computadora en una posición específica
+  const getComputerAt = (row: number, col: number): Computer | undefined => {
+    return computers.find((c) => (c.gridRow ?? 0) === row && (c.gridCol ?? 0) === col);
+  };
+
+  // Verificar si hay computadoras con posiciones definidas
+  const hasGridPositions = useMemo(() => {
+    return computers.some((c) => c.gridRow !== undefined && c.gridRow !== 0 || c.gridCol !== undefined && c.gridCol !== 0);
+  }, [computers]);
+
+  // Fallback: separar computadoras por número si no hay posiciones definidas
+  const topComputers = useMemo(() => {
+    if (hasGridPositions) return [];
+    return computers.filter(c => c.number >= 1 && c.number <= 5).sort((a, b) => a.number - b.number);
+  }, [computers, hasGridPositions]);
+
+  const leftComputers = useMemo(() => {
+    if (hasGridPositions) return [];
+    return computers.filter(c => c.number >= 6 && c.number <= 9).sort((a, b) => a.number - b.number);
+  }, [computers, hasGridPositions]);
 
   const handleComputerClick = (computer: Computer) => {
-    // Check if user has access to this computer
-    const isRestrictedForUser = userGroup === UserGroup.NORMAL && computer.accessLevel === 'special';
+    // Check if user has access to this computer using the new allowedUserTypes system
+    const hasAccess = userHasAccess(computer, userType);
 
-    if (!disabled && computer.isAvailable && !isRestrictedForUser) {
+    if (!disabled && computer.isAvailable && hasAccess) {
       setSelectedForDetails(computer);
     }
   };
@@ -49,14 +89,14 @@ export function LabLayoutVisual({
   const ComputerStation = ({ computer }: { computer: Computer }) => {
     const isSelected = selectedComputerNumber === computer.number;
     const isAvailable = computer.isAvailable;
-    const isPremium = computer.accessLevel === "special";
-    const isRestrictedForUser = userGroup === UserGroup.NORMAL && computer.accessLevel === 'special';
+    const isRestricted = computer.accessLevel === "special";
+    const hasAccess = userHasAccess(computer, userType);
 
     return (
       <div
         className={`
           relative transition-all duration-300 group
-          ${!isAvailable || isRestrictedForUser ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+          ${!isAvailable || !hasAccess ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
           ${disabled ? "cursor-not-allowed" : ""}
         `}
         onClick={() => handleComputerClick(computer)}
@@ -70,7 +110,7 @@ export function LabLayoutVisual({
               transition-all duration-300
               ${isSelected ? "ring-4 ring-blue-500 bg-blue-100" : "bg-gray-200"}
               ${isAvailable && !disabled ? "hover:bg-gray-300 hover:scale-105" : ""}
-              ${isPremium ? "border-2 border-orange-400" : "border-2 border-gray-400"}
+              ${isRestricted ? "border-2 border-orange-400" : "border-2 border-gray-400"}
             `}
           >
             <Monitor className={`absolute inset-0 m-auto h-8 w-8 ${isSelected ? "text-blue-600" : "text-gray-600"}`} />
@@ -82,7 +122,7 @@ export function LabLayoutVisual({
                 w-6 h-6 rounded-full
                 flex items-center justify-center
                 text-xs font-bold
-                ${isSelected ? "bg-blue-500 text-white" : isPremium ? "bg-orange-500 text-white" : "bg-gray-700 text-white"}
+                ${isSelected ? "bg-blue-500 text-white" : isRestricted ? "bg-orange-500 text-white" : "bg-gray-700 text-white"}
               `}
             >
               {computer.number}
@@ -109,9 +149,9 @@ export function LabLayoutVisual({
 
         {/* Hover Info */}
         <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs py-1 px-2 rounded whitespace-nowrap z-10 pointer-events-none">
-          {isRestrictedForUser ? (
+          {!hasAccess ? (
             <span className="text-orange-300 font-semibold">
-              Solo disponible CFD/Metaverso
+              Acceso restringido
             </span>
           ) : (
             <>
@@ -125,6 +165,24 @@ export function LabLayoutVisual({
     );
   };
 
+  // Renderizar celda de la grilla dinámica
+  const renderGridCell = (row: number, col: number) => {
+    const computer = getComputerAt(row, col);
+    if (!computer) {
+      return (
+        <div
+          key={`${row}-${col}`}
+          className="w-24 h-24 border border-dashed border-gray-200 rounded-lg"
+        />
+      );
+    }
+    return (
+      <div key={`${row}-${col}`} className="w-24 h-24 flex items-center justify-center">
+        <ComputerStation computer={computer} />
+      </div>
+    );
+  };
+
   return (
     <>
       <div className="w-full bg-gray-50 rounded-lg p-8 border-2 border-gray-300">
@@ -134,51 +192,79 @@ export function LabLayoutVisual({
           <p className="text-sm text-gray-600">Haz clic en una computadora para ver sus especificaciones</p>
         </div>
 
-        {/* Lab Layout */}
-        <div className="relative">
-          {/* Top Row - Normal Access Computers (1-4) */}
-          <div className="mb-8">
-            <div className="flex justify-center items-center gap-8 p-6 bg-white rounded-lg border-2 border-blue-300">
-              <Badge className="absolute top-2 right-2 bg-blue-500">
-                Acceso General
-              </Badge>
-              {topComputers.map((computer) => (
-                <ComputerStation key={computer._id} computer={computer} />
-              ))}
+        {/* Lab Layout - Dynamic Grid or Legacy Layout */}
+        {hasGridPositions ? (
+          // Dynamic Grid Layout based on database positions
+          <div className="flex justify-center">
+            <div
+              className="inline-grid gap-3 bg-white rounded-lg border-2 border-gray-300 p-6"
+              style={{
+                gridTemplateColumns: `repeat(${gridDimensions.cols}, 1fr)`,
+              }}
+            >
+              {Array.from({ length: gridDimensions.rows }).map((_, row) =>
+                Array.from({ length: gridDimensions.cols }).map((_, col) =>
+                  renderGridCell(row, col)
+                )
+              )}
             </div>
           </div>
-
-          {/* Main Area with Left Column */}
-          <div className="flex gap-4">
-            {/* Left Column - CFD/Metaverso Computers (5-9) */}
-            <div className="flex flex-col gap-8 p-6 bg-white rounded-lg border-2 border-orange-300 min-w-[140px]">
-              <Badge className="bg-orange-500 text-center mb-2 text-white">
-                Uso CFD/Metaverso
-              </Badge>
-              {leftComputers.map((computer) => (
-                <ComputerStation key={computer._id} computer={computer} />
-              ))}
+        ) : (
+          // Legacy Layout (fallback for computers without grid positions)
+          <div className="relative">
+            {/* Top Row - Normal Access Computers (1-5) */}
+            <div className="mb-8">
+              <div className="flex justify-center items-center gap-8 p-6 bg-white rounded-lg border-2 border-blue-300">
+                <Badge className="absolute top-2 right-2 bg-blue-500">
+                  Acceso General
+                </Badge>
+                {topComputers.map((computer) => (
+                  <ComputerStation key={computer._id} computer={computer} />
+                ))}
+              </div>
             </div>
 
-            {/* Center Work Area */}
-            <div className="flex-1 bg-white rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center min-h-[600px]">
-              <div className="text-center text-gray-400">
-                <p className="text-lg font-semibold">Área de Trabajo</p>
-                <p className="text-sm mt-2">Las computadoras están distribuidas alrededor del laboratorio</p>
-                {selectedComputerNumber && (
-                  <div className="mt-4">
-                    <Badge className="bg-blue-500 text-lg py-2 px-4">
-                      Computadora #{selectedComputerNumber} Seleccionada
-                    </Badge>
-                  </div>
-                )}
+            {/* Main Area with Left Column */}
+            <div className="flex gap-4">
+              {/* Left Column - CFD/Metaverso Computers (6-9) */}
+              <div className="flex flex-col gap-8 p-6 bg-white rounded-lg border-2 border-orange-300 min-w-[140px]">
+                <Badge className="bg-orange-500 text-center mb-2 text-white">
+                  Uso CFD/Metaverso
+                </Badge>
+                {leftComputers.map((computer) => (
+                  <ComputerStation key={computer._id} computer={computer} />
+                ))}
+              </div>
+
+              {/* Center Work Area */}
+              <div className="flex-1 bg-white rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center min-h-[600px]">
+                <div className="text-center text-gray-400">
+                  <p className="text-lg font-semibold">Área de Trabajo</p>
+                  <p className="text-sm mt-2">Las computadoras están distribuidas alrededor del laboratorio</p>
+                  {selectedComputerNumber && (
+                    <div className="mt-4">
+                      <Badge className="bg-blue-500 text-lg py-2 px-4">
+                        Computadora #{selectedComputerNumber} Seleccionada
+                      </Badge>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Selected Computer Indicator (for dynamic grid) */}
+        {hasGridPositions && selectedComputerNumber && (
+          <div className="mt-4 flex justify-center">
+            <Badge className="bg-blue-500 text-lg py-2 px-4">
+              Computadora #{selectedComputerNumber} Seleccionada
+            </Badge>
+          </div>
+        )}
 
         {/* Legend */}
-        <div className="mt-6 flex justify-center gap-4 text-sm">
+        <div className="mt-6 flex justify-center gap-4 text-sm flex-wrap">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-blue-100 border-2 border-blue-500"></div>
             <span>Seleccionada</span>
@@ -189,11 +275,11 @@ export function LabLayoutVisual({
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-orange-100 border-2 border-orange-400"></div>
-            <span>CFD/Metaverso</span>
+            <span>Acceso Restringido</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded bg-gray-200 border-2 border-gray-400 opacity-50"></div>
-            <span>En Mantenimiento</span>
+            <span>No Disponible</span>
           </div>
         </div>
       </div>

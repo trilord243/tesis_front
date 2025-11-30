@@ -79,7 +79,10 @@ export interface Computer {
   readonly description: string;
   readonly isAvailable: boolean;
   readonly maintenanceNotes: string;
-  readonly accessLevel: 'normal' | 'special'; // normal = first 4, special = computers 5-9
+  readonly accessLevel: 'normal' | 'special'; // DEPRECATED: Use allowedUserTypes instead
+  readonly allowedUserTypes: readonly string[]; // Lista de tipos de usuario permitidos. Si está vacío, todos pueden acceder
+  readonly gridRow: number; // Posición en el plano: fila (0 = arriba)
+  readonly gridCol: number; // Posición en el plano: columna (0 = izquierda)
   readonly createdAt: string;
   readonly updatedAt: string;
 }
