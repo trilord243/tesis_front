@@ -1,9 +1,7 @@
 "use client";
-
 import { useEffect, useState, useCallback } from "react";
 import { format, addDays, startOfMonth, endOfMonth, isSameDay, isWeekend } from "date-fns";
 import { es } from "date-fns/locale";
-import { Navbar } from "@/components/layout/navbar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,14 +29,12 @@ import {
   Globe,
   RefreshCw,
 } from "lucide-react";
-
 export default function PublicCalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [reservations, setReservations] = useState<MetaverseReservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<MetaverseReservation | null>(null);
   const [showEventDialog, setShowEventDialog] = useState(false);
-
   // Cargar reservas aprobadas
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -54,44 +50,35 @@ export default function PublicCalendarPage() {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {
     loadData();
   }, [loadData]);
-
   // Generar días del calendario
   const generateCalendarDays = () => {
     const start = startOfMonth(currentMonth);
     const end = endOfMonth(currentMonth);
     const days: Date[] = [];
-
     const startDay = start.getDay();
     for (let i = 0; i < startDay; i++) {
       days.push(addDays(start, -(startDay - i)));
     }
-
     for (let d = new Date(start); d <= end; d = addDays(d, 1)) {
       days.push(new Date(d));
     }
-
     const remainingDays = 7 - (days.length % 7);
     if (remainingDays < 7) {
       for (let i = 1; i <= remainingDays; i++) {
         days.push(addDays(end, i));
       }
     }
-
     return days;
   };
-
   const calendarDays = generateCalendarDays();
-
   // Obtener todas las reservas para una fecha (puede haber múltiples)
   const getReservationsForDate = (date: Date): MetaverseReservation[] => {
     const dateStr = format(date, "yyyy-MM-dd");
     return reservations.filter((r) => r.reservationDate === dateStr);
   };
-
   const handleDayClick = (date: Date) => {
     const dateReservations = getReservationsForDate(date);
     if (dateReservations.length === 1) {
@@ -103,11 +90,9 @@ export default function PublicCalendarPage() {
       setShowEventDialog(true);
     }
   };
-
   return (
     <>
-      <Navbar isAuthenticated={false} showAuthButtons={true} isAdmin={false} />
-      <div className="min-h-screen bg-gray-50 pt-20 md:pt-24">
+      <div className="min-h-screen bg-gray-50 ">
         {/* Header */}
         <header className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -137,7 +122,6 @@ export default function PublicCalendarPage() {
             </div>
           </div>
         </header>
-
         {/* Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Info */}
@@ -151,7 +135,6 @@ export default function PublicCalendarPage() {
               </p>
             </div>
           </div>
-
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Calendario */}
             <div className="lg:col-span-2">
@@ -201,7 +184,6 @@ export default function PublicCalendarPage() {
                           </div>
                         ))}
                       </div>
-
                       {/* Días del calendario */}
                       <div className="grid grid-cols-7 gap-1">
                         {calendarDays.map((date, index) => {
@@ -210,7 +192,6 @@ export default function PublicCalendarPage() {
                           const dateReservations = getReservationsForDate(date);
                           const hasReservations = dateReservations.length > 0;
                           const weekend = isWeekend(date);
-
                           return (
                             <button
                               key={index}
@@ -241,7 +222,6 @@ export default function PublicCalendarPage() {
                           );
                         })}
                       </div>
-
                       {/* Leyenda */}
                       <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t">
                         <div className="flex items-center gap-2">
@@ -258,7 +238,6 @@ export default function PublicCalendarPage() {
                 </CardContent>
               </Card>
             </div>
-
             {/* Panel lateral - Próximos eventos */}
             <div>
               <Card>
@@ -310,7 +289,6 @@ export default function PublicCalendarPage() {
                   )}
                 </CardContent>
               </Card>
-
               {/* CTA para reservar */}
               <Card className="mt-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
                 <CardContent className="pt-6">
@@ -335,7 +313,6 @@ export default function PublicCalendarPage() {
             </div>
           </div>
         </div>
-
         {/* Modal de detalle de evento */}
         <Dialog open={showEventDialog} onOpenChange={setShowEventDialog}>
           <DialogContent className="max-w-lg">
@@ -343,7 +320,6 @@ export default function PublicCalendarPage() {
               <DialogTitle>{selectedEvent?.eventTitle}</DialogTitle>
               <DialogDescription>Detalles del evento</DialogDescription>
             </DialogHeader>
-
             {selectedEvent && (
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -351,7 +327,6 @@ export default function PublicCalendarPage() {
                     Confirmado
                   </Badge>
                 </div>
-
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4 text-gray-500" />
@@ -363,19 +338,16 @@ export default function PublicCalendarPage() {
                       )}
                     </span>
                   </div>
-
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="h-4 w-4 text-gray-500" />
                     <span>{formatMetaverseTimeBlocksRange(selectedEvent.timeBlocks)}</span>
                   </div>
-
                   {selectedEvent.organization && (
                     <div className="flex items-center gap-2 text-sm">
                       <Building2 className="h-4 w-4 text-gray-500" />
                       <span>{selectedEvent.organization}</span>
                     </div>
                   )}
-
                   {selectedEvent.expectedAttendees && (
                     <div className="flex items-center gap-2 text-sm">
                       <Users className="h-4 w-4 text-gray-500" />
@@ -383,12 +355,10 @@ export default function PublicCalendarPage() {
                     </div>
                   )}
                 </div>
-
                 <div className="pt-3 border-t">
                   <h4 className="font-semibold mb-2">Descripción</h4>
                   <p className="text-sm text-gray-600">{selectedEvent.eventDescription}</p>
                 </div>
-
                 {selectedEvent.purpose && (
                   <div className="pt-3 border-t">
                     <h4 className="font-semibold mb-2">Propósito</h4>

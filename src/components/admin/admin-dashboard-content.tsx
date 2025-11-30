@@ -25,6 +25,8 @@ import {
   Search,
   Crown,
   Globe,
+  LayoutGrid,
+  Settings,
 } from "lucide-react";
 
 interface AdminDashboardContentProps {
@@ -200,6 +202,27 @@ export function AdminDashboardContent({
       category: "Préstamos y Reservas",
       keywords: ["aprobar", "rechazar", "metaverso", "solicitudes", "gestionar"],
     },
+    {
+      title: "Calendario Público",
+      description: "Ver el calendario público de eventos del laboratorio de metaverso",
+      icon: Calendar,
+      href: "/calendar",
+      color: "#10B981",
+      stats: "Vista pública",
+      category: "Préstamos y Reservas",
+      keywords: ["calendario", "público", "eventos", "metaverso", "ver"],
+    },
+    {
+      title: "Configuración del Laboratorio",
+      description: "Configura tipos de usuario, software, propósitos y el plano visual del laboratorio con grillas",
+      icon: LayoutGrid,
+      href: "/admin/config-laboratorio",
+      color: "#FF8200",
+      stats: "Plano y opciones",
+      category: "Configuración",
+      keywords: ["configuración", "plano", "grillas", "tipos usuario", "software", "laboratorio"],
+      requiredRole: "superadmin",
+    },
   ];
 
   // Filtrar funcionalidades basado en rol y búsqueda
@@ -235,10 +258,11 @@ export function AdminDashboardContent({
     "Gestión de Activos": { icon: Package, color: "#FF8200", titleColor: "#1859A9" },
     "Gestión de Usuarios": { icon: Users, color: "#1859A9", titleColor: "#1859A9" },
     "Préstamos y Reservas": { icon: Calendar, color: "#003087", titleColor: "#1859A9" },
+    "Configuración": { icon: Settings, color: "#FF8200", titleColor: "#1859A9" },
   };
 
   // Orden de categorías (Préstamos y Reservas primero)
-  const categoryOrder = ["Préstamos y Reservas", "Gestión de Activos", "Gestión de Usuarios"];
+  const categoryOrder = ["Préstamos y Reservas", "Configuración", "Gestión de Activos", "Gestión de Usuarios"];
 
   // Ordenar categorías según el orden definido
   const sortedCategories = Object.keys(categorizedFeatures).sort((a, b) => {
