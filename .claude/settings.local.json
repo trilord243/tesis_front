@@ -24,9 +24,13 @@
       "WebFetch(domain:reactlibs.dev)",
       "Bash(npm run format:*)",
       "Bash(npx prettier:*)",
-      "Bash(heroku logs:*)"
+      "Bash(heroku logs:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "/home/trilord243/tesis/centromundox-api-reservas"
+    ]
   }
 }

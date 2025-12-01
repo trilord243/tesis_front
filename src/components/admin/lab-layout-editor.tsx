@@ -35,6 +35,8 @@ import {
   MinusCircle,
   Rows3,
   Columns3,
+  Pencil,
+  Copy,
 } from "lucide-react";
 
 interface Computer {
@@ -87,10 +89,31 @@ export function LabLayoutEditor({
   const [selectedComputer, setSelectedComputer] = useState<Computer | null>(null);
   const [draggedComputer, setDraggedComputer] = useState<Computer | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [targetCell, setTargetCell] = useState<{ row: number; col: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const [autoAssigning, setAutoAssigning] = useState(false);
+
+  // Form state for editing computer
+  const [editComputerForm, setEditComputerForm] = useState({
+    _id: "",
+    number: 0,
+    name: "",
+    cpu: "",
+    gpu: "",
+    ram: "",
+    storage: "",
+    software: "",
+    specialization: "",
+    description: "",
+    accessLevel: "normal" as "normal" | "special",
+    allowedUserTypes: [] as string[],
+    isAvailable: true,
+    maintenanceNotes: "",
+    gridRow: 0,
+    gridCol: 0,
+  });
 
   // Grid dimensions state - calculate from existing computers or use defaults
   const [gridRows, setGridRows] = useState(() => {
@@ -116,6 +139,48 @@ export function LabLayoutEditor({
     accessLevel: "normal" as "normal" | "special",
     allowedUserTypes: [] as string[],
   });
+
+  // Template selection for new computer
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+
+  // Apply template to new computer form
+  const applyTemplate = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    if (!templateId) {
+      // Reset to empty form but keep the number
+      setNewComputerForm((prev) => ({
+        number: prev.number,
+        name: "",
+        cpu: "",
+        gpu: "",
+        ram: "",
+        storage: "",
+        software: "",
+        specialization: "",
+        description: "",
+        accessLevel: "normal",
+        allowedUserTypes: [],
+      }));
+      return;
+    }
+
+    const template = computers.find((c) => c._id === templateId);
+    if (template) {
+      setNewComputerForm((prev) => ({
+        number: prev.number, // Keep the new number
+        name: "", // Name should be unique, leave empty
+        cpu: template.cpu,
+        gpu: template.gpu,
+        ram: template.ram,
+        storage: template.storage,
+        software: template.software.join(", "),
+        specialization: template.specialization,
+        description: template.description,
+        accessLevel: template.accessLevel,
+        allowedUserTypes: template.allowedUserTypes || [],
+      }));
+    }
+  };
 
   // Functions to add/remove rows and columns
   const addRow = () => {
@@ -313,6 +378,7 @@ export function LabLayoutEditor({
           accessLevel: "normal",
           allowedUserTypes: [],
         });
+        setSelectedTemplate("");
         setShowAddDialog(true);
       }
     }
@@ -389,6 +455,58 @@ export function LabLayoutEditor({
         gridCol: 0,
       });
       setSelectedComputer(null);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Handle opening edit dialog
+  const handleOpenEditDialog = (computer: Computer) => {
+    setEditComputerForm({
+      _id: computer._id,
+      number: computer.number,
+      name: computer.name,
+      cpu: computer.cpu,
+      gpu: computer.gpu,
+      ram: computer.ram,
+      storage: computer.storage,
+      software: computer.software.join(", "),
+      specialization: computer.specialization,
+      description: computer.description,
+      accessLevel: computer.accessLevel,
+      allowedUserTypes: computer.allowedUserTypes || [],
+      isAvailable: computer.isAvailable,
+      maintenanceNotes: computer.maintenanceNotes || "",
+      gridRow: computer.gridRow,
+      gridCol: computer.gridCol,
+    });
+    setSelectedComputer(null);
+    setShowEditDialog(true);
+  };
+
+  // Handle save edited computer
+  const handleSaveEditedComputer = async () => {
+    setSaving(true);
+    try {
+      await onSave({
+        _id: editComputerForm._id,
+        number: editComputerForm.number,
+        name: editComputerForm.name,
+        cpu: editComputerForm.cpu,
+        gpu: editComputerForm.gpu,
+        ram: editComputerForm.ram,
+        storage: editComputerForm.storage,
+        software: editComputerForm.software.split(",").map((s) => s.trim()).filter(Boolean),
+        specialization: editComputerForm.specialization,
+        description: editComputerForm.description,
+        accessLevel: editComputerForm.accessLevel,
+        allowedUserTypes: editComputerForm.allowedUserTypes,
+        isAvailable: editComputerForm.isAvailable,
+        maintenanceNotes: editComputerForm.maintenanceNotes,
+        gridRow: editComputerForm.gridRow,
+        gridCol: editComputerForm.gridCol,
+      });
+      setShowEditDialog(false);
     } finally {
       setSaving(false);
     }
@@ -605,7 +723,7 @@ export function LabLayoutEditor({
 
       {/* Computer Details Dialog */}
       <Dialog open={!!selectedComputer} onOpenChange={() => setSelectedComputer(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           {selectedComputer && (
             <>
               <DialogHeader>
@@ -615,32 +733,32 @@ export function LabLayoutEditor({
                   } />
                   Computadora #{selectedComputer.number}
                 </DialogTitle>
-                <DialogDescription>{selectedComputer.name}</DialogDescription>
+                <DialogDescription className="break-words">{selectedComputer.name}</DialogDescription>
               </DialogHeader>
               <div className="space-y-3 py-4">
-                <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   <div>
                     <span className="font-semibold">CPU:</span>
-                    <p className="text-gray-600">{selectedComputer.cpu}</p>
+                    <p className="text-gray-600 break-words">{selectedComputer.cpu}</p>
                   </div>
                   <div>
                     <span className="font-semibold">GPU:</span>
-                    <p className="text-gray-600">{selectedComputer.gpu}</p>
+                    <p className="text-gray-600 break-words">{selectedComputer.gpu}</p>
                   </div>
                   <div>
                     <span className="font-semibold">RAM:</span>
-                    <p className="text-gray-600">{selectedComputer.ram}</p>
+                    <p className="text-gray-600 break-words">{selectedComputer.ram}</p>
                   </div>
                   <div>
                     <span className="font-semibold">Almacenamiento:</span>
-                    <p className="text-gray-600">{selectedComputer.storage}</p>
+                    <p className="text-gray-600 break-words">{selectedComputer.storage}</p>
                   </div>
                 </div>
                 <div>
                   <span className="font-semibold text-sm">Especialización:</span>
-                  <p className="text-gray-600 text-sm">{selectedComputer.specialization}</p>
+                  <p className="text-gray-600 text-sm break-words">{selectedComputer.specialization}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-sm">Nivel de acceso:</span>
                   <Badge variant={selectedComputer.accessLevel === "special" ? "default" : "outline"}>
                     {selectedComputer.accessLevel === "special" ? "Restringido" : "Normal (todos)"}
@@ -665,7 +783,7 @@ export function LabLayoutEditor({
                     )}
                   </div>
                 )}
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-sm">Estado:</span>
                   <Badge variant={selectedComputer.isAvailable ? "default" : "secondary"}>
                     {selectedComputer.isAvailable ? "Disponible" : "En mantenimiento"}
@@ -678,10 +796,19 @@ export function LabLayoutEditor({
                   </p>
                 </div>
               </div>
-              <DialogFooter className="flex-col sm:flex-row gap-2">
+              <DialogFooter className="flex-col gap-2 sm:flex-row">
                 <Button
                   variant="outline"
-                  className="text-orange-600 hover:bg-orange-50 border-orange-200"
+                  className="w-full sm:w-auto text-blue-600 hover:bg-blue-50 border-blue-200"
+                  onClick={() => handleOpenEditDialog(selectedComputer)}
+                  disabled={saving}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Editar
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto text-orange-600 hover:bg-orange-50 border-orange-200"
                   onClick={() => handleRemoveFromLayout(selectedComputer)}
                   disabled={saving}
                 >
@@ -694,14 +821,14 @@ export function LabLayoutEditor({
                 </Button>
                 <Button
                   variant="outline"
-                  className="text-red-600 hover:bg-red-50 border-red-200"
+                  className="w-full sm:w-auto text-red-600 hover:bg-red-50 border-red-200"
                   onClick={() => handleDeleteComputer(selectedComputer)}
                   disabled={saving}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Eliminar
                 </Button>
-                <Button variant="outline" onClick={() => setSelectedComputer(null)}>
+                <Button variant="outline" className="w-full sm:w-auto" onClick={() => setSelectedComputer(null)}>
                   Cerrar
                 </Button>
               </DialogFooter>
@@ -712,7 +839,7 @@ export function LabLayoutEditor({
 
       {/* Add Computer Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[700px]">
           <DialogHeader>
             <DialogTitle>Nueva Computadora</DialogTitle>
             <DialogDescription>
@@ -720,6 +847,33 @@ export function LabLayoutEditor({
               {(targetCell?.col ?? 0) + 1}
             </DialogDescription>
           </DialogHeader>
+
+          {/* Template Selector */}
+          {computers.length > 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-2">
+              <div className="flex items-center gap-2 mb-2">
+                <Copy className="h-4 w-4 text-blue-600" />
+                <Label className="text-blue-800 font-medium">Copiar de computadora existente</Label>
+              </div>
+              <Select value={selectedTemplate} onValueChange={applyTemplate}>
+                <SelectTrigger className="bg-white">
+                  <SelectValue placeholder="Selecciona una plantilla (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sin plantilla (empezar desde cero)</SelectItem>
+                  {computers.map((comp) => (
+                    <SelectItem key={comp._id} value={comp._id}>
+                      #{comp.number} - {comp.name} ({comp.specialization})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-blue-600 mt-2">
+                Esto copiará CPU, GPU, RAM, almacenamiento, software y otras características.
+              </p>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4 py-4">
             <div className="space-y-2">
               <Label>Número</Label>
@@ -897,7 +1051,7 @@ export function LabLayoutEditor({
 
       {/* Assign Existing Computer Dialog */}
       <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Asignar Computadora</DialogTitle>
             <DialogDescription>
@@ -966,11 +1120,224 @@ export function LabLayoutEditor({
                   accessLevel: "normal",
                   allowedUserTypes: [],
                 });
+                setSelectedTemplate("");
                 setShowAddDialog(true);
               }}
             >
               <Plus className="h-4 w-4 mr-2" />
               Crear Nueva
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Computer Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="w-[700px]">
+          <DialogHeader>
+            <DialogTitle>Editar Computadora #{editComputerForm.number}</DialogTitle>
+            <DialogDescription>
+              Modifica las características de la computadora
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 py-4">
+            <div className="space-y-2">
+              <Label>Número</Label>
+              <Input
+                type="number"
+                value={editComputerForm.number}
+                onChange={(e) =>
+                  setEditComputerForm({ ...editComputerForm, number: parseInt(e.target.value) })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Nombre</Label>
+              <Input
+                value={editComputerForm.name}
+                onChange={(e) =>
+                  setEditComputerForm({ ...editComputerForm, name: e.target.value })
+                }
+                placeholder="Workstation VR-01"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>CPU</Label>
+              <Input
+                value={editComputerForm.cpu}
+                onChange={(e) =>
+                  setEditComputerForm({ ...editComputerForm, cpu: e.target.value })
+                }
+                placeholder="Intel Core i9-14900K"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>GPU</Label>
+              <Input
+                value={editComputerForm.gpu}
+                onChange={(e) =>
+                  setEditComputerForm({ ...editComputerForm, gpu: e.target.value })
+                }
+                placeholder="NVIDIA RTX 4090 24GB"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>RAM</Label>
+              <Input
+                value={editComputerForm.ram}
+                onChange={(e) =>
+                  setEditComputerForm({ ...editComputerForm, ram: e.target.value })
+                }
+                placeholder="128GB DDR5"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Almacenamiento</Label>
+              <Input
+                value={editComputerForm.storage}
+                onChange={(e) =>
+                  setEditComputerForm({ ...editComputerForm, storage: e.target.value })
+                }
+                placeholder="2TB NVMe SSD"
+              />
+            </div>
+            <div className="col-span-2 space-y-2">
+              <Label>Software (separado por comas)</Label>
+              <Input
+                value={editComputerForm.software}
+                onChange={(e) =>
+                  setEditComputerForm({ ...editComputerForm, software: e.target.value })
+                }
+                placeholder="Unity, Blender, Unreal Engine 5"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Especialización</Label>
+              <Input
+                value={editComputerForm.specialization}
+                onChange={(e) =>
+                  setEditComputerForm({ ...editComputerForm, specialization: e.target.value })
+                }
+                placeholder="Desarrollo VR/AR"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Nivel de Acceso</Label>
+              <Select
+                value={editComputerForm.accessLevel}
+                onValueChange={(v) =>
+                  setEditComputerForm({
+                    ...editComputerForm,
+                    accessLevel: v as "normal" | "special",
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="normal">Normal (todos los usuarios)</SelectItem>
+                  <SelectItem value="special">Especial (restringido)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {editComputerForm.accessLevel === "special" && userTypes.length > 0 && (
+              <div className="col-span-2 space-y-2">
+                <Label>Tipos de Usuario Permitidos</Label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Selecciona los tipos de usuario que pueden acceder a esta computadora.
+                </p>
+                <div className="grid grid-cols-2 gap-2 max-h-[150px] overflow-y-auto p-2 border rounded-md bg-gray-50">
+                  {userTypes.filter((ut) => ut.isActive).map((userType) => {
+                    const isSelected = editComputerForm.allowedUserTypes.includes(userType.value);
+                    return (
+                      <div
+                        key={userType._id}
+                        className={`
+                          flex items-center gap-2 p-2 rounded cursor-pointer transition-colors
+                          ${isSelected ? "bg-blue-100 border-blue-300 border" : "bg-white border border-gray-200 hover:bg-gray-100"}
+                        `}
+                        onClick={() => {
+                          const newAllowed = isSelected
+                            ? editComputerForm.allowedUserTypes.filter((t) => t !== userType.value)
+                            : [...editComputerForm.allowedUserTypes, userType.value];
+                          setEditComputerForm({
+                            ...editComputerForm,
+                            allowedUserTypes: newAllowed,
+                          });
+                        }}
+                      >
+                        <div
+                          className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                            isSelected ? "bg-blue-600 border-blue-600" : "border-gray-300"
+                          }`}
+                        >
+                          {isSelected && (
+                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
+                        <span className="text-sm">{userType.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label>Estado</Label>
+              <Select
+                value={editComputerForm.isAvailable ? "available" : "maintenance"}
+                onValueChange={(v) =>
+                  setEditComputerForm({
+                    ...editComputerForm,
+                    isAvailable: v === "available",
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="available">Disponible</SelectItem>
+                  <SelectItem value="maintenance">En mantenimiento</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {!editComputerForm.isAvailable && (
+              <div className="col-span-2 space-y-2">
+                <Label>Notas de Mantenimiento</Label>
+                <Textarea
+                  value={editComputerForm.maintenanceNotes}
+                  onChange={(e) =>
+                    setEditComputerForm({ ...editComputerForm, maintenanceNotes: e.target.value })
+                  }
+                  placeholder="Describe el problema o la razón del mantenimiento..."
+                  rows={2}
+                />
+              </div>
+            )}
+            <div className="col-span-2 space-y-2">
+              <Label>Descripción</Label>
+              <Textarea
+                value={editComputerForm.description}
+                onChange={(e) =>
+                  setEditComputerForm({ ...editComputerForm, description: e.target.value })
+                }
+                placeholder="Descripción de la computadora y sus capacidades..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveEditedComputer} disabled={saving || !editComputerForm.name}>
+              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              <Save className="h-4 w-4 mr-2" />
+              Guardar Cambios
             </Button>
           </DialogFooter>
         </DialogContent>

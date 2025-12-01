@@ -27,6 +27,9 @@ import {
   Globe,
   LayoutGrid,
   Settings,
+  Gauge,
+  FileText,
+  BarChart3,
 } from "lucide-react";
 
 interface AdminDashboardContentProps {
@@ -62,7 +65,119 @@ export function AdminDashboardContent({
 
   // Todas las funcionalidades organizadas por categoría
   const allFeatures: Feature[] = [
-    // Gestión de Activos (solo superadmin)
+    // 1. Gestión de Reservas - Primera categoría (lentes, computadores, sala)
+    {
+      title: "Solicitudes de Préstamo (Lentes VR)",
+      description: "Gestiona solicitudes de préstamo de equipos VR/AR",
+      icon: AlertCircle,
+      href: "/admin/solicitudes",
+      color: "#1859A9",
+      stats: `${stats.solicitudesPendientes || 0} pendientes`,
+      category: "Gestión de Reservas",
+      keywords: ["préstamos", "solicitudes", "vr", "ar", "lentes", "aprobar"],
+    },
+    {
+      title: "Reservas de Computadoras",
+      description: "Administra y aprueba las reservas de computadoras del laboratorio",
+      icon: Computer,
+      href: "/admin/reservas-lab",
+      color: "#1859A9",
+      stats: "Gestión de reservas",
+      category: "Gestión de Reservas",
+      keywords: ["reservas", "laboratorio", "computadoras", "aprobar", "calendario"],
+    },
+    {
+      title: "Reservas de Sala Metaverso",
+      description: "Aprueba o rechaza las solicitudes de reserva del laboratorio de metaverso",
+      icon: Globe,
+      href: "/admin/reservas-metaverso",
+      color: "#7C3AED",
+      stats: "Aprobar solicitudes",
+      category: "Gestión de Reservas",
+      keywords: ["aprobar", "rechazar", "metaverso", "solicitudes", "gestionar", "sala"],
+    },
+
+    // 2. Configuración del Laboratorio
+    {
+      title: "Configuración de Computadoras",
+      description: "Configura tipos de usuario, software, propósitos y el plano visual del laboratorio",
+      icon: LayoutGrid,
+      href: "/admin/config-laboratorio",
+      color: "#FF8200",
+      stats: "Plano y opciones",
+      category: "Configuración del Laboratorio",
+      keywords: ["configuración", "plano", "grillas", "tipos usuario", "software", "laboratorio"],
+      requiredRole: "superadmin",
+    },
+    {
+      title: "Reservar Sala Metaverso",
+      description: "Solicita el uso del laboratorio completo para eventos y experiencias inmersivas",
+      icon: Globe,
+      href: "/laboratorio",
+      color: "#8B5CF6",
+      stats: "Crear reserva",
+      category: "Configuración del Laboratorio",
+      keywords: ["laboratorio", "metaverso", "eventos", "reservar", "inmersivo"],
+    },
+
+    // 3. Calendarios
+    {
+      title: "Calendario de Computadoras",
+      description: "Vista mensual de todas las reservas aprobadas de computadoras del laboratorio",
+      icon: Computer,
+      href: "/calendario-computadoras",
+      color: "#003087",
+      stats: "Vista completa",
+      category: "Calendarios",
+      keywords: ["calendario", "reservas", "computadoras", "laboratorio", "mensual", "vista", "aprobadas"],
+    },
+    {
+      title: "Calendario Público Metaverso",
+      description: "Ver el calendario público de eventos del laboratorio de metaverso",
+      icon: Calendar,
+      href: "/calendar",
+      color: "#10B981",
+      stats: "Vista pública",
+      category: "Calendarios",
+      keywords: ["calendario", "público", "eventos", "metaverso", "ver"],
+    },
+
+    // 4. Centro de Control (solo superadmin)
+    {
+      title: "Centro de Control",
+      description: "Panel central con configuraciones del sistema, logs de actividad y estadísticas",
+      icon: Gauge,
+      href: "/admin/centro-control",
+      color: "#7C3AED",
+      stats: "Panel completo",
+      category: "Centro de Control",
+      keywords: ["control", "sistema", "logs", "estadísticas", "configuración", "panel"],
+      requiredRole: "superadmin",
+    },
+    {
+      title: "Logs del Sistema",
+      description: "Visualiza el historial de acciones y cambios realizados en el sistema",
+      icon: FileText,
+      href: "/admin/logs",
+      color: "#7C3AED",
+      stats: "Auditoría",
+      category: "Centro de Control",
+      keywords: ["logs", "historial", "acciones", "auditoría", "cambios"],
+      requiredRole: "superadmin",
+    },
+    {
+      title: "Estadísticas del Sistema",
+      description: "Métricas de uso, reservas y actividad general del sistema",
+      icon: BarChart3,
+      href: "/admin/analytics",
+      color: "#7C3AED",
+      stats: "Métricas",
+      category: "Centro de Control",
+      keywords: ["estadísticas", "métricas", "uso", "analytics", "reportes"],
+      requiredRole: "superadmin",
+    },
+
+    // 5. Gestión de Activos (solo superadmin)
     {
       title: "Gestión de Activos",
       description: "Control completo del inventario - crear, editar y administrar activos",
@@ -108,7 +223,7 @@ export function AdminDashboardContent({
       requiredRole: "superadmin",
     },
 
-    // Gestión de Usuarios
+    // 6. Gestión de Usuarios
     {
       title: "Roles y Usuarios",
       description: "Crear usuarios, asignar roles (superadmin, admin, user) y gestionar permisos",
@@ -150,79 +265,6 @@ export function AdminDashboardContent({
       category: "Gestión de Usuarios",
       keywords: ["qr", "código", "acceso", "admin"],
     },
-
-    // Gestión de Préstamos y Reservas
-    {
-      title: "Solicitudes de Préstamo",
-      description: "Gestiona solicitudes de préstamo de equipos VR/AR",
-      icon: AlertCircle,
-      href: "/admin/solicitudes",
-      color: "#1859A9",
-      stats: `${stats.solicitudesPendientes || 0} pendientes`,
-      category: "Préstamos y Reservas",
-      keywords: ["préstamos", "solicitudes", "vr", "ar", "lentes", "aprobar"],
-    },
-    {
-      title: "Reservas de Laboratorio",
-      description: "Administra y aprueba las reservas de computadoras del laboratorio",
-      icon: Computer,
-      href: "/admin/reservas-lab",
-      color: "#1859A9",
-      stats: "Gestión de reservas",
-      category: "Préstamos y Reservas",
-      keywords: ["reservas", "laboratorio", "computadoras", "aprobar", "calendario"],
-    },
-    {
-      title: "Calendario de Reservas",
-      description: "Vista mensual de todas las reservas aprobadas del laboratorio",
-      icon: Calendar,
-      href: "/admin/calendario-reservas",
-      color: "#003087",
-      stats: "Vista completa",
-      category: "Préstamos y Reservas",
-      keywords: ["calendario", "reservas", "mensual", "vista", "aprobadas"],
-    },
-    {
-      title: "Reservar Laboratorio Metaverso",
-      description: "Solicita el uso del laboratorio completo para eventos y experiencias inmersivas",
-      icon: Globe,
-      href: "/laboratorio",
-      color: "#8B5CF6",
-      stats: "Crear reserva",
-      category: "Préstamos y Reservas",
-      keywords: ["laboratorio", "metaverso", "eventos", "reservar", "inmersivo"],
-    },
-    {
-      title: "Gestionar Reservas Metaverso",
-      description: "Aprueba o rechaza las solicitudes de reserva del laboratorio de metaverso",
-      icon: Globe,
-      href: "/admin/reservas-metaverso",
-      color: "#7C3AED",
-      stats: "Aprobar solicitudes",
-      category: "Préstamos y Reservas",
-      keywords: ["aprobar", "rechazar", "metaverso", "solicitudes", "gestionar"],
-    },
-    {
-      title: "Calendario Público",
-      description: "Ver el calendario público de eventos del laboratorio de metaverso",
-      icon: Calendar,
-      href: "/calendar",
-      color: "#10B981",
-      stats: "Vista pública",
-      category: "Préstamos y Reservas",
-      keywords: ["calendario", "público", "eventos", "metaverso", "ver"],
-    },
-    {
-      title: "Configuración del Laboratorio",
-      description: "Configura tipos de usuario, software, propósitos y el plano visual del laboratorio con grillas",
-      icon: LayoutGrid,
-      href: "/admin/config-laboratorio",
-      color: "#FF8200",
-      stats: "Plano y opciones",
-      category: "Configuración",
-      keywords: ["configuración", "plano", "grillas", "tipos usuario", "software", "laboratorio"],
-      requiredRole: "superadmin",
-    },
   ];
 
   // Filtrar funcionalidades basado en rol y búsqueda
@@ -255,14 +297,16 @@ export function AdminDashboardContent({
 
   // Definir colores e iconos por categoría
   const categoryConfig: Record<string, { icon: typeof Package; color: string; titleColor: string }> = {
+    "Gestión de Reservas": { icon: Calendar, color: "#1859A9", titleColor: "#1859A9" },
+    "Configuración del Laboratorio": { icon: Settings, color: "#FF8200", titleColor: "#1859A9" },
+    "Calendarios": { icon: Calendar, color: "#003087", titleColor: "#1859A9" },
+    "Centro de Control": { icon: Gauge, color: "#7C3AED", titleColor: "#7C3AED" },
     "Gestión de Activos": { icon: Package, color: "#FF8200", titleColor: "#1859A9" },
     "Gestión de Usuarios": { icon: Users, color: "#1859A9", titleColor: "#1859A9" },
-    "Préstamos y Reservas": { icon: Calendar, color: "#003087", titleColor: "#1859A9" },
-    "Configuración": { icon: Settings, color: "#FF8200", titleColor: "#1859A9" },
   };
 
-  // Orden de categorías (Préstamos y Reservas primero)
-  const categoryOrder = ["Préstamos y Reservas", "Configuración", "Gestión de Activos", "Gestión de Usuarios"];
+  // Orden de categorías (Gestión de Reservas primero, luego Configuración)
+  const categoryOrder = ["Gestión de Reservas", "Configuración del Laboratorio", "Calendarios", "Centro de Control", "Gestión de Activos", "Gestión de Usuarios"];
 
   // Ordenar categorías según el orden definido
   const sortedCategories = Object.keys(categorizedFeatures).sort((a, b) => {

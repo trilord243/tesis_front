@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**CentroMundoX Frontend** - Next.js 15 application for VR/AR equipment reservation management at Centro Mundo X research facility. Features RFID tracking, admin dashboards, lab reservations, product history audit trails, and analytics.
+**CentroMundoX Frontend** - Next.js 15 application for VR/AR equipment reservation management at Centro Mundo X research facility. Features RFID tracking, admin dashboards, lab reservations, metaverse lab booking, product history audit trails, and analytics.
 
 Connects to NestJS backend at `../centromundox-api-reservas` (port 3000).
 
@@ -12,13 +12,12 @@ Connects to NestJS backend at `../centromundox-api-reservas` (port 3000).
 
 ```bash
 # Development (use PORT=3001 to avoid conflict with backend on 3000)
-npm run dev                  # Start with Turbopack
 PORT=3001 npm run dev        # Linux/macOS
 set PORT=3001 && npm run dev # Windows
 
 # Production
-npm run build               # Build for production
-npm start                   # Run production server
+npm run build
+npm start
 
 # Linting - ALWAYS run after changes
 npm run lint
@@ -32,7 +31,7 @@ npm run ui:add [component]
 ## Environment Setup
 
 ```bash
-# .env.local (create for local development)
+# .env.local
 NEXT_PUBLIC_API_URL=http://localhost:3000
 JWT_SECRET=your-secret  # Must match backend
 ```
@@ -47,13 +46,10 @@ JWT_SECRET=your-secret  # Must match backend
 
 ### Core Pattern: API Proxy
 
-**NEVER call backend directly from client components.** All requests go through:
-
-1. **API Routes** (`src/app/api/*`) - Proxy to backend with auth headers
-2. **Server Actions** (`src/lib/actions/*`) - Form handling with cookies
+**NEVER call backend directly from client components.** All requests go through API routes:
 
 ```typescript
-// API Route pattern (src/app/api/example/route.ts)
+// src/app/api/example/route.ts
 export async function POST(request: NextRequest) {
   const token = request.cookies.get("auth-token")?.value;
   const response = await fetch(`${API_BASE_URL}/endpoint`, {
@@ -65,8 +61,9 @@ export async function POST(request: NextRequest) {
 
 ### Authentication Flow
 - JWT stored in httpOnly cookie (`auth-token`, 1 hour expiry)
-- `middleware.ts` (root level) validates JWT with jose, handles role-based routing
+- `middleware.ts` validates JWT with jose, handles role-based routing
 - Roles: `user` → `/dashboard/*`, `admin`/`superadmin` → `/admin/*`
+- Protected routes: `/dashboard`, `/admin`, `/laboratorio`
 
 ### Next.js 15 Async APIs
 Always await runtime APIs:
@@ -88,8 +85,6 @@ Strict mode with extra checks enabled:
 ### Path Aliases
 ```typescript
 import { Button } from "@/components/ui/button";  // @/* → ./src/*
-import { User } from "@/types";                    // @/types/*
-import { cn } from "@/lib/utils";                  // @/lib/*
 ```
 
 ### Type Safety Patterns
@@ -97,49 +92,120 @@ import { cn } from "@/lib/utils";                  // @/lib/*
 // Use satisfies for type validation without widening
 const config = { key: 'value' } satisfies ConfigType;
 
-// Prefer interfaces over types for object shapes
+// Prefer interfaces over types, const maps over enums
 interface User { id: string; name: string; }
-
-// Use const maps instead of enums
 const STATUS = { PENDING: 'pending', APPROVED: 'approved' } as const;
 ```
 
 ## Code Style
 
-### React & TypeScript
 - **Server Components by default** - minimize `'use client'`
 - Use `useActionState` (not deprecated `useFormState`)
-- Prefer interfaces over types, const maps over enums
 - Descriptive names: `isLoading`, `hasError`, `handleSubmit`
-
-### Component Structure
-```
-exports → subcomponents → helpers → types
-```
-
-### Directory Convention
-Lowercase with dashes: `components/auth-wizard`
+- Component structure: `exports → subcomponents → helpers → types`
+- Directory convention: lowercase with dashes (`components/auth-wizard`)
 
 ## Key Directories
 
-- `src/app/api/*` - API route proxies (auth, products, lab-reservations, lab-config, computers, zones, users, analytics)
-- `src/app/admin/*` - Admin pages (activos, analytics, solicitudes, usuarios, config-laboratorio)
-- `src/app/dashboard/*` - User pages (reservas, perfil, qr, reservar-lab, mis-reservas-lab)
-- `src/lib/actions/*` - Server actions by feature
-- `src/lib/api/*` - API client services
-- `src/components/admin/*` - Admin components (30+ specialized)
-- `src/components/lab-reservations/*` - Lab booking components
-- `src/components/ui/*` - Shadcn UI components
-- `src/types/*` - TypeScript interfaces (auth, product, lab-reservation, lab-config, usage-analytics)
+```
+src/
+├── app/
+│   ├── api/                    # API route proxies to backend
+│   │   ├── auth/               # Login, register, logout, user
+│   │   ├── admin/              # Admin-only endpoints
+│   │   ├── products/           # Equipment CRUD
+│   │   ├── lab-reservations/   # Computer lab bookings
+│   │   ├── metaverse-reservations/  # Metaverse lab bookings
+│   │   ├── lab-config/         # Lab configuration (computers, software, etc.)
+│   │   └── computers/          # Computer management
+│   ├── admin/                  # Admin pages (17 pages)
+│   │   ├── dashboard/          # Admin home
+│   │   ├── activos/            # Equipment management
+│   │   ├── solicitudes/        # Access requests
+│   │   ├── usuarios/           # User management
+│   │   ├── analytics/          # Usage analytics
+│   │   ├── reservas-lab/       # Computer lab reservations
+│   │   ├── reservas-metaverso/ # Metaverse lab reservations
+│   │   └── config-laboratorio/ # Lab configuration
+│   ├── dashboard/              # User pages (8 pages)
+│   │   ├── reservas/           # Equipment reservations
+│   │   ├── reservar-lab/       # Book computer lab
+│   │   ├── mis-reservas-lab/   # My lab reservations
+│   │   └── perfil/, qr/        # Profile, QR code
+│   ├── laboratorio/            # Metaverse lab booking (authenticated)
+│   └── calendar/               # Public calendar (approved events)
+├── components/
+│   ├── admin/                  # 34 admin components
+│   ├── lab-reservations/       # Lab booking components
+│   ├── ui/                     # Shadcn UI components
+│   └── layout/                 # Navbar, footer
+├── lib/
+│   ├── actions/                # Server actions
+│   └── utils.ts                # Utilities (cn helper)
+└── types/                      # TypeScript interfaces
+    ├── auth.ts
+    ├── product.ts
+    ├── lab-reservation.ts
+    ├── lab-config.ts
+    └── metaverse-reservation.ts
+```
+
+## Business Logic
+
+### Metaverse Laboratory Reservations
+
+| Route | Access | Purpose |
+|-------|--------|---------|
+| `/laboratorio` | Authenticated | Create reservations |
+| `/calendar` | Public | View approved events |
+| `/admin/reservas-metaverso` | Admin | Approve/reject |
+
+**Time Blocks** (6 blocks × 1h 45min): 07:00-08:45, 08:45-10:30, 10:30-12:15, 12:15-14:00, 14:00-15:45, 15:45-17:30
+
+**Business Rules**:
+- Multiple events per day allowed if different time blocks
+- Admin reservations auto-approved; users require approval
+- Blocks only lock when APPROVED (pending = still available)
+
+**Calendar Color Coding**:
+- Green: All blocks available
+- Yellow: Some blocks occupied
+- Orange: All blocks occupied
+- Gray: Unavailable (weekend/past)
+
+### Computer Lab Reservations
+
+**Dynamic User Type Access Control**:
+```typescript
+function userHasAccess(computer: Computer, userType: string): boolean {
+  if (computer.accessLevel === "normal") return true;
+  return computer.allowedUserTypes?.includes(userType) ?? false;
+}
+```
+
+- Superadmin configures `allowedUserTypes` per computer at `/admin/config-laboratorio`
+- Users only see computers their type can access
+
+## Component Notes
+
+**Metaverse Lab Page** (`/laboratorio`):
+- Do NOT use shadcn Checkbox - causes event propagation errors
+- Use custom div-based checkboxes:
+```tsx
+<div
+  className={`w-4 h-4 rounded border-2 ${isSelected ? "bg-blue-600" : "border-gray-300"}`}
+  onClick={handleToggle}
+/>
+```
 
 ## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
-| Port conflict | Use `PORT=3001 npm run dev` (Linux/macOS) or `set PORT=3001 && npm run dev` (Windows) |
+| Port conflict | Use `PORT=3001 npm run dev` |
 | CORS errors | Check backend `FRONTEND_URL` env var |
 | Auth issues | Clear cookies, verify JWT_SECRET matches backend |
-| Type errors with array access | Use optional chaining: `arr[0]?.prop` (noUncheckedIndexedAccess) |
+| Type errors with array access | Use optional chaining: `arr[0]?.prop` |
 
 ## Brand Colors
 
@@ -148,564 +214,12 @@ Lowercase with dashes: `components/auth-wizard`
 - Secondary Blue: `#003087`
 - Secondary Orange: `#F68629`
 
----
+## Deployment
 
-## Metaverse Laboratory Reservation System
+Frontend deployed to Vercel. Backend on Heroku: `https://centromundox-backend-947baa9d183e.herokuapp.com/`
 
-Sistema completo para reservar el laboratorio de metaverso. Implementado en Noviembre 2025.
-
-### System Overview
-
-| Ruta | Acceso | Propósito |
-|------|--------|-----------|
-| `/laboratorio` | Usuarios autenticados | Crear reservas del laboratorio |
-| `/calendar` | Público (sin login) | Ver eventos aprobados (solo lectura) |
-| `/admin/reservas-metaverso` | Solo admins | Aprobar/rechazar reservas |
-
-### Key Business Rules
-
-1. **Múltiples eventos por día**: Se permiten varios eventos el mismo día siempre que NO usen el mismo bloque horario
-2. **Auto-aprobación para admins**: Si un admin crea una reserva, se aprueba automáticamente
-3. **Usuarios requieren aprobación**: Las reservas de usuarios quedan en estado `pending`
-4. **Bloques se bloquean al aprobar**: Solo las reservas APPROVED ocupan bloques
-
-### Time Blocks (6 bloques de 1h 45min)
-
-```typescript
-const METAVERSE_TIME_BLOCKS = [
-  { value: "block_1", label: "Bloque 1", startTime: "07:00", endTime: "08:45" },
-  { value: "block_2", label: "Bloque 2", startTime: "08:45", endTime: "10:30" },
-  { value: "block_3", label: "Bloque 3", startTime: "10:30", endTime: "12:15" },
-  { value: "block_4", label: "Bloque 4", startTime: "12:15", endTime: "14:00" },
-  { value: "block_5", label: "Bloque 5", startTime: "14:00", endTime: "15:45" },
-  { value: "block_6", label: "Bloque 6", startTime: "15:45", endTime: "17:30" },
-];
-```
-
-### Frontend Pages
-
-#### `/laboratorio` (Authenticated)
-- **File**: `src/app/laboratorio/page.tsx`
-- Calendario interactivo con colores de disponibilidad:
-  - 🟢 **Verde**: Todos los bloques libres
-  - 🟡 **Amarillo**: Algunos bloques ocupados, otros disponibles
-  - 🟠 **Naranja**: Todos los bloques ocupados
-  - ⬜ **Gris**: No disponible (fin de semana/pasado)
-- Formulario con:
-  - Datos del solicitante (nombre, email, teléfono, organización)
-  - Información del evento (título, descripción, propósito, asistentes)
-  - Selección de bloques horarios (los ocupados aparecen deshabilitados)
-  - Opción de recurrencia semanal (hasta 8 semanas)
-
-#### `/calendar` (Public)
-- **File**: `src/app/calendar/page.tsx`
-- Solo muestra eventos APPROVED
-- Calendario de solo lectura
-- Click en día con eventos muestra detalles
-- Muestra "X eventos" si hay múltiples en un día
-
-#### `/admin/reservas-metaverso` (Admin)
-- **File**: `src/app/admin/reservas-metaverso/page.tsx`
-- Lista todas las reservas con filtros por estado
-- Acciones: Aprobar (con verificación de conflictos), Rechazar (requiere razón)
-- Detalles completos del evento y solicitante
-
-### API Routes
-
-```
-POST   /api/metaverse-reservations           # Crear reserva
-GET    /api/metaverse-reservations           # Listar todas (admin)
-GET    /api/metaverse-reservations/approved  # Solo aprobadas (público)
-GET    /api/metaverse-reservations/availability?startDate=X&endDate=Y
-PATCH  /api/metaverse-reservations/:id       # Aprobar/rechazar (admin)
-DELETE /api/metaverse-reservations/:id       # Eliminar (admin)
-```
-
-### Availability Response Format
-
-```typescript
-// GET /api/metaverse-reservations/availability
-{
-  "2025-12-01": {
-    "available": true,
-    "occupiedBlocks": ["block_1", "block_3"],
-    "availableBlocks": ["block_2", "block_4", "block_5", "block_6"]
-  },
-  "2025-12-02": {
-    "available": false,  // Todos los bloques ocupados
-    "occupiedBlocks": ["block_1", "block_2", "block_3", "block_4", "block_5", "block_6"],
-    "availableBlocks": []
-  }
-}
-```
-
-### Types
-
-**File**: `src/types/metaverse-reservation.ts`
-
-```typescript
-interface MetaverseReservation {
-  _id: string;
-  requesterName: string;
-  requesterEmail: string;
-  requesterPhone?: string;
-  organization?: string;
-  eventTitle: string;
-  eventDescription: string;
-  purpose: string;
-  expectedAttendees?: number;
-  reservationDate: string;  // "YYYY-MM-DD"
-  timeBlocks: string[];     // ["block_1", "block_2"]
-  status: "pending" | "approved" | "rejected" | "cancelled";
-  userId: string;
-  isRecurring: boolean;
-  recurrenceGroupId?: string;
-  recurrenceWeeks?: number;
-  recurrenceDays?: number[];
-  approvedBy?: string;
-  approvedAt?: Date;
-  rejectedBy?: string;
-  rejectedAt?: Date;
-  rejectionReason?: string;
-  adminNotes?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-```
-
-### Dashboard Cards
-
-Los accesos al sistema están en los dashboards:
-
-- **Admin Dashboard** (`src/components/admin/admin-dashboard-content.tsx`):
-  - "Reservar Laboratorio Metaverso" → `/laboratorio`
-  - "Gestionar Reservas Metaverso" → `/admin/reservas-metaverso`
-
-- **User Dashboard**: Card para reservar laboratorio → `/laboratorio`
-
-### Middleware Protection
-
-**File**: `middleware.ts`
-
-```typescript
-const protectedRoutes = ["/dashboard", "/admin", "/laboratorio"];
-```
-
-### Component Notes
-
-⚠️ **NO usar shadcn Checkbox** en esta página. Causa errores de propagación de eventos.
-Se usan checkboxes custom con divs:
-
-```tsx
-<div
-  className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-    isSelected ? "bg-blue-600 border-blue-600" : "border-gray-300"
-  }`}
-  onClick={() => handleToggle()}
->
-  {isSelected && <CheckIcon />}
-</div>
-```
-
-### Backend Module
-
-**Path**: `../centromundox-api-reservas/src/metaverse-reservations/`
-
-#### Files Structure
-
-```
-src/metaverse-reservations/
-├── metaverse-reservation.entity.ts      # Entidad MongoDB con TypeORM
-├── metaverse-reservations.service.ts    # Lógica de negocio
-├── metaverse-reservations.controller.ts # Endpoints REST
-├── metaverse-reservations.module.ts     # Módulo NestJS
-└── dto/
-    ├── create-metaverse-reservation.dto.ts
-    ├── update-metaverse-reservation.dto.ts
-    └── filter-metaverse-reservation.dto.ts
-```
-
-#### Entity (metaverse-reservation.entity.ts)
-
-```typescript
-export enum MetaverseReservationStatus {
-  PENDING = "pending",
-  APPROVED = "approved",
-  REJECTED = "rejected",
-  CANCELLED = "cancelled",
-}
-
-export const VALID_METAVERSE_TIME_BLOCKS = [
-  "block_1", "block_2", "block_3", "block_4", "block_5", "block_6"
-] as const;
-
-@Entity("metaverseReservations")
-export class MetaverseReservation {
-  @ObjectIdColumn()
-  _id: ObjectId;
-
-  @Column()
-  requesterName: string;
-
-  @Column()
-  requesterEmail: string;
-
-  @Column({ nullable: true })
-  requesterPhone?: string;
-
-  @Column({ nullable: true })
-  organization?: string;
-
-  @Column()
-  eventTitle: string;
-
-  @Column()
-  eventDescription: string;
-
-  @Column()
-  purpose: string;
-
-  @Column({ nullable: true })
-  expectedAttendees?: number;
-
-  @Column()
-  reservationDate: string;  // "YYYY-MM-DD"
-
-  @Column("array")
-  timeBlocks: string[];
-
-  @Column({ default: MetaverseReservationStatus.PENDING })
-  status: MetaverseReservationStatus;
-
-  @Column()
-  userId: string;
-
-  @Column({ default: false })
-  isRecurring: boolean;
-
-  @Column({ nullable: true })
-  recurrenceGroupId?: string;
-
-  @Column({ nullable: true })
-  recurrencePattern?: string;
-
-  @Column({ nullable: true })
-  recurrenceWeeks?: number;
-
-  @Column("array", { nullable: true })
-  recurrenceDays?: number[];
-
-  @Column({ nullable: true })
-  approvedBy?: string;
-
-  @Column({ nullable: true })
-  approvedAt?: Date;
-
-  @Column({ nullable: true })
-  rejectedBy?: string;
-
-  @Column({ nullable: true })
-  rejectedAt?: Date;
-
-  @Column({ nullable: true })
-  rejectionReason?: string;
-
-  @Column({ nullable: true })
-  adminNotes?: string;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
-}
-```
-
-#### Service Key Methods (metaverse-reservations.service.ts)
-
-```typescript
-// Crear reserva (auto-aprueba si es admin)
-async create(
-  createDto: CreateMetaverseReservationDto,
-  userId: string,
-  isAdmin: boolean = false
-): Promise<MetaverseReservation | MetaverseReservation[]>
-
-// Verificar disponibilidad por bloques
-async checkAvailability(date: string): Promise<{
-  available: boolean;
-  occupiedBlocks: string[];
-  availableBlocks: string[];
-  reservations: MetaverseReservation[];
-}>
-
-// Obtener disponibilidad para rango de fechas
-async getAvailabilityRange(startDate: string, endDate: string): Promise<Record<string, {
-  available: boolean;
-  occupiedBlocks: string[];
-  availableBlocks: string[];
-}>>
-
-// Aprobar/rechazar reserva
-async update(
-  id: string,
-  adminUserId: string,
-  updateDto: UpdateMetaverseReservationDto
-): Promise<MetaverseReservation>
-
-// Obtener solo reservas aprobadas (público)
-async findApproved(): Promise<MetaverseReservation[]>
-```
-
-#### Controller Endpoints (metaverse-reservations.controller.ts)
-
-```typescript
-@Controller("metaverse-reservations")
-export class MetaverseReservationsController {
-
-  @Post()
-  @UseGuards(JwtAuthGuard)  // Requiere autenticación
-  async create(@Request() req, @Body() createDto) {
-    const isAdmin = req.user.role === "admin" || req.user.role === "superadmin";
-    return this.service.create(createDto, req.user.userId, isAdmin);
-  }
-
-  @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles("admin", "superadmin")  // Solo admins
-  async findAll(@Query() filterDto) { ... }
-
-  @Get("approved")
-  // Sin guard - público
-  async findApproved() { ... }
-
-  @Get("availability")
-  // Sin guard - público
-  async getAvailability(@Query() query) { ... }
-
-  @Patch(":id")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles("admin", "superadmin")
-  async update(@Param("id") id, @Request() req, @Body() updateDto) { ... }
-
-  @Delete(":id")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles("admin", "superadmin")
-  async remove(@Param("id") id) { ... }
-}
-```
-
-#### Module Registration
-
-El módulo está registrado en `app.module.ts`:
-
-```typescript
-@Module({
-  imports: [
-    // ... otros módulos
-    MetaverseReservationsModule,
-  ],
-})
-export class AppModule {}
-```
-
-#### Conflict Detection Logic
-
-Al crear o aprobar una reserva, el servicio verifica conflictos por bloque:
-
-```typescript
-// Verificar si algún bloque solicitado ya está ocupado
-const existingApproved = await this.repository.find({
-  where: {
-    reservationDate: date,
-    status: MetaverseReservationStatus.APPROVED,
-  },
-});
-
-const occupiedBlocks = new Set<string>();
-for (const reservation of existingApproved) {
-  for (const block of reservation.timeBlocks) {
-    occupiedBlocks.add(block);
-  }
-}
-
-const conflictingBlocks = requestedBlocks.filter(block => occupiedBlocks.has(block));
-if (conflictingBlocks.length > 0) {
-  throw new ConflictException(
-    `Los siguientes bloques horarios ya están ocupados: ${conflictingBlocks.join(", ")}`
-  );
-}
-```
-
-### Heroku Deployment
-
-Backend desplegado en: `https://centromundox-backend-947baa9d183e.herokuapp.com/`
-
-Para desplegar cambios del backend:
 ```bash
-cd ../centromundox-api-reservas
-git add -A && git commit -m "mensaje"
-git push origin master    # GitHub
-git push heroku master    # Heroku
-```
-
-Para verificar el deploy:
-```bash
+# Check backend deployment
 heroku releases --app centromundox-backend
 heroku ps --app centromundox-backend
 ```
-
----
-
-## Computer Lab Reservation System - Dynamic User Type Access Control
-
-Sistema de control de acceso dinámico para computadoras del laboratorio. Implementado en Noviembre 2025.
-
-### Overview
-
-El superadmin puede configurar qué tipos de usuario tienen acceso a cada computadora del laboratorio, en lugar de usar los niveles de acceso fijos "normal" y "special".
-
-### Access Control Logic
-
-```typescript
-// Función helper para verificar acceso (lab-layout-visual.tsx, computer-selector.tsx)
-function userHasAccess(computer: Computer, userType: string): boolean {
-  // Si es acceso "normal", todos pueden usar la computadora
-  if (computer.accessLevel === "normal") return true;
-
-  // Si es "special", verificar si el tipo de usuario está en allowedUserTypes
-  if (!computer.allowedUserTypes || computer.allowedUserTypes.length === 0) {
-    return false; // Sin tipos permitidos = nadie tiene acceso
-  }
-
-  return computer.allowedUserTypes.includes(userType);
-}
-```
-
-### Computer Entity Fields
-
-```typescript
-interface Computer {
-  // ... otros campos
-  accessLevel: "normal" | "special";  // DEPRECATED: Solo para compatibilidad
-  allowedUserTypes: string[];          // Lista de tipos de usuario permitidos
-}
-```
-
-### Frontend Components
-
-#### Lab Layout Editor (`src/components/admin/lab-layout-editor.tsx`)
-
-El editor visual para superadmins incluye:
-- Selector multi-select de tipos de usuario cuando `accessLevel === "special"`
-- Los tipos de usuario vienen de la configuración "Tipos de Usuario" del sistema
-- UI con checkboxes personalizados para seleccionar múltiples tipos
-
-```tsx
-// Cuando el accessLevel es "special", mostrar selector de tipos
-{newComputerForm.accessLevel === "special" && userTypes.length > 0 && (
-  <div className="space-y-2">
-    <Label>Tipos de Usuario Permitidos</Label>
-    <div className="grid grid-cols-2 gap-2">
-      {userTypes.filter((ut) => ut.isActive).map((userType) => (
-        <div key={userType._id} onClick={() => toggleUserType(userType.value)}>
-          {/* Checkbox + label */}
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-```
-
-#### Lab Layout Visual (`src/components/lab-reservations/lab-layout-visual.tsx`)
-
-- Recibe `userType: string` prop en lugar del antiguo `userGroup`
-- Usa `userHasAccess()` para determinar si mostrar computadora como disponible
-- Computadoras sin acceso se muestran en gris con tooltip explicativo
-
-#### Computer Selector (`src/components/lab-reservations/computer-selector.tsx`)
-
-- Vista de tarjetas también usa `userHasAccess()` para filtrar
-- Muestra alerta informativa sobre acceso restringido
-- Pasa `userType` al componente `LabLayoutVisual`
-
-### Configuration Page (`src/app/admin/config-laboratorio/page.tsx`)
-
-- Obtiene los tipos de usuario de la configuración del sistema
-- Pasa los tipos activos al `LabLayoutEditor`:
-
-```typescript
-<LabLayoutEditor
-  computers={computers}
-  userTypes={configs
-    .filter((c) => c.type === "user_type")
-    .map((c) => ({
-      _id: c._id,
-      value: c.value,
-      label: c.label,
-      isActive: c.isActive,
-    }))}
-  // ...
-/>
-```
-
-### Types
-
-**File**: `src/types/lab-reservation.ts`
-
-```typescript
-interface Computer {
-  readonly _id: string;
-  readonly name: string;
-  readonly labConfigId: string;
-  readonly status: 'available' | 'occupied' | 'maintenance';
-  readonly accessLevel: 'normal' | 'special'; // DEPRECATED
-  readonly allowedUserTypes: readonly string[]; // Tipos de usuario permitidos
-  readonly gridRow?: number;
-  readonly gridColumn?: number;
-  readonly currentUserId?: string;
-  readonly currentReservationId?: string;
-}
-```
-
-**File**: `src/types/lab-config.ts`
-
-```typescript
-interface ComputerConfig {
-  // ... otros campos
-  accessLevel: "normal" | "special";
-  allowedUserTypes?: string[];
-  gridRow?: number;
-  gridColumn?: number;
-}
-
-interface CreateComputerDto {
-  // ... otros campos
-  accessLevel?: "normal" | "special";
-  allowedUserTypes?: string[];
-  gridRow?: number;
-  gridColumn?: number;
-}
-```
-
-### User Flow
-
-1. **Superadmin** va a `/admin/config-laboratorio`
-2. En el editor visual, selecciona una computadora para editar o crea una nueva
-3. Si establece `accessLevel = "special"`, aparece el selector de tipos de usuario
-4. Selecciona los tipos que pueden acceder (ej: "Estudiante", "Profesor", "Investigador")
-5. Guarda la configuración
-
-6. **Usuario** va a `/dashboard/reservar-lab`
-7. Selecciona su tipo de usuario en el formulario
-8. Solo ve como disponibles las computadoras donde su tipo está en `allowedUserTypes`
-9. Computadoras restringidas aparecen en gris y no se pueden seleccionar
-
-### Backend Support
-
-El backend (`../centromundox-api-reservas`) tiene:
-
-- **Entity**: Campo `allowedUserTypes: string[]` con `@Column("simple-array")`
-- **DTOs**: Validación con `@IsArray()` y `@IsString({ each: true })`
-- **Service**: Seed data incluye `allowedUserTypes: []` para todas las computadoras
-- **Migration**: Método `migrateAllowedUserTypes()` para computadoras existentes

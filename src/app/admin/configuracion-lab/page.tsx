@@ -25,7 +25,7 @@ export default function LabConfigPage() {
   // Edit/Create states
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [formData, setFormData] = useState({ key: "", label: "", order: 0 });
+  const [formData, setFormData] = useState({ value: "", label: "", order: 0 });
 
   useEffect(() => {
     loadData();
@@ -56,8 +56,8 @@ export default function LabConfigPage() {
   };
 
   const handleCreate = async () => {
-    if (!formData.key || !formData.label) {
-      setError("Key y Label son requeridos");
+    if (!formData.value || !formData.label) {
+      setError("Value y Label son requeridos");
       return;
     }
 
@@ -84,7 +84,7 @@ export default function LabConfigPage() {
 
       setSuccess("Creado exitosamente");
       setIsCreating(false);
-      setFormData({ key: "", label: "", order: 0 });
+      setFormData({ value: "", label: "", order: 0 });
       await loadData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
@@ -161,13 +161,13 @@ export default function LabConfigPage() {
 
   const startEdit = (item: UserTypeConfig | SoftwareConfig | PurposeConfig) => {
     setEditingId(item._id);
-    setFormData({ key: item.key, label: item.label, order: item.order });
+    setFormData({ value: item.value, label: item.label, order: item.order });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setIsCreating(false);
-    setFormData({ key: "", label: "", order: 0 });
+    setFormData({ value: "", label: "", order: 0 });
   };
 
   const isSoftwareConfig = (item: UserTypeConfig | SoftwareConfig | PurposeConfig): item is SoftwareConfig => {
@@ -185,10 +185,10 @@ export default function LabConfigPage() {
             <CardContent className="pt-6">
               <div className="grid gap-4">
                 <div>
-                  <Label>Key (identificador único)</Label>
+                  <Label>Value (identificador único)</Label>
                   <Input
-                    value={formData.key}
-                    onChange={(e) => setFormData({ ...formData, key: e.target.value })}
+                    value={formData.value}
+                    onChange={(e) => setFormData({ ...formData, value: e.target.value })}
                     placeholder="ej: profesor, unity, tesis"
                   />
                 </div>
@@ -229,8 +229,8 @@ export default function LabConfigPage() {
               {editingId === item._id ? (
                 <div className="grid gap-4">
                   <div>
-                    <Label>Key</Label>
-                    <Input value={formData.key} disabled className="bg-gray-100" />
+                    <Label>Value</Label>
+                    <Input value={formData.value} disabled className="bg-gray-100" />
                   </div>
                   <div>
                     <Label>Label</Label>
@@ -262,7 +262,7 @@ export default function LabConfigPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="font-semibold text-lg">{item.label}</h3>
-                    <p className="text-sm text-gray-600">Key: {item.key}</p>
+                    <p className="text-sm text-gray-600">Value: {item.value}</p>
                     <p className="text-xs text-gray-500">Orden: {item.order}</p>
                     {isSoftwareConfig(item) && item.isFixed && (
                       <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded mt-1 inline-block">

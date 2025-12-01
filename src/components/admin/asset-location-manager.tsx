@@ -267,7 +267,7 @@ export function AssetLocationManager() {
 
         {/* Update Location Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>
                 {formData.status === 'maintenance' ? 'Enviar a Mantenimiento' : 'Actualizar Ubicación'}

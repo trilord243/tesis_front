@@ -1363,7 +1363,7 @@ export function AssetForm() {
 
       {/* Dialog para imprimir etiqueta */}
       <Dialog open={showPrintDialog} onOpenChange={setShowPrintDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>¡Activo Creado Exitosamente!</DialogTitle>
             <DialogDescription>

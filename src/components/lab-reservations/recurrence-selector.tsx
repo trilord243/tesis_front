@@ -8,6 +8,7 @@ import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { BigDatePicker } from "./big-date-picker";
 import {
   Popover,
   PopoverContent,
@@ -164,56 +165,15 @@ export function RecurrenceSelector({
             className="space-y-4"
           >
             <p className="text-sm text-gray-600">
-              Selecciona una o más fechas específicas para tu reserva.
+              Selecciona una o más fechas específicas para tu reserva. Haz clic en los días para agregarlos o quitarlos.
             </p>
 
-            <div className="flex justify-center">
-              <div className="p-4 bg-white rounded-xl border shadow-sm">
-                <Calendar
-                  mode="multiple"
-                  selected={selectedDates}
-                  onSelect={handleDateSelect}
-                  disabled={isDateDisabled}
-                  locale={es}
-                  className="rounded-md"
-                />
-              </div>
-            </div>
-
-            {selectedDates.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="p-4 bg-green-50 rounded-xl border border-green-200"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-green-800">
-                    {selectedDates.length} fecha(s) seleccionada(s)
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onDatesChange([])}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    Limpiar
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {selectedDates
-                    .sort((a, b) => a.getTime() - b.getTime())
-                    .map((date, i) => (
-                      <span
-                        key={i}
-                        className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
-                      >
-                        {format(date, "EEE d MMM", { locale: es })}
-                      </span>
-                    ))}
-                </div>
-              </motion.div>
-            )}
+            <BigDatePicker
+              selectedDates={selectedDates}
+              onDatesChange={onDatesChange}
+              disabledDates={disabledDates}
+              allowWeekends={false}
+            />
           </motion.div>
         ) : (
           <motion.div

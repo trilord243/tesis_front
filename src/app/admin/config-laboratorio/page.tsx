@@ -124,6 +124,7 @@ export default function ConfigLaboratorioPage() {
     specialization: "",
     description: "",
     accessLevel: "normal" as "normal" | "special",
+    allowedUserTypes: [] as string[],
   });
 
   const fetchData = useCallback(async () => {
@@ -240,6 +241,7 @@ export default function ConfigLaboratorioPage() {
         specialization: computer.specialization,
         description: computer.description,
         accessLevel: computer.accessLevel,
+        allowedUserTypes: computer.allowedUserTypes || [],
       });
     } else {
       setEditingComputer(null);
@@ -257,6 +259,7 @@ export default function ConfigLaboratorioPage() {
         specialization: "",
         description: "",
         accessLevel: "normal",
+        allowedUserTypes: [],
       });
     }
     setComputerDialogOpen(true);
@@ -558,6 +561,18 @@ export default function ConfigLaboratorioPage() {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
+                          name: computer.name,
+                          cpu: computer.cpu,
+                          gpu: computer.gpu,
+                          ram: computer.ram,
+                          storage: computer.storage,
+                          software: computer.software,
+                          specialization: computer.specialization,
+                          description: computer.description,
+                          accessLevel: computer.accessLevel,
+                          allowedUserTypes: computer.allowedUserTypes,
+                          isAvailable: computer.isAvailable,
+                          maintenanceNotes: computer.maintenanceNotes,
                           gridRow: computer.gridRow,
                           gridCol: computer.gridCol,
                         }),
@@ -653,7 +668,7 @@ export default function ConfigLaboratorioPage() {
 
         {/* Computer Dialog */}
         <Dialog open={computerDialogOpen} onOpenChange={setComputerDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-[700px]">
             <DialogHeader>
               <DialogTitle>
                 {editingComputer ? "Editar Computadora" : "Nueva Computadora"}
@@ -754,6 +769,8 @@ export default function ConfigLaboratorioPage() {
                     setComputerForm({
                       ...computerForm,
                       accessLevel: v as "normal" | "special",
+                      // Limpiar allowedUserTypes si cambia a normal
+                      allowedUserTypes: v === "normal" ? [] : computerForm.allowedUserTypes,
                     })
                   }
                 >
@@ -762,10 +779,61 @@ export default function ConfigLaboratorioPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="normal">Normal (todos los usuarios)</SelectItem>
-                    <SelectItem value="special">Especial (CFD/Centro Mundo X)</SelectItem>
+                    <SelectItem value="special">Especial (restringido)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              {computerForm.accessLevel === "special" && (
+                <div className="col-span-2 space-y-2">
+                  <Label>Tipos de Usuario Permitidos</Label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Selecciona los tipos de usuario que pueden acceder a esta computadora.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 max-h-[150px] overflow-y-auto p-2 border rounded-md bg-gray-50">
+                    {configs
+                      .filter((c) => c.type === "user_type" && c.isActive)
+                      .map((userType) => {
+                        const isSelected = computerForm.allowedUserTypes.includes(userType.value);
+                        return (
+                          <div
+                            key={userType._id}
+                            className={`
+                              flex items-center gap-2 p-2 rounded cursor-pointer transition-colors
+                              ${isSelected ? "bg-blue-100 border-blue-300 border" : "bg-white border border-gray-200 hover:bg-gray-100"}
+                            `}
+                            onClick={() => {
+                              const newAllowed = isSelected
+                                ? computerForm.allowedUserTypes.filter((t) => t !== userType.value)
+                                : [...computerForm.allowedUserTypes, userType.value];
+                              setComputerForm({
+                                ...computerForm,
+                                allowedUserTypes: newAllowed,
+                              });
+                            }}
+                          >
+                            <div
+                              className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                                isSelected ? "bg-blue-600 border-blue-600" : "border-gray-300"
+                              }`}
+                            >
+                              {isSelected && (
+                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </div>
+                            <span className="text-sm">{userType.label}</span>
+                          </div>
+                        );
+                      })}
+                  </div>
+                  {computerForm.allowedUserTypes.length > 0 && (
+                    <p className="text-xs text-blue-600">
+                      {computerForm.allowedUserTypes.length} tipo(s) seleccionado(s)
+                    </p>
+                  )}
+                </div>
+              )}
               <div className="col-span-2 space-y-2">
                 <Label>Descripción</Label>
                 <Textarea

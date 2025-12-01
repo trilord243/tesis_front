@@ -12,9 +12,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Verificar que el usuario es administrador
+    // Verificar que el usuario es administrador o superadmin
     const user = await getCurrentUser();
-    if (!user || user.role !== "admin") {
+    if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
       return NextResponse.json(
         { error: "Acceso denegado. Se requieren permisos de administrador" },
         { status: 403 }
@@ -77,9 +77,9 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Verificar que el usuario es administrador
+    // Verificar que el usuario es administrador o superadmin
     const user = await getCurrentUser();
-    if (!user || user.role !== "admin") {
+    if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
       return NextResponse.json(
         { error: "Acceso denegado. Se requieren permisos de administrador" },
         { status: 403 }
@@ -171,9 +171,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Verificar que el usuario es administrador
+    // Verificar que el usuario es administrador o superadmin
     const user = await getCurrentUser();
-    if (!user || user.role !== "admin") {
+    if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
       return NextResponse.json(
         { error: "Acceso denegado. Se requieren permisos de administrador" },
         { status: 403 }

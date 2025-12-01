@@ -548,7 +548,7 @@ export default function LaboratorioPage() {
 
         {/* Modal de formulario de reserva */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[700px]">
             <DialogHeader>
               <DialogTitle>Solicitar Reserva del Laboratorio</DialogTitle>
               <DialogDescription>

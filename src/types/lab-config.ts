@@ -2,8 +2,9 @@
 
 export interface UserTypeConfig {
   _id: string;
-  key: string;
-  label: string;
+  type: string;
+  value: string; // El valor interno (ej: 'profesor', 'unity')
+  label: string; // La etiqueta visible (ej: 'Profesor', 'Unity')
   isActive: boolean;
   order: number;
   createdAt: string;
@@ -12,10 +13,10 @@ export interface UserTypeConfig {
 
 export interface SoftwareConfig {
   _id: string;
-  key: string;
+  type: string;
+  value: string;
   label: string;
   isActive: boolean;
-  isFixed: boolean; // true for "otro" - cannot be deleted
   order: number;
   createdAt: string;
   updatedAt: string;
@@ -23,7 +24,8 @@ export interface SoftwareConfig {
 
 export interface PurposeConfig {
   _id: string;
-  key: string;
+  type: string;
+  value: string;
   label: string;
   isActive: boolean;
   order: number;

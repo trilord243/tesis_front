@@ -78,10 +78,10 @@ export default async function DashboardPage() {
           color: "#FF8200",
         },
         {
-          title: "Ver Disponibilidad Lab",
-          description: "Consulta el calendario de disponibilidad de computadoras",
+          title: "Calendario de Computadoras",
+          description: "Ver las reservas aprobadas de computadoras del laboratorio",
           icon: CalendarDays,
-          href: "/dashboard/disponibilidad-lab",
+          href: "/calendario-computadoras",
           color: "#22c55e",
         },
         {

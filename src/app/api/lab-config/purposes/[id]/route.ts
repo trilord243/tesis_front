@@ -14,9 +14,9 @@ export async function PUT(
     const body = await request.json();
 
     const response = await fetch(
-      `${API_BASE_URL}/lab-config/purposes/${params.id}`,
+      `${API_BASE_URL}/lab-config/${params.id}`,
       {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           ...(token && { Authorization: `Bearer ${token}` }),
@@ -46,7 +46,7 @@ export async function DELETE(
     const token = cookieStore.get("auth-token")?.value;
 
     const response = await fetch(
-      `${API_BASE_URL}/lab-config/purposes/${params.id}`,
+      `${API_BASE_URL}/lab-config/${params.id}`,
       {
         method: "DELETE",
         headers: {

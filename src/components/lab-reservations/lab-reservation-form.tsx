@@ -23,16 +23,8 @@ import { ComputerSelector } from "./computer-selector";
 import { TimeBlockSelector } from "./time-block-selector";
 import { RecurrenceSelector } from "./recurrence-selector";
 import { ReservationPreview } from "./reservation-preview";
-import {
-  UserType,
-  Software,
-  Purpose,
-  CreateLabReservationDto,
-  RecurrencePattern,
-  USER_TYPE_LABELS,
-  SOFTWARE_LABELS,
-  PURPOSE_LABELS,
-} from "@/types/lab-reservation";
+import { RecurrencePattern } from "@/types/lab-reservation";
+import type { UserTypeConfig, SoftwareConfig, PurposeConfig } from "@/types/lab-config";
 import {
   CheckCircle2,
   ChevronLeft,
@@ -57,11 +49,19 @@ export function LabReservationForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Configuraciones dinámicas del admin
+  const [userTypes, setUserTypes] = useState<UserTypeConfig[]>([]);
+  const [softwareOptions, setSoftwareOptions] = useState<SoftwareConfig[]>([]);
+  const [purposeOptions, setPurposeOptions] = useState<PurposeConfig[]>([]);
+  const [loadingConfig, setLoadingConfig] = useState(true);
+
   // Form data - Basic info
-  const [userType, setUserType] = useState<UserType | "">("");
-  const [selectedSoftware, setSelectedSoftware] = useState<Software[]>([]);
+  const [userType, setUserType] = useState<string>("");
+  const [otherUserType, setOtherUserType] = useState("");
+  const [selectedSoftware, setSelectedSoftware] = useState<string[]>([]);
   const [otherSoftware, setOtherSoftware] = useState("");
-  const [purpose, setPurpose] = useState<Purpose | "">("");
+  const [purpose, setPurpose] = useState<string>("");
+  const [otherPurpose, setOtherPurpose] = useState("");
   const [description, setDescription] = useState("");
 
   // Form data - Reservation details
@@ -84,6 +84,42 @@ export function LabReservationForm({
 
   const totalSteps = 7;
 
+  // Load dynamic configuration from admin panel on mount
+  useEffect(() => {
+    const loadConfig = async () => {
+      setLoadingConfig(true);
+      try {
+        const response = await fetch("/api/lab-config/public");
+        if (response.ok) {
+          const data = await response.json();
+          // Filtrar solo los activos y ordenar
+          setUserTypes(
+            (data.userTypes || [])
+              .filter((ut: UserTypeConfig) => ut.isActive)
+              .sort((a: UserTypeConfig, b: UserTypeConfig) => a.order - b.order)
+          );
+          setSoftwareOptions(
+            (data.software || [])
+              .filter((s: SoftwareConfig) => s.isActive)
+              .sort((a: SoftwareConfig, b: SoftwareConfig) => a.order - b.order)
+          );
+          setPurposeOptions(
+            (data.purposes || [])
+              .filter((p: PurposeConfig) => p.isActive)
+              .sort((a: PurposeConfig, b: PurposeConfig) => a.order - b.order)
+          );
+        } else {
+          console.error("Error loading lab config:", await response.text());
+        }
+      } catch (err) {
+        console.error("Error loading lab config:", err);
+      } finally {
+        setLoadingConfig(false);
+      }
+    };
+    loadConfig();
+  }, []);
+
   // Load user's existing reservations when reaching step 7
   useEffect(() => {
     if (currentStep === 7) {
@@ -97,10 +133,12 @@ export function LabReservationForm({
       const response = await fetch("/api/lab-reservations/user");
       if (response.ok) {
         const reservations = await response.json();
+        // Solo bloquear fechas donde el usuario ya tiene reserva APROBADA
+        // Las pendientes NO bloquean porque pueden ser rechazadas
         const reservedDates = (
           reservations as Array<{ status: string; reservationDate: string }>
         )
-          .filter((r) => r.status === "pending" || r.status === "approved")
+          .filter((r) => r.status === "approved")
           .map((r) => r.reservationDate);
         setExistingReservations(reservedDates);
       }
@@ -112,12 +150,12 @@ export function LabReservationForm({
   };
 
   // Handle software toggle
-  const handleSoftwareToggle = (software: Software) => {
+  const handleSoftwareToggle = (softwareKey: string) => {
     setSelectedSoftware((prev) => {
-      if (prev.includes(software)) {
-        return prev.filter((s) => s !== software);
+      if (prev.includes(softwareKey)) {
+        return prev.filter((s) => s !== softwareKey);
       } else {
-        return [...prev, software];
+        return [...prev, softwareKey];
       }
     });
   };
@@ -133,15 +171,17 @@ export function LabReservationForm({
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return userType !== "";
+        // Si selecciona "otro", debe escribir el tipo de usuario
+        return userType !== "" && (userType !== "otro" || otherUserType.trim().length > 0);
       case 2:
         return (
           selectedSoftware.length > 0 &&
-          (!selectedSoftware.includes(Software.OTRO) ||
+          (!selectedSoftware.includes("otro") ||
             otherSoftware.trim().length > 0)
         );
       case 3:
-        return purpose !== "";
+        // Si selecciona "otro", debe escribir el propósito
+        return purpose !== "" && (purpose !== "otro" || otherPurpose.trim().length > 0);
       case 4:
         return description.trim().length >= 20;
       case 5:
@@ -189,13 +229,14 @@ export function LabReservationForm({
     setError(null);
 
     try {
-      const reservationData: CreateLabReservationDto = {
-        userType: userType as UserType,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const reservationData: any = {
+        userType: userType === "otro" ? otherUserType : userType,
         software: selectedSoftware,
-        ...(selectedSoftware.includes(Software.OTRO) && otherSoftware
+        ...(selectedSoftware.includes("otro") && otherSoftware
           ? { otherSoftware }
           : {}),
-        purpose: purpose as Purpose,
+        purpose: purpose === "otro" ? otherPurpose : purpose,
         description,
         computerNumber: selectedComputerNumber,
         timeBlocks: selectedTimeBlocks,
@@ -320,32 +361,76 @@ export function LabReservationForm({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <RadioGroup
-                  value={userType}
-                  onValueChange={(value) => setUserType(value as UserType)}
-                >
-                  <div className="space-y-3">
-                    {Object.values(UserType).map((type) => (
-                      <div
-                        key={type}
-                        className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                          userType === type
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200 hover:border-blue-300"
-                        }`}
-                        onClick={() => setUserType(type)}
-                      >
-                        <RadioGroupItem value={type} id={type} />
-                        <Label
-                          htmlFor={type}
-                          className="flex-1 cursor-pointer font-medium"
-                        >
-                          {USER_TYPE_LABELS[type]}
-                        </Label>
-                      </div>
-                    ))}
+                {loadingConfig ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                    <span className="ml-2 text-gray-600">Cargando opciones...</span>
                   </div>
-                </RadioGroup>
+                ) : userTypes.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    No hay tipos de usuario configurados. Contacte al administrador.
+                  </div>
+                ) : (
+                  <>
+                    <RadioGroup
+                      value={userType}
+                      onValueChange={(val) => setUserType(val)}
+                    >
+                      <div className="space-y-3">
+                        {userTypes.map((type) => (
+                          <div
+                            key={type.value}
+                            className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                              userType === type.value
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-200 hover:border-blue-300"
+                            }`}
+                            onClick={() => setUserType(type.value)}
+                          >
+                            <RadioGroupItem value={type.value} id={type.value} />
+                            <Label
+                              htmlFor={type.value}
+                              className="flex-1 cursor-pointer font-medium"
+                            >
+                              {type.label}
+                            </Label>
+                          </div>
+                        ))}
+                        {/* Opción Otro */}
+                        <div
+                          className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                            userType === "otro"
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-gray-200 hover:border-blue-300"
+                          }`}
+                          onClick={() => setUserType("otro")}
+                        >
+                          <RadioGroupItem value="otro" id="userType-otro" />
+                          <Label
+                            htmlFor="userType-otro"
+                            className="flex-1 cursor-pointer font-medium"
+                          >
+                            Otro
+                          </Label>
+                        </div>
+                      </div>
+                    </RadioGroup>
+
+                    {userType === "otro" && (
+                      <div className="mt-4 space-y-2">
+                        <Label htmlFor="otherUserType">
+                          Especifica tu tipo de usuario
+                        </Label>
+                        <Input
+                          id="otherUserType"
+                          value={otherUserType}
+                          onChange={(e) => setOtherUserType(e.target.value)}
+                          placeholder="Ej: Investigador visitante, Tesista externo, etc."
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
               </motion.div>
             )}
 
@@ -358,54 +443,68 @@ export function LabReservationForm({
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-4"
               >
-                <div className="grid gap-3">
-                  {Object.values(Software).map((software) => (
-                    <div
-                      key={software}
-                      className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                        selectedSoftware.includes(software)
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-blue-300"
-                      }`}
-                      onClick={() => handleSoftwareToggle(software)}
-                    >
-                      <Checkbox
-                        checked={selectedSoftware.includes(software)}
-                        onCheckedChange={() => handleSoftwareToggle(software)}
-                      />
-                      <Label className="flex-1 cursor-pointer font-medium">
-                        {SOFTWARE_LABELS[software]}
-                      </Label>
+                {loadingConfig ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                    <span className="ml-2 text-gray-600">Cargando opciones...</span>
+                  </div>
+                ) : softwareOptions.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    No hay software configurado. Contacte al administrador.
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid gap-3">
+                      {softwareOptions.map((software) => (
+                        <div
+                          key={software.value}
+                          className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                            selectedSoftware.includes(software.value)
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-gray-200 hover:border-blue-300"
+                          }`}
+                          onClick={() => handleSoftwareToggle(software.value)}
+                        >
+                          <Checkbox
+                            checked={selectedSoftware.includes(software.value)}
+                            onCheckedChange={() => handleSoftwareToggle(software.value)}
+                          />
+                          <Label className="flex-1 cursor-pointer font-medium">
+                            {software.label}
+                          </Label>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
 
-                {selectedSoftware.includes(Software.OTRO) && (
-                  <div className="space-y-2">
-                    <Label htmlFor="otherSoftware">
-                      Especifica el software que necesitas
-                    </Label>
-                    <Input
-                      id="otherSoftware"
-                      value={otherSoftware}
-                      onChange={(e) => setOtherSoftware(e.target.value)}
-                      placeholder="Ej: MATLAB, AutoCAD, etc."
-                    />
-                  </div>
-                )}
+                    {selectedSoftware.includes("otro") && (
+                      <div className="space-y-2">
+                        <Label htmlFor="otherSoftware">
+                          Especifica el software que necesitas
+                        </Label>
+                        <Input
+                          id="otherSoftware"
+                          value={otherSoftware}
+                          onChange={(e) => setOtherSoftware(e.target.value)}
+                          placeholder="Ej: MATLAB, AutoCAD, etc."
+                        />
+                      </div>
+                    )}
 
-                {selectedSoftware.length > 0 && (
-                  <div className="flex flex-wrap gap-2 p-4 bg-blue-50 rounded-lg">
-                    <span className="font-medium">Seleccionados:</span>
-                    {selectedSoftware.map((software) => (
-                      <Badge key={software} variant="secondary">
-                        {SOFTWARE_LABELS[software]}
-                        {software === Software.OTRO &&
-                          otherSoftware &&
-                          `: ${otherSoftware}`}
-                      </Badge>
-                    ))}
-                  </div>
+                    {selectedSoftware.length > 0 && (
+                      <div className="flex flex-wrap gap-2 p-4 bg-blue-50 rounded-lg">
+                        <span className="font-medium">Seleccionados:</span>
+                        {selectedSoftware.map((softwareVal) => {
+                          const sw = softwareOptions.find((s) => s.value === softwareVal);
+                          return (
+                            <Badge key={softwareVal} variant="secondary">
+                              {sw?.label || softwareVal}
+                              {softwareVal === "otro" && otherSoftware && `: ${otherSoftware}`}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
                 )}
               </motion.div>
             )}
@@ -418,32 +517,76 @@ export function LabReservationForm({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <RadioGroup
-                  value={purpose}
-                  onValueChange={(value) => setPurpose(value as Purpose)}
-                >
-                  <div className="space-y-3">
-                    {Object.values(Purpose).map((p) => (
-                      <div
-                        key={p}
-                        className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                          purpose === p
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-gray-200 hover:border-blue-300"
-                        }`}
-                        onClick={() => setPurpose(p)}
-                      >
-                        <RadioGroupItem value={p} id={p} />
-                        <Label
-                          htmlFor={p}
-                          className="flex-1 cursor-pointer font-medium"
-                        >
-                          {PURPOSE_LABELS[p]}
-                        </Label>
-                      </div>
-                    ))}
+                {loadingConfig ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                    <span className="ml-2 text-gray-600">Cargando opciones...</span>
                   </div>
-                </RadioGroup>
+                ) : purposeOptions.length === 0 ? (
+                  <div className="text-center py-12 text-gray-500">
+                    No hay propósitos configurados. Contacte al administrador.
+                  </div>
+                ) : (
+                  <>
+                    <RadioGroup
+                      value={purpose}
+                      onValueChange={(val) => setPurpose(val)}
+                    >
+                      <div className="space-y-3">
+                        {purposeOptions.map((p) => (
+                          <div
+                            key={p.value}
+                            className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                              purpose === p.value
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-200 hover:border-blue-300"
+                            }`}
+                            onClick={() => setPurpose(p.value)}
+                          >
+                            <RadioGroupItem value={p.value} id={p.value} />
+                            <Label
+                              htmlFor={p.value}
+                              className="flex-1 cursor-pointer font-medium"
+                            >
+                              {p.label}
+                            </Label>
+                          </div>
+                        ))}
+                        {/* Opción Otro */}
+                        <div
+                          className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                            purpose === "otro"
+                              ? "border-blue-500 bg-blue-50"
+                              : "border-gray-200 hover:border-blue-300"
+                          }`}
+                          onClick={() => setPurpose("otro")}
+                        >
+                          <RadioGroupItem value="otro" id="purpose-otro" />
+                          <Label
+                            htmlFor="purpose-otro"
+                            className="flex-1 cursor-pointer font-medium"
+                          >
+                            Otro
+                          </Label>
+                        </div>
+                      </div>
+                    </RadioGroup>
+
+                    {purpose === "otro" && (
+                      <div className="mt-4 space-y-2">
+                        <Label htmlFor="otherPurpose">
+                          Especifica el propósito de tu reserva
+                        </Label>
+                        <Input
+                          id="otherPurpose"
+                          value={otherPurpose}
+                          onChange={(e) => setOtherPurpose(e.target.value)}
+                          placeholder="Ej: Proyecto de investigación, Práctica personal, etc."
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
               </motion.div>
             )}
 

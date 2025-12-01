@@ -11,9 +11,9 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Verificar que el usuario actual es admin
+    // Verificar que el usuario actual es admin o superadmin
     const currentUser = await getCurrentUser();
-    if (!currentUser || currentUser.role !== "admin") {
+    if (!currentUser || (currentUser.role !== "admin" && currentUser.role !== "superadmin")) {
       return NextResponse.json(
         { error: "Acceso denegado. Solo administradores." },
         { status: 403 }

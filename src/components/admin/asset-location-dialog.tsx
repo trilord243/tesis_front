@@ -102,7 +102,7 @@ export function AssetLocationDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {mode === "maintenance" ? (

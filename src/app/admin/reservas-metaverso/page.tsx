@@ -380,7 +380,7 @@ export default function AdminReservasMetaversoPage() {
 
         {/* Detail Dialog */}
         <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[700px]">
             <DialogHeader>
               <DialogTitle>{selectedReservation?.eventTitle}</DialogTitle>
               <DialogDescription>Detalles de la solicitud</DialogDescription>

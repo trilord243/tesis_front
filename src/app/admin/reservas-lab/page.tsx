@@ -35,8 +35,9 @@ import {
   Computer,
   CalendarDays,
   List,
-  Repeat,
+  Package,
 } from "lucide-react";
+import { ReservationGroupCard } from "@/components/lab-reservations/reservation-group-card";
 
 export default function AdminReservasLabPage() {
   const [reservations, setReservations] = useState<LabReservation[]>([]);
@@ -113,6 +114,52 @@ export default function AdminReservasLabPage() {
   const uniqueComputers = Array.from(
     new Set(reservations.map((r) => r.computerNumber).filter((num): num is number => num !== undefined && num !== null))
   ).sort((a, b) => a - b);
+
+  // Agrupar reservas por recurrenceGroupId
+  const groupedReservations = filteredReservations.reduce<{
+    groups: Map<string, LabReservation[]>;
+    individual: LabReservation[];
+  }>(
+    (acc, reservation) => {
+      if (reservation.recurrenceGroupId) {
+        const existing = acc.groups.get(reservation.recurrenceGroupId) || [];
+        existing.push(reservation);
+        acc.groups.set(reservation.recurrenceGroupId, existing);
+      } else {
+        acc.individual.push(reservation);
+      }
+      return acc;
+    },
+    { groups: new Map(), individual: [] }
+  );
+
+  // Convert groups map to array and sort by first pending reservation's date
+  const sortedGroups = Array.from(groupedReservations.groups.entries())
+    .map(([groupId, reservations]) => ({
+      groupId,
+      reservations: reservations.sort((a, b) =>
+        new Date(a.reservationDate).getTime() - new Date(b.reservationDate).getTime()
+      ),
+      hasPending: reservations.some(r => r.status === ReservationStatus.PENDING),
+    }))
+    .sort((a, b) => {
+      // Groups with pending reservations first
+      if (a.hasPending && !b.hasPending) return -1;
+      if (!a.hasPending && b.hasPending) return 1;
+      // Then by first reservation date
+      const dateA = a.reservations[0]?.reservationDate || '';
+      const dateB = b.reservations[0]?.reservationDate || '';
+      return dateA.localeCompare(dateB);
+    });
+
+  // Sort individual reservations (pending first, then by date)
+  const sortedIndividual = [...groupedReservations.individual].sort((a, b) => {
+    const aIsPending = a.status === ReservationStatus.PENDING;
+    const bIsPending = b.status === ReservationStatus.PENDING;
+    if (aIsPending && !bIsPending) return -1;
+    if (!aIsPending && bIsPending) return 1;
+    return new Date(a.reservationDate).getTime() - new Date(b.reservationDate).getTime();
+  });
 
   const handleViewReservation = (reservation: LabReservation) => {
     setSelectedReservation(reservation);
@@ -328,95 +375,118 @@ export default function AdminReservasLabPage() {
 
       {/* Reservations List */}
       {!loading && !error && filteredReservations.length > 0 && (
-        <div className="space-y-4">
-          {filteredReservations.map((reservation) => (
-            <Card
-              key={reservation._id}
-              className="hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => handleViewReservation(reservation)}
-            >
-              <CardContent className="p-6">
-                <div className="flex flex-col gap-4">
-                  {/* Header Row */}
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <Badge className={STATUS_COLORS[reservation.status]}>
-                        {STATUS_LABELS[reservation.status]}
-                      </Badge>
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">
-                        <Computer className="h-3 w-3 mr-1" />
-                        Computadora #{reservation.computerNumber}
-                      </Badge>
-                      <span className="font-semibold">{reservation.userName}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {reservation.userEmail}
-                      </span>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={(e) => {
-                      e.stopPropagation();
-                      handleViewReservation(reservation);
-                    }}>
-                      Ver Detalles
-                    </Button>
-                  </div>
+        <div className="space-y-6">
+          {/* Grouped (Recurrent) Reservations */}
+          {sortedGroups.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-lg font-semibold text-purple-700">
+                <Package className="h-5 w-5" />
+                Solicitudes Recurrentes ({sortedGroups.length})
+              </div>
+              {sortedGroups.map(({ groupId, reservations }) => (
+                <ReservationGroupCard
+                  key={groupId}
+                  groupId={groupId}
+                  reservations={reservations}
+                  onSuccess={handleDialogSuccess}
+                />
+              ))}
+            </div>
+          )}
 
-                  {/* Info Row */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">
-                        {formatDate(reservation.reservationDate)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      {reservation.timeBlocks && reservation.timeBlocks.length > 0 ? (
-                        <span className="font-medium text-blue-700">
-                          {formatTimeBlocksRange(reservation.timeBlocks)}
-                        </span>
-                      ) : (
-                        <span>
-                          Solicitada el {new Date(reservation.createdAt).toLocaleDateString("es-ES")}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Tipo:</span>{" "}
-                      <span className="font-medium">{USER_TYPE_LABELS[reservation.userType]}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">Propósito:</span>{" "}
-                      <span className="font-medium">{PURPOSE_LABELS[reservation.purpose]}</span>
-                      {reservation.recurrenceGroupId && (
-                        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 ml-2">
-                          <Repeat className="h-3 w-3 mr-1" />
-                          Recurrente
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Software & Description */}
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap gap-2">
-                      <span className="text-sm text-muted-foreground">Software:</span>
-                      {reservation.software.map((sw, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {SOFTWARE_LABELS[sw]}
-                          {sw === "otro" && reservation.otherSoftware && `: ${reservation.otherSoftware}`}
-                        </Badge>
-                      ))}
-                    </div>
-                    {reservation.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        <span className="font-medium">Descripción:</span> {reservation.description}
-                      </p>
-                    )}
-                  </div>
+          {/* Individual Reservations */}
+          {sortedIndividual.length > 0 && (
+            <div className="space-y-4">
+              {sortedGroups.length > 0 && (
+                <div className="flex items-center gap-2 text-lg font-semibold text-gray-700 pt-4 border-t">
+                  <Calendar className="h-5 w-5" />
+                  Solicitudes Individuales ({sortedIndividual.length})
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              )}
+              {sortedIndividual.map((reservation) => (
+                <Card
+                  key={reservation._id}
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => handleViewReservation(reservation)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex flex-col gap-4">
+                      {/* Header Row */}
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <Badge className={STATUS_COLORS[reservation.status]}>
+                            {STATUS_LABELS[reservation.status]}
+                          </Badge>
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">
+                            <Computer className="h-3 w-3 mr-1" />
+                            Computadora #{reservation.computerNumber}
+                          </Badge>
+                          <span className="font-semibold">{reservation.userName}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {reservation.userEmail}
+                          </span>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewReservation(reservation);
+                        }}>
+                          Ver Detalles
+                        </Button>
+                      </div>
+
+                      {/* Info Row */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">
+                            {formatDate(reservation.reservationDate)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          {reservation.timeBlocks && reservation.timeBlocks.length > 0 ? (
+                            <span className="font-medium text-blue-700">
+                              {formatTimeBlocksRange(reservation.timeBlocks)}
+                            </span>
+                          ) : (
+                            <span>
+                              Solicitada el {new Date(reservation.createdAt).toLocaleDateString("es-ES")}
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Tipo:</span>{" "}
+                          <span className="font-medium">{USER_TYPE_LABELS[reservation.userType]}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Propósito:</span>{" "}
+                          <span className="font-medium">{PURPOSE_LABELS[reservation.purpose]}</span>
+                        </div>
+                      </div>
+
+                      {/* Software & Description */}
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap gap-2">
+                          <span className="text-sm text-muted-foreground">Software:</span>
+                          {reservation.software.map((sw, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs">
+                              {SOFTWARE_LABELS[sw]}
+                              {sw === "otro" && reservation.otherSoftware && `: ${reservation.otherSoftware}`}
+                            </Badge>
+                          ))}
+                        </div>
+                        {reservation.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            <span className="font-medium">Descripción:</span> {reservation.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

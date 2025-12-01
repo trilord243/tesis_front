@@ -286,58 +286,58 @@ export function LabLayoutVisual({
 
       {/* Specifications Dialog */}
       <Dialog open={!!selectedForDetails} onOpenChange={() => setSelectedForDetails(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-[700px]">
           {selectedForDetails && (
             <>
               <DialogHeader>
-                <div className="flex items-center justify-between">
-                  <DialogTitle className="text-2xl">
-                    {selectedForDetails.name}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <DialogTitle className="text-xl sm:text-2xl flex flex-wrap items-center gap-2">
+                    <span className="break-words">{selectedForDetails.name}</span>
                     {selectedForDetails.accessLevel === "special" && (
-                      <Badge className="ml-2 bg-orange-500 text-white">CFD/Metaverso</Badge>
+                      <Badge className="bg-orange-500 text-white text-xs">CFD/Metaverso</Badge>
                     )}
                   </DialogTitle>
-                  <div className="text-3xl font-bold text-blue-600">
+                  <div className="text-2xl sm:text-3xl font-bold text-blue-600">
                     #{selectedForDetails.number}
                   </div>
                 </div>
-                <DialogDescription className="text-lg">
+                <DialogDescription className="text-base sm:text-lg break-words">
                   {selectedForDetails.specialization}
                 </DialogDescription>
               </DialogHeader>
 
               <div className="space-y-4">
                 {/* Description */}
-                <p className="text-gray-700">{selectedForDetails.description}</p>
+                <p className="text-gray-700 text-sm sm:text-base break-words">{selectedForDetails.description}</p>
 
                 {/* Specifications Grid */}
-                <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-start gap-3">
                     <Cpu className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-semibold text-sm">Procesador</p>
-                      <p className="text-sm text-gray-700">{selectedForDetails.cpu}</p>
+                      <p className="text-sm text-gray-700 break-words">{selectedForDetails.cpu}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <Monitor className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-semibold text-sm">Tarjeta Gráfica</p>
-                      <p className="text-sm text-gray-700">{selectedForDetails.gpu}</p>
+                      <p className="text-sm text-gray-700 break-words">{selectedForDetails.gpu}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <HardDrive className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-semibold text-sm">Memoria RAM</p>
-                      <p className="text-sm text-gray-700">{selectedForDetails.ram}</p>
+                      <p className="text-sm text-gray-700 break-words">{selectedForDetails.ram}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <HardDrive className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-semibold text-sm">Almacenamiento</p>
-                      <p className="text-sm text-gray-700">{selectedForDetails.storage}</p>
+                      <p className="text-sm text-gray-700 break-words">{selectedForDetails.storage}</p>
                     </div>
                   </div>
                 </div>
@@ -355,7 +355,7 @@ export function LabLayoutVisual({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-2 pt-4">
+                <div className="flex flex-col sm:flex-row gap-2 pt-4">
                   <Button
                     onClick={handleSelect}
                     disabled={disabled || !selectedForDetails.isAvailable}

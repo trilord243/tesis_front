@@ -44,7 +44,7 @@ export function ProductDetailsDialog({ product }: ProductDetailsDialogProps) {
           <Eye className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg mx-auto">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Detalles del Activo</DialogTitle>
           <DialogDescription>

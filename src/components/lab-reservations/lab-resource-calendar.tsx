@@ -336,7 +336,7 @@ export function LabResourceCalendar({
 
         {/* Dialog de detalles */}
         <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Detalles de la Reserva</DialogTitle>
               <DialogDescription>
