@@ -13,7 +13,7 @@ Connects to NestJS backend at `../centromundox-api-reservas` (port 3000).
 ```bash
 # Development (use PORT=3001 to avoid conflict with backend on 3000)
 PORT=3001 npm run dev        # Linux/macOS
-set PORT=3001 && npm run dev # Windows
+$env:PORT=3001; npm run dev  # Windows PowerShell
 
 # Production
 npm run build
@@ -43,6 +43,7 @@ JWT_SECRET=your-secret  # Must match backend
 - **Tailwind CSS v4** with Shadcn UI (Radix primitives)
 - **Jose** for JWT middleware, **nuqs** for URL state
 - **react-big-calendar** for lab reservations, **driver.js** for onboarding tours
+- **react-unity-webgl** for metaverse WebGL integration
 
 ### Core Pattern: API Proxy
 
@@ -61,9 +62,11 @@ export async function POST(request: NextRequest) {
 
 ### Authentication Flow
 - JWT stored in httpOnly cookie (`auth-token`, 1 hour expiry)
-- `middleware.ts` validates JWT with jose, handles role-based routing
+- `middleware.ts` (root level) validates JWT with jose, handles role-based routing
 - Roles: `user` → `/dashboard/*`, `admin`/`superadmin` → `/admin/*`
 - Protected routes: `/dashboard`, `/admin`, `/laboratorio`
+- Admins accessing `/dashboard` are auto-redirected to `/admin/dashboard`
+- Non-admins accessing `/admin` are redirected to `/dashboard`
 
 ### Next.js 15 Async APIs
 Always await runtime APIs:
@@ -111,14 +114,20 @@ const STATUS = { PENDING: 'pending', APPROVED: 'approved' } as const;
 src/
 ├── app/
 │   ├── api/                    # API route proxies to backend
-│   │   ├── auth/               # Login, register, logout, user
-│   │   ├── admin/              # Admin-only endpoints
-│   │   ├── products/           # Equipment CRUD
-│   │   ├── lab-reservations/   # Computer lab bookings
-│   │   ├── metaverse-reservations/  # Metaverse lab bookings
-│   │   ├── lab-config/         # Lab configuration (computers, software, etc.)
-│   │   └── computers/          # Computer management
-│   ├── admin/                  # Admin pages (17 pages)
+│   │   ├── auth/               # Login, register, logout, user, update-profile
+│   │   ├── admin/              # Admin-only: users, lens-requests, access-codes
+│   │   ├── products/           # Equipment CRUD, usage-statistics
+│   │   ├── product-types/      # Product type management with tags
+│   │   ├── lab-reservations/   # Computer lab bookings, availability
+│   │   ├── metaverse-reservations/  # Metaverse lab: bookings, availability, approval
+│   │   ├── lab-config/         # Lab config: computers, software, purposes, user-types
+│   │   ├── computers/          # Computer CRUD with seed endpoint
+│   │   ├── analytics/          # Cabinet status analytics
+│   │   ├── system-logs/        # System logging with stats
+│   │   ├── users/              # User management, email verification
+│   │   ├── zones/              # Zone/area management
+│   │   └── lens-request/       # VR lens requests
+│   ├── admin/                  # Admin pages
 │   │   ├── dashboard/          # Admin home
 │   │   ├── activos/            # Equipment management
 │   │   ├── solicitudes/        # Access requests
@@ -127,7 +136,7 @@ src/
 │   │   ├── reservas-lab/       # Computer lab reservations
 │   │   ├── reservas-metaverso/ # Metaverse lab reservations
 │   │   └── config-laboratorio/ # Lab configuration
-│   ├── dashboard/              # User pages (8 pages)
+│   ├── dashboard/              # User pages
 │   │   ├── reservas/           # Equipment reservations
 │   │   ├── reservar-lab/       # Book computer lab
 │   │   ├── mis-reservas-lab/   # My lab reservations
@@ -135,13 +144,14 @@ src/
 │   ├── laboratorio/            # Metaverse lab booking (authenticated)
 │   └── calendar/               # Public calendar (approved events)
 ├── components/
-│   ├── admin/                  # 34 admin components
+│   ├── admin/                  # Admin components
 │   ├── lab-reservations/       # Lab booking components
 │   ├── ui/                     # Shadcn UI components
 │   └── layout/                 # Navbar, footer
 ├── lib/
-│   ├── actions/                # Server actions
+│   ├── actions/                # Server actions (e.g., whatsapp-actions.ts)
 │   └── utils.ts                # Utilities (cn helper)
+├── middleware.ts               # JWT auth & role-based routing (root level)
 └── types/                      # TypeScript interfaces
     ├── auth.ts
     ├── product.ts

@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Computer as ComputerType,
   LabReservation,
   TIME_BLOCKS,
   USER_TYPE_LABELS,
@@ -31,6 +32,7 @@ import {
   RefreshCw,
   Monitor,
   ArrowLeft,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -59,21 +61,19 @@ const TIME_BLOCK_HOURS: Record<
   "15:45-17:30": { start: "15:45", end: "17:30", startNum: 15.75, endNum: 17.5 },
 };
 
-// Colores para cada computadora
-const COMPUTER_COLORS: Record<number, string> = {
-  1: "#3B82F6",
-  2: "#10B981",
-  3: "#F59E0B",
-  4: "#EF4444",
-  5: "#8B5CF6",
-  6: "#EC4899",
-  7: "#06B6D4",
-  8: "#84CC16",
-  9: "#F97316",
-  10: "#6366F1",
-  11: "#14B8A6",
-  12: "#A855F7",
-};
+// Paleta de colores para computadoras (se expande dinámicamente si hay más)
+const COLOR_PALETTE = [
+  "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6",
+  "#EC4899", "#06B6D4", "#84CC16", "#F97316", "#6366F1",
+  "#14B8A6", "#A855F7", "#0EA5E9", "#22C55E", "#FACC15",
+  "#DC2626", "#7C3AED", "#DB2777", "#0891B2", "#65A30D",
+];
+
+// Generar color para una computadora
+function getComputerColor(computerNumber: number): string {
+  const index = (computerNumber - 1) % COLOR_PALETTE.length;
+  return COLOR_PALETTE[index] ?? "#6B7280";
+}
 
 interface CalendarEvent {
   id: string;
@@ -92,6 +92,7 @@ export default function CalendarioComputadorasPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState<View>("month");
   const [reservations, setReservations] = useState<LabReservation[]>([]);
+  const [computers, setComputers] = useState<ComputerType[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<{ role: string; name: string; lastName: string } | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -115,14 +116,24 @@ export default function CalendarioComputadorasPage() {
     checkAuth();
   }, [router]);
 
-  // Cargar reservas aprobadas (usando endpoint público accesible a todos los usuarios autenticados)
+  // Cargar computadoras y reservas
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/lab-reservations/public");
-      if (response.ok) {
-        const data = await response.json();
+      // Cargar ambos en paralelo
+      const [reservationsRes, computersRes] = await Promise.all([
+        fetch("/api/lab-reservations/public"),
+        fetch("/api/computers"),
+      ]);
+
+      if (reservationsRes.ok) {
+        const data = await reservationsRes.json();
         setReservations(Array.isArray(data) ? data : []);
+      }
+
+      if (computersRes.ok) {
+        const data = await computersRes.json();
+        setComputers(Array.isArray(data) ? data : []);
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -136,6 +147,14 @@ export default function CalendarioComputadorasPage() {
       loadData();
     }
   }, [loadData, user]);
+
+  // Obtener lista ordenada de computadoras únicas en reservas o de la configuración
+  const computerNumbers = useMemo(() => {
+    const fromReservations = new Set(reservations.map((r) => r.computerNumber));
+    const fromComputers = new Set(computers.map((c) => c.number));
+    const allNumbers = new Set([...fromReservations, ...fromComputers]);
+    return Array.from(allNumbers).sort((a, b) => a - b);
+  }, [reservations, computers]);
 
   // Convertir reservaciones a eventos del calendario
   const events: CalendarEvent[] = useMemo(() => {
@@ -193,7 +212,7 @@ export default function CalendarioComputadorasPage() {
 
   // Estilo de eventos por computadora
   const eventStyleGetter = useCallback((event: CalendarEvent) => {
-    const color = COMPUTER_COLORS[event.resource.computerNumber] || "#6B7280";
+    const color = getComputerColor(event.resource.computerNumber);
     return {
       style: {
         backgroundColor: color,
@@ -210,14 +229,17 @@ export default function CalendarioComputadorasPage() {
   // Manejar click en slot (día)
   const handleSelectSlot = useCallback(
     ({ start }: { start: Date }) => {
-      const dayReservations = getReservationsForDate(start);
-      if (dayReservations.length > 0) {
-        setSelectedDate(start);
-        setShowDayDialog(true);
-      }
+      setSelectedDate(start);
+      setShowDayDialog(true);
     },
-    [getReservationsForDate]
+    []
   );
+
+  // Manejar click en evento
+  const handleSelectEvent = useCallback((event: CalendarEvent) => {
+    setSelectedDate(event.start);
+    setShowDayDialog(true);
+  }, []);
 
   // Navegación del calendario
   const handleNavigate = useCallback((newDate: Date) => {
@@ -408,7 +430,10 @@ export default function CalendarioComputadorasPage() {
                     max={new Date(2025, 0, 1, 18, 0, 0)}
                     eventPropGetter={eventStyleGetter}
                     onSelectSlot={handleSelectSlot}
+                    onSelectEvent={handleSelectEvent}
                     selectable
+                    popup={false}
+                    doShowMoreDrillDown={false}
                     toolbar={false}
                     components={{
                       event: EventComponent,
@@ -433,6 +458,10 @@ export default function CalendarioComputadorasPage() {
                       noEventsInRange: "No hay reservas",
                       showMore: (total: number) => `+ ${total} más`,
                     }}
+                    onShowMore={(_events, date) => {
+                      setSelectedDate(date);
+                      setShowDayDialog(true);
+                    }}
                   />
                 </div>
               )}
@@ -441,16 +470,19 @@ export default function CalendarioComputadorasPage() {
               <div className="px-4 py-3 border-t bg-gray-50">
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="text-xs text-gray-500 font-medium">Computadoras:</span>
-                  {Object.entries(COMPUTER_COLORS).slice(0, 10).map(([num, color]) => (
+                  {computerNumbers.map((num) => (
                     <div key={num} className="flex items-center gap-1">
-                      <div className="w-3 h-3 rounded" style={{ backgroundColor: color }} />
+                      <div className="w-3 h-3 rounded" style={{ backgroundColor: getComputerColor(num) }} />
                       <span className="text-xs text-gray-600">PC{num}</span>
                     </div>
                   ))}
+                  {computerNumbers.length === 0 && (
+                    <span className="text-xs text-gray-400">Cargando...</span>
+                  )}
                 </div>
                 <div className="mt-2 flex justify-between items-center">
                   <span className="text-xs text-gray-400">
-                    Haz clic en un día para ver detalles
+                    Haz clic en un día o evento para ver detalles
                   </span>
                   <span className="text-xs text-gray-400">
                     {reservations.length} reserva{reservations.length !== 1 ? "s" : ""} aprobada
@@ -464,7 +496,7 @@ export default function CalendarioComputadorasPage() {
 
         {/* Modal de detalle del día */}
         <Dialog open={showDayDialog} onOpenChange={setShowDayDialog}>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="w-[calc(100%-2rem)] max-w-[700px] max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-xl flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5" style={{ color: "#1859A9" }} />
@@ -478,59 +510,74 @@ export default function CalendarioComputadorasPage() {
             {selectedDate && (
               <div className="space-y-4 mt-4">
                 {groupReservationsByComputer(getReservationsForDate(selectedDate)).map(
-                  ({ computerNumber, reservations: compReservations }) => (
-                    <div
-                      key={computerNumber}
-                      className="border rounded-lg overflow-hidden"
-                      style={{ borderLeftWidth: "4px", borderLeftColor: COMPUTER_COLORS[computerNumber] || "#6B7280" }}
-                    >
+                  ({ computerNumber, reservations: compReservations }) => {
+                    const color = getComputerColor(computerNumber);
+                    return (
                       <div
-                        className="px-4 py-2 font-semibold flex items-center gap-2"
-                        style={{ backgroundColor: `${COMPUTER_COLORS[computerNumber]}15` }}
+                        key={computerNumber}
+                        className="border rounded-lg overflow-hidden"
+                        style={{ borderLeftWidth: "4px", borderLeftColor: color }}
                       >
-                        <Monitor className="h-4 w-4" style={{ color: COMPUTER_COLORS[computerNumber] }} />
-                        <span>Computadora #{computerNumber}</span>
-                        <Badge variant="secondary" className="ml-auto">
-                          {compReservations.length} reserva{compReservations.length !== 1 ? "s" : ""}
-                        </Badge>
-                      </div>
-                      <div className="divide-y">
-                        {compReservations.map((reservation) => (
-                          <div key={reservation._id} className="px-4 py-3 bg-white">
-                            <div className="flex items-start justify-between">
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <Clock className="h-3 w-3" />
-                                  <span className="font-medium">
-                                    {formatTimeBlocksRange(reservation.timeBlocks)}
-                                  </span>
-                                </div>
+                        <div
+                          className="px-4 py-2 font-semibold flex items-center gap-2"
+                          style={{ backgroundColor: `${color}15` }}
+                        >
+                          <Monitor className="h-4 w-4" style={{ color }} />
+                          <span>Computadora #{computerNumber}</span>
+                          <Badge variant="secondary" className="ml-auto">
+                            {compReservations.length} reserva{compReservations.length !== 1 ? "s" : ""}
+                          </Badge>
+                        </div>
+                        <div className="divide-y">
+                          {compReservations.map((reservation) => (
+                            <div key={reservation._id} className="px-4 py-3 bg-white">
+                              {/* Nombre del usuario - Prominente */}
+                              <div className="flex items-center gap-2 mb-2">
+                                <User className="h-4 w-4 text-gray-500" />
+                                <span className="font-semibold text-gray-900">
+                                  {reservation.userName}
+                                </span>
+                                <Badge variant="outline" className="text-xs ml-auto">
+                                  {USER_TYPE_LABELS[reservation.userType] || reservation.userType}
+                                </Badge>
                               </div>
-                              <Badge variant="outline" className="text-xs">
-                                {USER_TYPE_LABELS[reservation.userType] || reservation.userType}
-                              </Badge>
+                              {/* Horario */}
+                              <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                                <Clock className="h-3 w-3" />
+                                <span className="font-medium">
+                                  {formatTimeBlocksRange(reservation.timeBlocks)}
+                                </span>
+                              </div>
+                              {/* Bloques horarios */}
+                              <div className="flex flex-wrap gap-1">
+                                {reservation.timeBlocks.map((block) => {
+                                  const blockInfo = TIME_BLOCKS.find((b) => b.value === block);
+                                  return (
+                                    <Badge key={block} variant="secondary" className="text-xs">
+                                      {blockInfo?.label || block}
+                                    </Badge>
+                                  );
+                                })}
+                              </div>
+                              {/* Descripción si existe */}
+                              {reservation.description && (
+                                <p className="mt-2 text-sm text-gray-500 italic">
+                                  {reservation.description}
+                                </p>
+                              )}
                             </div>
-                            {/* Bloques */}
-                            <div className="mt-2 flex flex-wrap gap-1">
-                              {reservation.timeBlocks.map((block) => {
-                                const blockInfo = TIME_BLOCKS.find((b) => b.value === block);
-                                return (
-                                  <Badge key={block} variant="secondary" className="text-xs">
-                                    {blockInfo?.label || block}
-                                  </Badge>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )
+                    );
+                  }
                 )}
 
                 {getReservationsForDate(selectedDate).length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No hay reservas para este día
+                    <CalendarIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                    <p>No hay reservas para este día</p>
+                    <p className="text-sm mt-1">Este día está completamente disponible</p>
                   </div>
                 )}
               </div>

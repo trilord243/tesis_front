@@ -355,9 +355,46 @@
 
 .public-calendar .rbc-show-more {
   color: #1859A9;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 12px;
-  padding: 4px;
+  padding: 4px 8px;
+  background-color: rgba(24, 89, 169, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.public-calendar .rbc-show-more:hover {
+  background-color: rgba(24, 89, 169, 0.2);
+  color: #0d4a8a;
+}
+
+/* Ocultar popup overlay nativo de react-big-calendar */
+.public-calendar .rbc-overlay {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.public-calendar .rbc-overlay-header {
+  display: none !important;
+}
+
+.rbc-overlay {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.rbc-overlay-header {
+  display: none !important;
+}
+
+/* Ocultar cualquier popup nativo */
+.rbc-popup,
+.rbc-popup-header,
+.rbc-popup-content {
+  display: none !important;
 }
 
 /* Responsive for public calendar */
