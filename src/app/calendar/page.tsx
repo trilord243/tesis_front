@@ -149,8 +149,8 @@ export default function PublicCalendarPage() {
           resource: {
             reservation,
             requesterName: reservation.requesterName,
-            organization: reservation.organization,
-            expectedAttendees: reservation.expectedAttendees,
+            ...(reservation.organization !== undefined && { organization: reservation.organization }),
+            ...(reservation.expectedAttendees !== undefined && { expectedAttendees: reservation.expectedAttendees }),
             eventDescription: reservation.eventDescription,
             purpose: reservation.purpose,
           },
@@ -219,7 +219,7 @@ export default function PublicCalendarPage() {
   );
 
   // Formatear rango de bloques
-  const formatTimeBlocksRange = (blocks: string[]): string => {
+  const formatTimeBlocksRange = (blocks: readonly string[]): string => {
     if (blocks.length === 0) return "";
     const sortedBlocks = [...blocks].sort();
     const first = sortedBlocks[0];
@@ -282,7 +282,7 @@ export default function PublicCalendarPage() {
               {/* Toggle de vista */}
               <div className="hidden sm:flex gap-1 bg-gray-100 rounded-lg p-1">
                 <Button
-                  variant={currentView === "month" ? "default" : "ghost"}
+                  variant={currentView === "month" ? "primary" : "ghost"}
                   size="sm"
                   onClick={() => setCurrentView("month")}
                   className="h-8 px-4 text-sm"
@@ -295,7 +295,7 @@ export default function PublicCalendarPage() {
                   Mes
                 </Button>
                 <Button
-                  variant={currentView === "week" ? "default" : "ghost"}
+                  variant={currentView === "week" ? "primary" : "ghost"}
                   size="sm"
                   onClick={() => setCurrentView("week")}
                   className="h-8 px-4 text-sm"
@@ -308,7 +308,7 @@ export default function PublicCalendarPage() {
                   Semana
                 </Button>
                 <Button
-                  variant={currentView === "day" ? "default" : "ghost"}
+                  variant={currentView === "day" ? "primary" : "ghost"}
                   size="sm"
                   onClick={() => setCurrentView("day")}
                   className="h-8 px-4 text-sm"

@@ -23,7 +23,7 @@ import { ComputerSelector } from "./computer-selector";
 import { TimeBlockSelector } from "./time-block-selector";
 import { RecurrenceSelector } from "./recurrence-selector";
 import { ReservationPreview } from "./reservation-preview";
-import { RecurrencePattern } from "@/types/lab-reservation";
+import { RecurrencePattern, UserType } from "@/types/lab-reservation";
 import type { UserTypeConfig, SoftwareConfig, PurposeConfig } from "@/types/lab-config";
 import {
   CheckCircle2,

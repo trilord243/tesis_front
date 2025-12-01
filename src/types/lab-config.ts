@@ -17,6 +17,7 @@ export interface SoftwareConfig {
   value: string;
   label: string;
   isActive: boolean;
+  isFixed?: boolean;
   order: number;
   createdAt: string;
   updatedAt: string;

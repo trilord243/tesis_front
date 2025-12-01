@@ -120,9 +120,9 @@ export function BigDatePicker({
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
               onClick={goToPreviousMonth}
-              className="text-white hover:bg-white/20 h-10 w-10"
+              className="text-white hover:bg-white/20 h-10 w-10 p-0"
             >
               <ChevronLeft className="h-5 w-5" />
             </Button>
@@ -133,9 +133,9 @@ export function BigDatePicker({
 
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
               onClick={goToNextMonth}
-              className="text-white hover:bg-white/20 h-10 w-10"
+              className="text-white hover:bg-white/20 h-10 w-10 p-0"
             >
               <ChevronRight className="h-5 w-5" />
             </Button>
