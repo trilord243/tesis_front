@@ -115,11 +115,11 @@ export default function CalendarioComputadorasPage() {
     checkAuth();
   }, [router]);
 
-  // Cargar reservas aprobadas
+  // Cargar reservas aprobadas (usando endpoint público accesible a todos los usuarios autenticados)
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/lab-reservations?status=approved");
+      const response = await fetch("/api/lab-reservations/public");
       if (response.ok) {
         const data = await response.json();
         setReservations(Array.isArray(data) ? data : []);
