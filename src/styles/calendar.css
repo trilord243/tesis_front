@@ -41,11 +41,14 @@
   padding: 2px 4px;
   font-size: 11px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .rbc-event:hover {
-  opacity: 0.9;
+  opacity: 0.95;
   cursor: pointer;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .rbc-event-label {
@@ -336,17 +339,27 @@
   background-color: #f9fafb;
 }
 
-/* Eventos en vista de mes */
+/* Eventos en vista de mes - Estilo Google Calendar */
 .public-calendar .rbc-month-view .rbc-event {
   padding: 4px 8px;
-  margin: 2px 4px;
-  font-size: 12px;
+  margin: 3px 4px !important;
+  font-size: 13px;
   border-radius: 4px;
+  height: auto !important;
+  min-height: 26px;
+  line-height: 18px;
 }
 
 .public-calendar .rbc-month-view .rbc-event-content {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.public-calendar .rbc-month-view .rbc-event:hover {
+  background: #d4e4fc !important;
 }
 
 .public-calendar .rbc-row-segment {
@@ -421,4 +434,54 @@
     font-size: 12px;
     padding: 4px;
   }
+}
+
+/* ============================================
+   COMPUTER CALENDAR STYLES
+   ============================================ */
+
+.computer-calendar .rbc-month-view .rbc-event {
+  padding: 4px 8px;
+  margin: 3px 4px !important;
+  font-size: 13px;
+  border-radius: 4px;
+  height: auto !important;
+  min-height: 26px;
+  line-height: 18px;
+}
+
+.computer-calendar .rbc-month-view .rbc-event-content {
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.computer-calendar .rbc-month-view .rbc-event:hover {
+  filter: brightness(0.95);
+}
+
+.computer-calendar .rbc-month-row {
+  min-height: 100px;
+}
+
+.computer-calendar .rbc-date-cell {
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.computer-calendar .rbc-show-more {
+  color: #1859A9;
+  font-weight: 600;
+  font-size: 11px;
+  padding: 2px 6px;
+  background-color: rgba(24, 89, 169, 0.1);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.computer-calendar .rbc-show-more:hover {
+  background-color: rgba(24, 89, 169, 0.2);
 }

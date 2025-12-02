@@ -163,19 +163,23 @@ export default function PublicCalendarPage() {
     return calendarEvents;
   }, [reservations]);
 
-  // Estilo de eventos - colores suaves
+  // Estilo de eventos - diseño estilo Google Calendar
   const eventStyleGetter = useCallback(() => {
     return {
       style: {
-        backgroundColor: "#1859A9",
-        borderColor: "#1859A9",
-        borderLeft: "3px solid #FF8200",
+        background: "#e8f0fe",
+        borderLeft: "4px solid #1859A9",
         borderRadius: "4px",
-        color: "white",
+        color: "#1859A9",
         fontSize: "13px",
-        padding: "6px 10px",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-        margin: "2px 4px",
+        fontWeight: "500",
+        padding: "4px 8px",
+        margin: "3px 4px",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap" as const,
+        cursor: "pointer",
+        transition: "background 0.15s ease",
       },
     };
   }, []);
@@ -239,10 +243,10 @@ export default function PublicCalendarPage() {
     }
   };
 
-  // Componente de evento personalizado - Solo título centrado
+  // Componente de evento personalizado - Diseño estilo Google Calendar
   const EventComponent = ({ event }: { event: CalendarEvent }) => (
-    <div className="h-full w-full flex items-center justify-center cursor-pointer">
-      <span className="font-semibold text-center leading-tight">{event.title}</span>
+    <div className="h-full w-full flex items-center overflow-hidden cursor-pointer">
+      <span className="truncate text-[13px] font-medium leading-tight">{event.title}</span>
     </div>
   );
 
@@ -481,7 +485,13 @@ export default function PublicCalendarPage() {
             {/* Leyenda simple */}
             <div className="flex flex-col sm:flex-row items-center justify-between px-3 sm:px-4 py-2 sm:py-3 border-t bg-gray-50 gap-1 sm:gap-0">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded" style={{ backgroundColor: "#1859A9" }} />
+                <div
+                  className="w-8 h-4 rounded"
+                  style={{
+                    backgroundColor: "#e8f0fe",
+                    borderLeft: "3px solid #1859A9"
+                  }}
+                />
                 <span className="text-xs text-gray-500">Evento reservado</span>
               </div>
               <span className="text-xs text-gray-400">
