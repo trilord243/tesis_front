@@ -68,6 +68,18 @@ export async function POST(request: NextRequest) {
 - Admins accessing `/dashboard` are auto-redirected to `/admin/dashboard`
 - Non-admins accessing `/admin` are redirected to `/dashboard`
 
+### Role Checks in API Routes
+When checking admin access, **always include both `admin` and `superadmin`**:
+```typescript
+// ✅ Correct
+if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
+  return NextResponse.json({ error: "Acceso denegado" }, { status: 403 });
+}
+
+// ❌ Wrong - excludes superadmin
+if (!user || user.role !== "admin") { ... }
+```
+
 ### Next.js 15 Async APIs
 Always await runtime APIs:
 ```typescript
@@ -98,6 +110,20 @@ const config = { key: 'value' } satisfies ConfigType;
 // Prefer interfaces over types, const maps over enums
 interface User { id: string; name: string; }
 const STATUS = { PENDING: 'pending', APPROVED: 'approved' } as const;
+
+// For exactOptionalPropertyTypes: spread conditionally instead of undefined
+// ✅ Correct
+resource: {
+  ...(item.optional !== undefined && { optional: item.optional }),
+}
+// ❌ Wrong - undefined not allowed for optional property
+resource: { optional: item.optional }
+
+// For readonly arrays in function parameters
+// ✅ Correct
+const formatBlocks = (blocks: readonly string[]): string => { ... }
+// ❌ Wrong - readonly array can't be passed to mutable param
+const formatBlocks = (blocks: string[]): string => { ... }
 ```
 
 ## Code Style
@@ -107,6 +133,12 @@ const STATUS = { PENDING: 'pending', APPROVED: 'approved' } as const;
 - Descriptive names: `isLoading`, `hasError`, `handleSubmit`
 - Component structure: `exports → subcomponents → helpers → types`
 - Directory convention: lowercase with dashes (`components/auth-wizard`)
+
+### Button Component Variants
+Custom Button with specific variants (NOT shadcn default):
+- **Variants**: `primary`, `secondary`, `outline`, `ghost`, `destructive`
+- **Sizes**: `sm`, `md`, `lg` (no `icon` size - use `sm` with `p-0` instead)
+- Do NOT use `variant="default"` - use `variant="primary"` instead
 
 ## Key Directories
 
@@ -185,6 +217,12 @@ src/
 
 ### Computer Lab Reservations
 
+| Route | Access | Purpose |
+|-------|--------|---------|
+| `/dashboard/reservar-lab` | Authenticated | Create reservations |
+| `/calendario-computadoras` | Authenticated | View all approved reservations |
+| `/admin/reservas-lab` | Admin | Approve/reject reservations |
+
 **Dynamic User Type Access Control**:
 ```typescript
 function userHasAccess(computer: Computer, userType: string): boolean {
@@ -195,6 +233,10 @@ function userHasAccess(computer: Computer, userType: string): boolean {
 
 - Superadmin configures `allowedUserTypes` per computer at `/admin/config-laboratorio`
 - Users only see computers their type can access
+
+**Public vs Admin Endpoints**:
+- `/api/lab-reservations/public` - All authenticated users (uses backend `/lab-reservations/approved`)
+- `/api/lab-reservations` - Admin only (full CRUD access)
 
 ## Component Notes
 
