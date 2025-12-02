@@ -25,7 +25,8 @@
       "Bash(npm run format:*)",
       "Bash(npx prettier:*)",
       "Bash(heroku logs:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:stackoverflow.com)"
     ],
     "deny": [],
     "ask": [],
