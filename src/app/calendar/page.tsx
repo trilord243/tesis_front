@@ -247,39 +247,71 @@ export default function PublicCalendarPage() {
     <div className="min-h-screen bg-gray-100">
       {/* Header simple */}
       <header className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Botón volver + Título */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Link
                 href="/"
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ChevronLeft className="h-5 w-5" />
-                <span className="text-sm font-medium">Volver</span>
+                <span className="text-sm font-medium hidden sm:inline">Volver</span>
               </Link>
-              <div className="h-6 w-px bg-gray-300" />
-              <h1 className="text-xl font-bold" style={{ color: "#1859A9" }}>
-                Calendario de Eventos
+              <div className="h-6 w-px bg-gray-300 hidden sm:block" />
+              <h1 className="text-base sm:text-xl font-bold" style={{ color: "#1859A9" }}>
+                <span className="hidden sm:inline">Calendario de Eventos</span>
+                <span className="sm:hidden">Eventos</span>
               </h1>
             </div>
 
             {/* Controles */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 sm:gap-3">
               {/* Navegación */}
-              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-                <Button variant="ghost" size="sm" onClick={goToPrevious} className="h-8 w-8 p-0">
+              <div className="flex items-center gap-0.5 sm:gap-1 bg-gray-100 rounded-lg p-0.5 sm:p-1">
+                <Button variant="ghost" size="sm" onClick={goToPrevious} className="h-7 w-7 sm:h-8 sm:w-8 p-0">
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={goToToday} className="h-8 px-3 text-sm">
+                <Button variant="ghost" size="sm" onClick={goToToday} className="h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm">
                   Hoy
                 </Button>
-                <Button variant="ghost" size="sm" onClick={goToNext} className="h-8 w-8 p-0">
+                <Button variant="ghost" size="sm" onClick={goToNext} className="h-7 w-7 sm:h-8 sm:w-8 p-0">
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
 
-              {/* Toggle de vista */}
+              {/* Toggle de vista - móvil: dropdown simplificado */}
+              <div className="flex sm:hidden gap-0.5 bg-gray-100 rounded-lg p-0.5">
+                <Button
+                  variant={currentView === "month" ? "primary" : "ghost"}
+                  size="sm"
+                  onClick={() => setCurrentView("month")}
+                  className="h-7 px-2 text-xs"
+                  style={currentView === "month" ? { backgroundColor: "#1859A9", color: "white" } : {}}
+                >
+                  M
+                </Button>
+                <Button
+                  variant={currentView === "week" ? "primary" : "ghost"}
+                  size="sm"
+                  onClick={() => setCurrentView("week")}
+                  className="h-7 px-2 text-xs"
+                  style={currentView === "week" ? { backgroundColor: "#1859A9", color: "white" } : {}}
+                >
+                  S
+                </Button>
+                <Button
+                  variant={currentView === "day" ? "primary" : "ghost"}
+                  size="sm"
+                  onClick={() => setCurrentView("day")}
+                  className="h-7 px-2 text-xs"
+                  style={currentView === "day" ? { backgroundColor: "#1859A9", color: "white" } : {}}
+                >
+                  D
+                </Button>
+              </div>
+
+              {/* Toggle de vista - desktop */}
               <div className="hidden sm:flex gap-1 bg-gray-100 rounded-lg p-1">
                 <Button
                   variant={currentView === "month" ? "primary" : "ghost"}
@@ -323,7 +355,7 @@ export default function PublicCalendarPage() {
               </div>
 
               {/* Actualizar */}
-              <Button onClick={loadData} variant="ghost" size="sm" disabled={loading} className="h-8 w-8 p-0">
+              <Button onClick={loadData} variant="ghost" size="sm" disabled={loading} className="h-7 w-7 sm:h-8 sm:w-8 p-0">
                 <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               </Button>
             </div>
@@ -332,27 +364,27 @@ export default function PublicCalendarPage() {
       </header>
 
       {/* Subtítulo con mes */}
-      <div className="bg-white border-b px-4 sm:px-6 lg:px-8 py-3">
-        <p className="text-center text-lg font-semibold text-gray-700 capitalize">
+      <div className="bg-white border-b px-2 sm:px-4 lg:px-8 py-2 sm:py-3">
+        <p className="text-center text-base sm:text-lg font-semibold text-gray-700 capitalize">
           {format(currentDate, "MMMM yyyy", { locale: es })}
         </p>
       </div>
 
       {/* Calendario */}
-      <div className="px-4 sm:px-6 lg:px-8 py-4">
+      <div className="px-2 sm:px-4 lg:px-8 py-2 sm:py-4">
         <Card className="shadow-sm border-0">
           <CardContent className="p-0">
               {loading ? (
-                <div className="flex items-center justify-center py-32">
+                <div className="flex items-center justify-center py-16 sm:py-32">
                   <Loader2
-                    className="h-12 w-12 animate-spin"
+                    className="h-8 w-8 sm:h-12 sm:w-12 animate-spin"
                     style={{ color: "#FF8200" }}
                   />
                 </div>
               ) : (
                 <div
-                  style={{ height: "calc(100vh - 280px)", minHeight: "600px" }}
-                  className="public-calendar"
+                  style={{ height: "calc(100vh - 200px)", minHeight: "400px" }}
+                  className="public-calendar text-xs sm:text-sm"
                 >
                   <Calendar
                     localizer={localizer}
@@ -411,13 +443,13 @@ export default function PublicCalendarPage() {
               )}
 
             {/* Leyenda simple */}
-            <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
+            <div className="flex flex-col sm:flex-row items-center justify-between px-3 sm:px-4 py-2 sm:py-3 border-t bg-gray-50 gap-1 sm:gap-0">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded" style={{ backgroundColor: "#1859A9" }} />
                 <span className="text-xs text-gray-500">Evento reservado</span>
               </div>
               <span className="text-xs text-gray-400">
-                {reservations.length} evento{reservations.length !== 1 ? "s" : ""} programado{reservations.length !== 1 ? "s" : ""}
+                {reservations.length} evento{reservations.length !== 1 ? "s" : ""}
               </span>
             </div>
           </CardContent>

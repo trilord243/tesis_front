@@ -668,7 +668,7 @@ export default function ConfigLaboratorioPage() {
 
         {/* Computer Dialog */}
         <Dialog open={computerDialogOpen} onOpenChange={setComputerDialogOpen}>
-          <DialogContent className="w-[700px]">
+          <DialogContent className="w-full max-w-[95vw] sm:max-w-[600px] md:max-w-[700px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingComputer ? "Editar Computadora" : "Nueva Computadora"}
@@ -679,7 +679,7 @@ export default function ConfigLaboratorioPage() {
                   : "Agrega una nueva computadora al laboratorio"}
               </DialogDescription>
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-4 py-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 py-4">
               <div className="space-y-2">
                 <Label>Número</Label>
                 <Input
@@ -741,7 +741,7 @@ export default function ConfigLaboratorioPage() {
                   placeholder="2TB NVMe SSD"
                 />
               </div>
-              <div className="col-span-2 space-y-2">
+              <div className="col-span-1 sm:col-span-2 space-y-2">
                 <Label>Software (separado por comas)</Label>
                 <Input
                   value={computerForm.software}
@@ -784,7 +784,7 @@ export default function ConfigLaboratorioPage() {
                 </Select>
               </div>
               {computerForm.accessLevel === "special" && (
-                <div className="col-span-2 space-y-2">
+                <div className="col-span-1 sm:col-span-2 space-y-2">
                   <Label>Tipos de Usuario Permitidos</Label>
                   <p className="text-xs text-gray-500 mb-2">
                     Selecciona los tipos de usuario que pueden acceder a esta computadora.
@@ -834,7 +834,7 @@ export default function ConfigLaboratorioPage() {
                   )}
                 </div>
               )}
-              <div className="col-span-2 space-y-2">
+              <div className="col-span-1 sm:col-span-2 space-y-2">
                 <Label>Descripción</Label>
                 <Textarea
                   value={computerForm.description}
@@ -846,11 +846,11 @@ export default function ConfigLaboratorioPage() {
                 />
               </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setComputerDialogOpen(false)}>
+            <DialogFooter className="flex-col gap-2 sm:flex-row">
+              <Button variant="outline" onClick={() => setComputerDialogOpen(false)} className="w-full sm:w-auto">
                 Cancelar
               </Button>
-              <Button onClick={handleSaveComputer} disabled={saving}>
+              <Button onClick={handleSaveComputer} disabled={saving} className="w-full sm:w-auto">
                 {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Guardar
               </Button>

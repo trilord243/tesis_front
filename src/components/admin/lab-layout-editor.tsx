@@ -525,7 +525,7 @@ export function LabLayoutEditor({
       <div
         key={cellId}
         className={`
-          relative w-24 h-24 border-2 rounded-lg transition-all duration-200
+          relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 border-2 rounded-lg transition-all duration-200
           ${computer
             ? computer.accessLevel === "special"
               ? "bg-orange-50 border-orange-300 hover:border-orange-500"
@@ -542,36 +542,36 @@ export function LabLayoutEditor({
         onDrop={() => handleDrop(row, col)}
       >
         {/* Cell ID label */}
-        <span className="absolute top-1 left-1 text-sm font-bold text-gray-500 font-mono bg-white/80 px-1 rounded">
+        <span className="absolute top-0.5 left-0.5 text-[8px] sm:text-[10px] md:text-xs font-bold text-gray-500 font-mono bg-white/80 px-0.5 rounded">
           {cellId}
         </span>
 
         {computer ? (
           <div
-            className="w-full h-full flex flex-col items-center justify-center p-1 pt-3"
+            className="w-full h-full flex flex-col items-center justify-center p-0.5 pt-2 sm:p-1 sm:pt-3"
             draggable
             onDragStart={() => handleDragStart(computer)}
             onDragEnd={() => setDraggedComputer(null)}
           >
-            <GripVertical className="absolute top-1 right-1 h-3 w-3 text-gray-400 cursor-grab" />
+            <GripVertical className="absolute top-0.5 right-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 text-gray-400 cursor-grab" />
             <Monitor
-              className={`h-7 w-7 ${
+              className={`h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 ${
                 computer.accessLevel === "special" ? "text-orange-600" : "text-blue-600"
               } ${!computer.isAvailable ? "opacity-50" : ""}`}
             />
-            <span className="font-bold text-sm">#{computer.number}</span>
-            <span className="text-[10px] text-gray-500 text-center truncate w-full px-1">
+            <span className="font-bold text-[10px] sm:text-xs md:text-sm">#{computer.number}</span>
+            <span className="text-[8px] sm:text-[9px] md:text-[10px] text-gray-500 text-center truncate w-full px-0.5">
               {computer.name.split(" ")[0]}
             </span>
             {!computer.isAvailable && (
-              <Badge variant="secondary" className="absolute bottom-1 text-[9px] scale-75">
+              <Badge variant="secondary" className="absolute bottom-0.5 text-[7px] sm:text-[8px] md:text-[9px] scale-75">
                 Mant.
               </Badge>
             )}
           </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center pt-2">
-            <Plus className="h-5 w-5 text-gray-300" />
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300" />
           </div>
         )}
       </div>
@@ -694,27 +694,27 @@ export function LabLayoutEditor({
       </div>
 
       {/* Grid */}
-      <div className="overflow-x-auto">
-        <div className="inline-block bg-white rounded-xl border-2 border-gray-300 p-6">
-          <h3 className="text-center font-bold text-gray-700 mb-4">
+      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="inline-block bg-white rounded-xl border-2 border-gray-300 p-3 sm:p-4 md:p-6">
+          <h3 className="text-center font-bold text-gray-700 mb-2 sm:mb-4 text-sm sm:text-base">
             Distribución del Laboratorio ({gridRows}x{gridCols})
           </h3>
-          <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${gridCols}, 1fr)` }}>
+          <div className="grid gap-1.5 sm:gap-2 md:gap-3" style={{ gridTemplateColumns: `repeat(${gridCols}, 1fr)` }}>
             {Array.from({ length: gridRows }).map((_, row) =>
               Array.from({ length: gridCols }).map((_, col) => renderCell(row, col))
             )}
           </div>
-          <div className="mt-4 flex justify-center gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-blue-50 border-2 border-blue-300" />
-              <span>Acceso Normal (todos)</span>
+          <div className="mt-3 sm:mt-4 flex flex-wrap justify-center gap-2 sm:gap-4 text-xs sm:text-sm">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-blue-50 border-2 border-blue-300" />
+              <span>Normal</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-orange-50 border-2 border-orange-300" />
-              <span>Acceso Restringido</span>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-orange-50 border-2 border-orange-300" />
+              <span>Restringido</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-gray-50 border-2 border-dashed border-gray-300" />
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="w-3 h-3 sm:w-4 sm:h-4 rounded bg-gray-50 border-2 border-dashed border-gray-300" />
               <span>Vacío</span>
             </div>
           </div>
@@ -839,7 +839,7 @@ export function LabLayoutEditor({
 
       {/* Add Computer Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="w-[700px]">
+        <DialogContent className="w-full max-w-[95vw] sm:max-w-[600px] md:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Nueva Computadora</DialogTitle>
             <DialogDescription>
@@ -874,7 +874,7 @@ export function LabLayoutEditor({
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4 py-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 py-4">
             <div className="space-y-2">
               <Label>Número</Label>
               <Input
@@ -935,7 +935,7 @@ export function LabLayoutEditor({
                 placeholder="2TB NVMe SSD"
               />
             </div>
-            <div className="col-span-2 space-y-2">
+            <div className="col-span-1 sm:col-span-2 space-y-2">
               <Label>Software (separado por comas)</Label>
               <Input
                 value={newComputerForm.software}
@@ -976,7 +976,7 @@ export function LabLayoutEditor({
               </Select>
             </div>
             {newComputerForm.accessLevel === "special" && userTypes.length > 0 && (
-              <div className="col-span-2 space-y-2">
+              <div className="col-span-1 sm:col-span-2 space-y-2">
                 <Label>Tipos de Usuario Permitidos</Label>
                 <p className="text-xs text-gray-500 mb-2">
                   Selecciona los tipos de usuario que pueden acceder a esta computadora. Si no seleccionas ninguno, nadie podrá acceder.
@@ -1024,7 +1024,7 @@ export function LabLayoutEditor({
                 )}
               </div>
             )}
-            <div className="col-span-2 space-y-2">
+            <div className="col-span-1 sm:col-span-2 space-y-2">
               <Label>Descripción</Label>
               <Textarea
                 value={newComputerForm.description}
@@ -1036,11 +1036,11 @@ export function LabLayoutEditor({
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button variant="outline" onClick={() => setShowAddDialog(false)} className="w-full sm:w-auto">
               Cancelar
             </Button>
-            <Button onClick={handleAddComputer} disabled={saving || !newComputerForm.name}>
+            <Button onClick={handleAddComputer} disabled={saving || !newComputerForm.name} className="w-full sm:w-auto">
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               <Save className="h-4 w-4 mr-2" />
               Agregar Computadora
@@ -1133,14 +1133,14 @@ export function LabLayoutEditor({
 
       {/* Edit Computer Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="w-[700px]">
+        <DialogContent className="w-full max-w-[95vw] sm:max-w-[600px] md:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Computadora #{editComputerForm.number}</DialogTitle>
             <DialogDescription>
               Modifica las características de la computadora
             </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-4 py-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 py-4">
             <div className="space-y-2">
               <Label>Número</Label>
               <Input
@@ -1201,7 +1201,7 @@ export function LabLayoutEditor({
                 placeholder="2TB NVMe SSD"
               />
             </div>
-            <div className="col-span-2 space-y-2">
+            <div className="col-span-1 sm:col-span-2 space-y-2">
               <Label>Software (separado por comas)</Label>
               <Input
                 value={editComputerForm.software}
@@ -1242,7 +1242,7 @@ export function LabLayoutEditor({
               </Select>
             </div>
             {editComputerForm.accessLevel === "special" && userTypes.length > 0 && (
-              <div className="col-span-2 space-y-2">
+              <div className="col-span-1 sm:col-span-2 space-y-2">
                 <Label>Tipos de Usuario Permitidos</Label>
                 <p className="text-xs text-gray-500 mb-2">
                   Selecciona los tipos de usuario que pueden acceder a esta computadora.
@@ -1306,7 +1306,7 @@ export function LabLayoutEditor({
               </Select>
             </div>
             {!editComputerForm.isAvailable && (
-              <div className="col-span-2 space-y-2">
+              <div className="col-span-1 sm:col-span-2 space-y-2">
                 <Label>Notas de Mantenimiento</Label>
                 <Textarea
                   value={editComputerForm.maintenanceNotes}
@@ -1318,7 +1318,7 @@ export function LabLayoutEditor({
                 />
               </div>
             )}
-            <div className="col-span-2 space-y-2">
+            <div className="col-span-1 sm:col-span-2 space-y-2">
               <Label>Descripción</Label>
               <Textarea
                 value={editComputerForm.description}
@@ -1330,11 +1330,11 @@ export function LabLayoutEditor({
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button variant="outline" onClick={() => setShowEditDialog(false)} className="w-full sm:w-auto">
               Cancelar
             </Button>
-            <Button onClick={handleSaveEditedComputer} disabled={saving || !editComputerForm.name}>
+            <Button onClick={handleSaveEditedComputer} disabled={saving || !editComputerForm.name} className="w-full sm:w-auto">
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               <Save className="h-4 w-4 mr-2" />
               Guardar Cambios
