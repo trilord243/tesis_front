@@ -90,6 +90,8 @@ export default function PublicCalendarPage() {
     null
   );
   const [showEventDialog, setShowEventDialog] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showDayDialog, setShowDayDialog] = useState(false);
 
   // Cargar reservas aprobadas
   const loadData = useCallback(async () => {
@@ -178,11 +180,37 @@ export default function PublicCalendarPage() {
     };
   }, []);
 
+  // Obtener reservas para una fecha específica
+  const getReservationsForDate = useCallback(
+    (date: Date) => {
+      const dateStr = format(date, "yyyy-MM-dd");
+      return reservations.filter((r) => r.reservationDate === dateStr);
+    },
+    [reservations]
+  );
+
+  // Manejar click en slot (día)
+  const handleSelectSlot = useCallback(
+    ({ start }: { start: Date }) => {
+      setSelectedDate(start);
+      setShowDayDialog(true);
+    },
+    []
+  );
+
   // Manejar click en evento
   const handleSelectEvent = useCallback((event: CalendarEvent) => {
-    setSelectedEvent(event);
-    setShowEventDialog(true);
-  }, []);
+    // Si hay múltiples eventos en el día, mostrar modal del día
+    const dateStr = format(event.start, "yyyy-MM-dd");
+    const dayReservations = reservations.filter((r) => r.reservationDate === dateStr);
+    if (dayReservations.length > 1) {
+      setSelectedDate(event.start);
+      setShowDayDialog(true);
+    } else {
+      setSelectedEvent(event);
+      setShowEventDialog(true);
+    }
+  }, [reservations]);
 
   // Navegación del calendario
   const handleNavigate = useCallback((newDate: Date) => {
@@ -399,10 +427,18 @@ export default function PublicCalendarPage() {
                     min={new Date(2025, 0, 1, 7, 0, 0)}
                     max={new Date(2025, 0, 1, 18, 0, 0)}
                     eventPropGetter={eventStyleGetter}
+                    onSelectSlot={handleSelectSlot}
                     onSelectEvent={handleSelectEvent}
+                    selectable
+                    popup={false}
+                    doShowMoreDrillDown={false}
                     toolbar={false}
                     components={{
                       event: EventComponent,
+                    }}
+                    onShowMore={(_events, date) => {
+                      setSelectedDate(date);
+                      setShowDayDialog(true);
                     }}
                     formats={{
                       dayHeaderFormat: (date: Date) =>
@@ -456,9 +492,9 @@ export default function PublicCalendarPage() {
         </Card>
       </div>
 
-      {/* Modal de detalle de evento */}
+      {/* Modal de detalle de evento individual */}
       <Dialog open={showEventDialog} onOpenChange={setShowEventDialog}>
-        <DialogContent>
+        <DialogContent className="w-full max-w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl">{selectedEvent?.title}</DialogTitle>
             <DialogDescription>Detalles del evento</DialogDescription>
@@ -560,6 +596,102 @@ export default function PublicCalendarPage() {
                   <p className="text-sm text-gray-600">
                     {selectedEvent.resource.eventDescription}
                   </p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de detalle del día - muestra todos los eventos del día */}
+      <Dialog open={showDayDialog} onOpenChange={setShowDayDialog}>
+        <DialogContent className="w-full max-w-[95vw] sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5" style={{ color: "#1859A9" }} />
+              {selectedDate && format(selectedDate, "EEEE, d 'de' MMMM yyyy", { locale: es })}
+            </DialogTitle>
+            <DialogDescription>
+              Eventos programados para este día
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedDate && (
+            <div className="space-y-4 mt-4">
+              {getReservationsForDate(selectedDate).map((reservation) => (
+                <div
+                  key={reservation._id}
+                  className="border rounded-lg overflow-hidden"
+                  style={{ borderLeftWidth: "4px", borderLeftColor: "#1859A9" }}
+                >
+                  <div
+                    className="px-4 py-3 font-semibold flex items-center gap-2"
+                    style={{ backgroundColor: "#1859A915" }}
+                  >
+                    <Building2 className="h-4 w-4" style={{ color: "#1859A9" }} />
+                    <span className="flex-1">{reservation.eventTitle}</span>
+                    <Badge className="bg-green-100 text-green-800 border-green-300 text-xs">
+                      Confirmado
+                    </Badge>
+                  </div>
+                  <div className="px-4 py-3 bg-white space-y-3">
+                    {/* Organizador */}
+                    <div className="flex items-center gap-2 text-sm">
+                      <User className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium">{reservation.requesterName}</span>
+                      {reservation.organization && (
+                        <span className="text-gray-500">- {reservation.organization}</span>
+                      )}
+                    </div>
+
+                    {/* Horario */}
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Clock className="h-4 w-4" />
+                      <span className="font-medium">
+                        {formatTimeBlocksRange(reservation.timeBlocks)}
+                      </span>
+                    </div>
+
+                    {/* Bloques */}
+                    <div className="flex flex-wrap gap-1">
+                      {reservation.timeBlocks.map((block) => (
+                        <Badge key={block} variant="secondary" className="text-xs">
+                          {getBlockLabel(block)}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    {/* Asistentes */}
+                    {reservation.expectedAttendees && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Users className="h-4 w-4" />
+                        <span>{reservation.expectedAttendees} asistentes esperados</span>
+                      </div>
+                    )}
+
+                    {/* Propósito */}
+                    {reservation.purpose && (
+                      <div className="flex items-start gap-2 text-sm text-gray-600">
+                        <Target className="h-4 w-4 mt-0.5" />
+                        <span>{reservation.purpose}</span>
+                      </div>
+                    )}
+
+                    {/* Descripción */}
+                    {reservation.eventDescription && (
+                      <p className="text-sm text-gray-500 italic border-t pt-2 mt-2">
+                        {reservation.eventDescription}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {getReservationsForDate(selectedDate).length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <CalendarIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p>No hay eventos para este día</p>
+                  <p className="text-sm mt-1">Este día está disponible</p>
                 </div>
               )}
             </div>
