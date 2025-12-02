@@ -99,10 +99,11 @@ export interface LabReservation {
   readonly userId: string;
   readonly userName: string;
   readonly userEmail: string;
-  readonly userType: UserType;
-  readonly software: readonly Software[];
+  // Ahora es string para aceptar valores dinámicos de lab-config
+  readonly userType: string;
+  readonly software: readonly string[];
   readonly otherSoftware?: string;
-  readonly purpose: Purpose;
+  readonly purpose: string;
   readonly description: string;
   // Campos de reserva
   readonly reservationDate: string; // YYYY-MM-DD
@@ -122,10 +123,11 @@ export interface LabReservation {
 
 // DTOs
 export interface CreateLabReservationDto {
-  readonly userType: UserType;
-  readonly software: readonly Software[];
+  // Ahora acepta valores dinámicos configurados en lab-config
+  readonly userType: string;
+  readonly software: readonly string[];
   readonly otherSoftware?: string;
-  readonly purpose: Purpose;
+  readonly purpose: string;
   readonly description: string;
   readonly computerNumber: number; // 1-9
   readonly timeBlocks: readonly string[]; // Bloques seleccionados (máx 3)
@@ -257,7 +259,8 @@ export const WEEKS_OPTIONS = [
   { value: 4, label: '4 semanas' },
 ] as const;
 
-export const USER_TYPE_LABELS: Record<UserType, string> = {
+// Ahora usan Record<string, string> para aceptar valores dinámicos de lab-config
+export const USER_TYPE_LABELS: Record<string, string> = {
   [UserType.PROFESOR]: 'Profesor',
   [UserType.ESTUDIANTE]: 'Estudiante',
   [UserType.CFD]: 'CFD',
@@ -265,13 +268,13 @@ export const USER_TYPE_LABELS: Record<UserType, string> = {
   [UserType.OTRO]: 'Otro',
 };
 
-export const USER_GROUP_LABELS: Record<UserGroup, string> = {
+export const USER_GROUP_LABELS: Record<string, string> = {
   [UserGroup.NORMAL]: 'Usuario Normal',
   [UserGroup.CENTROMUNDOX]: 'Centro Mundo X',
   [UserGroup.CFD]: 'CFD',
 };
 
-export const SOFTWARE_LABELS: Record<Software, string> = {
+export const SOFTWARE_LABELS: Record<string, string> = {
   [Software.UNITY]: 'Unity',
   [Software.AUTODESK]: 'Autodesk',
   [Software.BLENDER]: 'Blender',
@@ -279,7 +282,7 @@ export const SOFTWARE_LABELS: Record<Software, string> = {
   [Software.OTRO]: 'Otro',
 };
 
-export const PURPOSE_LABELS: Record<Purpose, string> = {
+export const PURPOSE_LABELS: Record<string, string> = {
   [Purpose.TESIS]: 'Tesis',
   [Purpose.CLASES]: 'Clases',
   [Purpose.TRABAJO_INDUSTRIAL]: 'Trabajo Industrial',
