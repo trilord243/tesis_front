@@ -73,4 +73,13 @@ temp/
 .eslintcache
 
 # Turbo
-.turbonul
+.turbo
+
+# Claude Code temporary files
+tmpclaude-*
+
+# UML diagrams and images
+uml/
+fotos-diagramas/
+*.plantuml
+UML-SISTEMA-RFID.md

@@ -56,7 +56,7 @@ export function ProductPrintButton({ product }: ProductPrintButtonProps) {
           <Printer className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md mx-auto w-full">
+      <DialogContent className="w-[28rem] sm:w-[32rem]">
         <DialogHeader className="pb-3">
           <DialogTitle className="text-base">
             Imprimir Etiqueta RFID
