@@ -26,12 +26,20 @@
       "Bash(npx prettier:*)",
       "Bash(heroku logs:*)",
       "Bash(npx tsc:*)",
-      "WebFetch(domain:stackoverflow.com)"
+      "WebFetch(domain:stackoverflow.com)",
+      "Bash(npm run lint:*)",
+      "Bash(powershell -Command \"\\(Invoke-RestMethod -Uri ''http://localhost:3000/lab-reservations''\\).Count\")",
+      "Bash(powershell -Command \"$response = Invoke-RestMethod -Uri ''http://localhost:3001/api/lab-reservations'' -Method GET; $response.Count\")",
+      "Bash(python:*)",
+      "Bash(powershell -Command \"\n$login = Invoke-RestMethod -Uri ''https://centromundox-backend-947baa9d183e.herokuapp.com/auth/login'' -Method POST -ContentType ''application/json'' -Body ''{\"\"email\"\":\"\"fescalona@correo.unimet.edu.ve\"\",\"\"password\"\":\"\"Link420/\"\"}''\n$token = $login.access_token\n$headers = @{ Authorization = \"\"Bearer $token\"\" }\n$data = Invoke-RestMethod -Uri ''https://centromundox-backend-947baa9d183e.herokuapp.com/lab-reservations'' -Headers $headers\n\n$total = $data.Count\n$recurrent = \\($data | Where-Object { $_.recurrenceGroupId }\\).Count\n$individual = \\($data | Where-Object { -not $_.recurrenceGroupId }\\).Count\n$pending = \\($data | Where-Object { $_.status -eq ''pending'' }\\).Count\n$pendingRecurrent = \\($data | Where-Object { $_.status -eq ''pending'' -and $_.recurrenceGroupId }\\).Count\n$pendingIndividual = \\($data | Where-Object { $_.status -eq ''pending'' -and -not $_.recurrenceGroupId }\\).Count\n$groups = \\($data | Where-Object { $_.recurrenceGroupId } | Select-Object -ExpandProperty recurrenceGroupId -Unique\\).Count\n\nWrite-Host ''=== TOTAL ===''\nWrite-Host \"\"Total reservas: $total\"\"\nWrite-Host \"\"Recurrentes: $recurrent\"\"\nWrite-Host \"\"Individuales: $individual\"\"\nWrite-Host ''''\nWrite-Host ''=== PENDIENTES ===''\nWrite-Host \"\"Total pendientes: $pending\"\"\nWrite-Host \"\"Recurrentes pendientes: $pendingRecurrent\"\"\nWrite-Host \"\"Individuales pendientes: $pendingIndividual\"\"\nWrite-Host ''''\nWrite-Host ''=== GRUPOS UNICOS ===''\nWrite-Host \"\"Grupos recurrentes unicos: $groups\"\"\n\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": [],
     "additionalDirectories": [
-      "/home/trilord243/tesis/centromundox-api-reservas"
+      "/home/trilord243/tesis/centromundox-api-reservas",
+      "C:\\Users\\FelipeEscalona\\Documents\\personal\\tesis\\centromundox-api-reservas"
     ]
   }
 }

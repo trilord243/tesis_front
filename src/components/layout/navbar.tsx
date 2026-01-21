@@ -237,7 +237,7 @@ export function Navbar({
           <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const showPendingBadge = isAdmin && item.href === "/admin/dashboard";
+              const showPendingBadge = isAdmin && item.href === "/admin/reservas-lab";
               return (
                 <Link
                   key={item.href}
@@ -412,7 +412,7 @@ export function Navbar({
             <div className="px-2 pt-2 pb-3 space-y-1 bg-gradient-to-b from-blue-50/50 to-white border-t border-gray-200">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const showPendingBadge = isAdmin && item.href === "/admin/dashboard";
+                const showPendingBadge = isAdmin && item.href === "/admin/reservas-lab";
                 return (
                   <Link
                     key={item.href}

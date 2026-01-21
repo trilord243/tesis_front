@@ -35,8 +35,22 @@ import {
   Computer,
   CalendarDays,
   List,
-  Package,
+  ArrowUpDown,
+  Repeat,
 } from "lucide-react";
+
+// Mapeo de valores a labels para los filtros
+const STATUS_FILTER_OPTIONS = {
+  all: "Todos los estados",
+  pending: "Pendientes",
+  approved: "Aprobadas",
+  rejected: "Rechazadas",
+} as const;
+
+const SORT_OPTIONS = {
+  newest: "Más reciente",
+  oldest: "Más antiguo",
+} as const;
 import { ReservationGroupCard } from "@/components/lab-reservations/reservation-group-card";
 
 export default function AdminReservasLabPage() {
@@ -47,10 +61,11 @@ export default function AdminReservasLabPage() {
   const [selectedReservation, setSelectedReservation] = useState<LabReservation | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Filtros
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  // Filtros - por defecto mostrar pendientes
+  const [statusFilter, setStatusFilter] = useState<keyof typeof STATUS_FILTER_OPTIONS>("pending");
   const [searchQuery, setSearchQuery] = useState("");
   const [computerFilter, setComputerFilter] = useState<string>("all");
+  const [sortOrder, setSortOrder] = useState<keyof typeof SORT_OPTIONS>("newest");
 
   const loadReservations = async () => {
     setLoading(true);
@@ -133,7 +148,7 @@ export default function AdminReservasLabPage() {
     { groups: new Map(), individual: [] }
   );
 
-  // Convert groups map to array and sort by first pending reservation's date
+  // Convert groups map to array and sort by createdAt
   const sortedGroups = Array.from(groupedReservations.groups.entries())
     .map(([groupId, reservations]) => ({
       groupId,
@@ -141,25 +156,30 @@ export default function AdminReservasLabPage() {
         new Date(a.reservationDate).getTime() - new Date(b.reservationDate).getTime()
       ),
       hasPending: reservations.some(r => r.status === ReservationStatus.PENDING),
+      firstCreatedAt: reservations.reduce((earliest, r) => {
+        const created = new Date(r.createdAt).getTime();
+        return created < earliest ? created : earliest;
+      }, Infinity),
     }))
     .sort((a, b) => {
-      // Groups with pending reservations first
-      if (a.hasPending && !b.hasPending) return -1;
-      if (!a.hasPending && b.hasPending) return 1;
-      // Then by first reservation date
-      const dateA = a.reservations[0]?.reservationDate || '';
-      const dateB = b.reservations[0]?.reservationDate || '';
-      return dateA.localeCompare(dateB);
+      // Sort by createdAt based on sortOrder
+      return sortOrder === "newest"
+        ? b.firstCreatedAt - a.firstCreatedAt
+        : a.firstCreatedAt - b.firstCreatedAt;
     });
 
-  // Sort individual reservations (pending first, then by date)
+  // Sort individual reservations by createdAt
   const sortedIndividual = [...groupedReservations.individual].sort((a, b) => {
-    const aIsPending = a.status === ReservationStatus.PENDING;
-    const bIsPending = b.status === ReservationStatus.PENDING;
-    if (aIsPending && !bIsPending) return -1;
-    if (!aIsPending && bIsPending) return 1;
-    return new Date(a.reservationDate).getTime() - new Date(b.reservationDate).getTime();
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
   });
+
+  // Contar el total de reservas recurrentes (no solo grupos)
+  const totalRecurrentReservations = sortedGroups.reduce(
+    (sum, group) => sum + group.reservations.length,
+    0
+  );
 
   const handleViewReservation = (reservation: LabReservation) => {
     setSelectedReservation(reservation);
@@ -295,17 +315,17 @@ export default function AdminReservasLabPage() {
             </div>
 
             {/* Filtros en una segunda fila con más espacio */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="w-full">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={(value: keyof typeof STATUS_FILTER_OPTIONS) => setStatusFilter(value)}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Estado" />
+                    <SelectValue>{STATUS_FILTER_OPTIONS[statusFilter]}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value={ReservationStatus.PENDING}>Pendientes</SelectItem>
-                    <SelectItem value={ReservationStatus.APPROVED}>Aprobadas</SelectItem>
-                    <SelectItem value={ReservationStatus.REJECTED}>Rechazadas</SelectItem>
+                    <SelectItem value="pending">Pendientes</SelectItem>
+                    <SelectItem value="approved">Aprobadas</SelectItem>
+                    <SelectItem value="rejected">Rechazadas</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -313,7 +333,7 @@ export default function AdminReservasLabPage() {
               <div className="w-full">
                 <Select value={computerFilter} onValueChange={setComputerFilter}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Computadora" />
+                    <SelectValue>{computerFilter === "all" ? "Todas las computadoras" : `Computadora #${computerFilter}`}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas las computadoras</SelectItem>
@@ -327,11 +347,24 @@ export default function AdminReservasLabPage() {
               </div>
 
               <div className="w-full">
+                <Select value={sortOrder} onValueChange={(value: keyof typeof SORT_OPTIONS) => setSortOrder(value)}>
+                  <SelectTrigger className="w-full">
+                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                    <SelectValue>{SORT_OPTIONS[sortOrder]}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Más reciente</SelectItem>
+                    <SelectItem value="oldest">Más antiguo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="w-full">
                 <Button
                   variant="outline"
                   onClick={loadReservations}
                   disabled={loading}
-                  className="w-full h-10"
+                  className="w-full h-10 border-orange-300 text-orange-600 hover:bg-orange-50"
                 >
                   <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
                   Actualizar
@@ -373,37 +406,58 @@ export default function AdminReservasLabPage() {
         </Card>
       )}
 
-      {/* Reservations List */}
+      {/* Reservations List with Tabs */}
       {!loading && !error && filteredReservations.length > 0 && (
-        <div className="space-y-6">
-          {/* Grouped (Recurrent) Reservations */}
-          {sortedGroups.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-lg font-semibold text-purple-700">
-                <Package className="h-5 w-5" />
-                Solicitudes Recurrentes ({sortedGroups.length})
-              </div>
-              {sortedGroups.map(({ groupId, reservations }) => (
+        <Tabs defaultValue="recurrentes" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="recurrentes" className="flex items-center gap-2">
+              <Repeat className="h-4 w-4" />
+              <span>Solicitudes Recurrentes</span>
+              <Badge variant="secondary" className="ml-1 bg-purple-100 text-purple-700">
+                {totalRecurrentReservations}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="individuales" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              <span>Solicitudes Individuales</span>
+              <Badge variant="secondary" className="ml-1 bg-blue-100 text-blue-700">
+                {sortedIndividual.length}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab Recurrentes */}
+          <TabsContent value="recurrentes" className="space-y-4">
+            {totalRecurrentReservations === 0 ? (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <Repeat className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <p className="text-muted-foreground">No hay solicitudes recurrentes</p>
+                </CardContent>
+              </Card>
+            ) : (
+              sortedGroups.map(({ groupId, reservations }) => (
                 <ReservationGroupCard
                   key={groupId}
                   groupId={groupId}
                   reservations={reservations}
                   onSuccess={handleDialogSuccess}
                 />
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </TabsContent>
 
-          {/* Individual Reservations */}
-          {sortedIndividual.length > 0 && (
-            <div className="space-y-4">
-              {sortedGroups.length > 0 && (
-                <div className="flex items-center gap-2 text-lg font-semibold text-gray-700 pt-4 border-t">
-                  <Calendar className="h-5 w-5" />
-                  Solicitudes Individuales ({sortedIndividual.length})
-                </div>
-              )}
-              {sortedIndividual.map((reservation) => (
+          {/* Tab Individuales */}
+          <TabsContent value="individuales" className="space-y-4">
+            {sortedIndividual.length === 0 ? (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <p className="text-muted-foreground">No hay solicitudes individuales</p>
+                </CardContent>
+              </Card>
+            ) : (
+              sortedIndividual.map((reservation) => (
                 <Card
                   key={reservation._id}
                   className="hover:shadow-md transition-shadow cursor-pointer"
@@ -484,10 +538,10 @@ export default function AdminReservasLabPage() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          )}
-        </div>
+              ))
+            )}
+          </TabsContent>
+        </Tabs>
       )}
 
           {/* Dialog */}

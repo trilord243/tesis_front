@@ -15,6 +15,7 @@ interface SelectContentProps {
 
 interface SelectValueProps {
   placeholder?: string;
+  children?: React.ReactNode;
 }
 
 const SelectContext = React.createContext<{
@@ -66,10 +67,13 @@ const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
 );
 SelectTrigger.displayName = "SelectTrigger";
 
-const SelectValue: React.FC<SelectValueProps> = ({ placeholder }) => {
+const SelectValue: React.FC<SelectValueProps> = ({ placeholder, children }) => {
   const { value } = React.useContext(SelectContext);
 
-  return <span className="block truncate">{value || placeholder}</span>;
+  // Si hay children, mostrarlos; sino mostrar el valor o placeholder
+  const displayContent = children ?? (value || placeholder);
+
+  return <span className="block truncate">{displayContent}</span>;
 };
 
 const SelectContent: React.FC<SelectContentProps> = ({ children }) => {

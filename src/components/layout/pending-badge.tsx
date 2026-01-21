@@ -19,9 +19,9 @@ export function PendingBadge({ className }: PendingBadgeProps) {
         const labData = await labResponse.json();
         const labPending = Array.isArray(labData) ? labData.length : 0;
 
-        // Fetch pending lens requests
-        const lensResponse = await fetch("/api/lens-requests?status=pendiente");
-        const lensData = await lensResponse.json();
+        // Fetch pending lens requests (uses admin route)
+        const lensResponse = await fetch("/api/admin/lens-requests?status=pendiente");
+        const lensData = lensResponse.ok ? await lensResponse.json() : [];
         const lensPending = Array.isArray(lensData) ? lensData.length : 0;
 
         // Fetch pending metaverse reservations

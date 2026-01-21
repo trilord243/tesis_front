@@ -47,24 +47,18 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        // Si no hay solicitudes, devolver un array vacío
-        return NextResponse.json([]);
-      }
-      throw new Error("Error al obtener solicitudes");
+      // Para cualquier error del backend, devolver array vacío
+      // Esto evita que el pending-badge falle silenciosamente
+      console.log(`lens-requests backend returned ${response.status}`);
+      return NextResponse.json([]);
     }
 
     const requests = await response.json();
     return NextResponse.json(requests);
   } catch (error) {
     console.error("Error en GET /api/admin/lens-requests:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Error interno del servidor",
-      },
-      { status: 500 }
-    );
+    // Retornar array vacío en lugar de 500 para no romper el frontend
+    return NextResponse.json([]);
   }
 }
 

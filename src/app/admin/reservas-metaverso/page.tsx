@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Navbar } from "@/components/layout/navbar";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -48,13 +48,133 @@ import {
   Search,
   Filter,
   Trash2,
+  Repeat,
+  CalendarDays,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
+
+// Componente reutilizable para mostrar una tarjeta de reserva
+function ReservationCard({
+  reservation,
+  onSelect,
+  onApprove,
+  onReject,
+}: {
+  reservation: MetaverseReservation;
+  onSelect: () => void;
+  onApprove: () => void;
+  onReject: () => void;
+}) {
+  return (
+    <div
+      className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors bg-white"
+      onClick={onSelect}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <h3 className="font-semibold text-lg">{reservation.eventTitle}</h3>
+            <Badge className={METAVERSE_STATUS_COLORS[reservation.status]}>
+              {METAVERSE_STATUS_LABELS[reservation.status]}
+            </Badge>
+            {reservation.isRecurring && (
+              <Badge variant="outline" className="border-purple-300 text-purple-600">
+                <Repeat className="h-3 w-3 mr-1" />
+                Recurrente
+              </Badge>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              {reservation.requesterName}
+            </div>
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              {reservation.requesterEmail}
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              {format(
+                new Date(reservation.reservationDate + "T12:00:00"),
+                "d MMM yyyy",
+                { locale: es }
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              {formatMetaverseTimeBlocksRange(reservation.timeBlocks)}
+            </div>
+          </div>
+
+          {/* Mostrar info de creación */}
+          <div className="mt-2 text-xs text-gray-400">
+            Creado: {format(new Date(reservation.createdAt), "d MMM yyyy, HH:mm", { locale: es })}
+          </div>
+        </div>
+
+        {reservation.status === MetaverseReservationStatus.PENDING && (
+          <div className="flex gap-2 ml-4 flex-shrink-0">
+            <Button
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onApprove();
+              }}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <CheckCircle className="h-4 w-4 mr-1" />
+              Aprobar
+            </Button>
+            <Button
+              size="sm"
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={(e) => {
+                e.stopPropagation();
+                onReject();
+              }}
+            >
+              <XCircle className="h-4 w-4 mr-1" />
+              Rechazar
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Mapeo de valores a labels para los filtros
+const STATUS_OPTIONS = {
+  all: "Todos los estados",
+  pending: "Pendientes",
+  approved: "Aprobadas",
+  rejected: "Rechazadas",
+} as const;
+
+const TYPE_OPTIONS = {
+  all: "Todos los tipos",
+  recurring: "Recurrentes",
+  individual: "Individuales",
+} as const;
+
+const SORT_OPTIONS = {
+  newest: "Más reciente",
+  oldest: "Más antiguo",
+} as const;
 
 export default function AdminReservasMetaversoPage() {
   const [reservations, setReservations] = useState<MetaverseReservation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<keyof typeof STATUS_OPTIONS>("all");
+  const [typeFilter, setTypeFilter] = useState<keyof typeof TYPE_OPTIONS>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<keyof typeof SORT_OPTIONS>("newest");
+  const [recurringExpanded, setRecurringExpanded] = useState(true);
+  const [individualExpanded, setIndividualExpanded] = useState(true);
 
   // Estados para modales
   const [selectedReservation, setSelectedReservation] = useState<MetaverseReservation | null>(null);
@@ -88,17 +208,38 @@ export default function AdminReservasMetaversoPage() {
     loadReservations();
   }, [loadReservations]);
 
-  // Filtrar reservas por búsqueda
-  const filteredReservations = reservations.filter((r) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      r.eventTitle.toLowerCase().includes(query) ||
-      r.requesterName.toLowerCase().includes(query) ||
-      r.requesterEmail.toLowerCase().includes(query) ||
-      (r.organization?.toLowerCase().includes(query) ?? false)
-    );
-  });
+  // Filtrar y ordenar reservas
+  const filteredReservations = reservations
+    .filter((r) => {
+      // Filtro por búsqueda
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch =
+          r.eventTitle.toLowerCase().includes(query) ||
+          r.requesterName.toLowerCase().includes(query) ||
+          r.requesterEmail.toLowerCase().includes(query) ||
+          (r.organization?.toLowerCase().includes(query) ?? false);
+        if (!matchesSearch) return false;
+      }
+
+      // Filtro por tipo (recurrente/individual)
+      if (typeFilter === "recurring" && !r.isRecurring) return false;
+      if (typeFilter === "individual" && r.isRecurring) return false;
+
+      return true;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+    });
+
+  // Separar en recurrentes e individuales (solo si no hay filtro de tipo)
+  const recurringReservations = filteredReservations.filter((r) => r.isRecurring);
+  const individualReservations = filteredReservations.filter((r) => !r.isRecurring);
+
+  // Determinar si mostrar secciones separadas o lista única
+  const showSeparateSections = typeFilter === "all";
 
   // Aprobar reserva
   const handleApprove = async (reservation: MetaverseReservation) => {
@@ -199,10 +340,6 @@ export default function AdminReservasMetaversoPage() {
                     </p>
                   </div>
                 </div>
-                <Button onClick={loadReservations} variant="outline" disabled={loading}>
-                  <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                  Actualizar
-                </Button>
               </div>
             </div>
           </div>
@@ -251,131 +388,206 @@ export default function AdminReservasMetaversoPage() {
 
           {/* Filters */}
           <Card className="mb-6">
-            <CardContent className="pt-6">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Buscar por título, nombre, email u organización..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-gray-500" />
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Filtrar por estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos</SelectItem>
-                      <SelectItem value="pending">Pendientes</SelectItem>
-                      <SelectItem value="approved">Aprobadas</SelectItem>
-                      <SelectItem value="rejected">Rechazadas</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-2">
+                <Filter className="h-5 w-5 text-gray-500" />
+                <CardTitle className="text-lg">Filtros</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar por nombre o email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* Filter Row */}
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
+                {/* Status Filter */}
+                <Select value={statusFilter} onValueChange={(value: keyof typeof STATUS_OPTIONS) => setStatusFilter(value)}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue>{STATUS_OPTIONS[statusFilter]}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    <SelectItem value="pending">Pendientes</SelectItem>
+                    <SelectItem value="approved">Aprobadas</SelectItem>
+                    <SelectItem value="rejected">Rechazadas</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Type Filter */}
+                <Select value={typeFilter} onValueChange={(value: keyof typeof TYPE_OPTIONS) => setTypeFilter(value)}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue>{TYPE_OPTIONS[typeFilter]}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los tipos</SelectItem>
+                    <SelectItem value="recurring">Recurrentes</SelectItem>
+                    <SelectItem value="individual">Individuales</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Sort Filter */}
+                <Select value={sortOrder} onValueChange={(value: keyof typeof SORT_OPTIONS) => setSortOrder(value)}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                    <SelectValue>{SORT_OPTIONS[sortOrder]}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Más reciente</SelectItem>
+                    <SelectItem value="oldest">Más antiguo</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Refresh Button */}
+                <Button onClick={loadReservations} variant="outline" disabled={loading} className="w-full sm:w-auto border-orange-300 text-orange-600 hover:bg-orange-50">
+                  <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                  Actualizar
+                </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Reservations List */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Solicitudes de Reserva</CardTitle>
-              <CardDescription>
-                {filteredReservations.length} solicitud(es) encontrada(s)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                </div>
-              ) : filteredReservations.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <Globe className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No hay solicitudes de reserva</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {filteredReservations.map((reservation) => (
-                    <div
-                      key={reservation._id}
-                      className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                      onClick={() => {
-                        setSelectedReservation(reservation);
-                        setShowDetailDialog(true);
-                      }}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-lg">{reservation.eventTitle}</h3>
-                            <Badge className={METAVERSE_STATUS_COLORS[reservation.status]}>
-                              {METAVERSE_STATUS_LABELS[reservation.status]}
-                            </Badge>
-                          </div>
+          {/* Loading State */}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+          ) : filteredReservations.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <Globe className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No hay solicitudes de reserva</p>
+            </div>
+          ) : showSeparateSections ? (
+            /* Vista con secciones separadas (cuando typeFilter es "all") */
+            <div className="space-y-6">
+              {/* Solicitudes Recurrentes */}
+              <div>
+                <button
+                  onClick={() => setRecurringExpanded(!recurringExpanded)}
+                  className="flex items-center gap-2 w-full text-left mb-4 group"
+                >
+                  {recurringExpanded ? (
+                    <ChevronDown className="h-5 w-5 text-purple-600" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-purple-600" />
+                  )}
+                  <Repeat className="h-5 w-5 text-purple-600" />
+                  <span className="text-lg font-semibold text-purple-700">
+                    Solicitudes Recurrentes ({recurringReservations.length})
+                  </span>
+                </button>
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4" />
-                              {reservation.requesterName}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Mail className="h-4 w-4" />
-                              {reservation.requesterEmail}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4" />
-                              {format(
-                                new Date(reservation.reservationDate + "T12:00:00"),
-                                "d MMM yyyy",
-                                { locale: es }
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-4 w-4" />
-                              {formatMetaverseTimeBlocksRange(reservation.timeBlocks)}
-                            </div>
-                          </div>
-                        </div>
+                {recurringExpanded && (
+                  <div className="space-y-4">
+                    {recurringReservations.length === 0 ? (
+                      <p className="text-gray-500 text-sm pl-8">No hay solicitudes recurrentes</p>
+                    ) : (
+                      recurringReservations.map((reservation) => (
+                        <ReservationCard
+                          key={reservation._id}
+                          reservation={reservation}
+                          onSelect={() => {
+                            setSelectedReservation(reservation);
+                            setShowDetailDialog(true);
+                          }}
+                          onApprove={() => handleApprove(reservation)}
+                          onReject={() => {
+                            setSelectedReservation(reservation);
+                            setShowRejectDialog(true);
+                          }}
+                        />
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
 
-                        {reservation.status === MetaverseReservationStatus.PENDING && (
-                          <div className="flex gap-2 ml-4">
-                            <Button
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleApprove(reservation);
-                              }}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Aprobar
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="bg-red-600 hover:bg-red-700 text-white"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedReservation(reservation);
-                                setShowRejectDialog(true);
-                              }}
-                            >
-                              <XCircle className="h-4 w-4 mr-1" />
-                              Rechazar
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              {/* Solicitudes Individuales */}
+              <div>
+                <button
+                  onClick={() => setIndividualExpanded(!individualExpanded)}
+                  className="flex items-center gap-2 w-full text-left mb-4 group"
+                >
+                  {individualExpanded ? (
+                    <ChevronDown className="h-5 w-5 text-blue-600" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-blue-600" />
+                  )}
+                  <CalendarDays className="h-5 w-5 text-blue-600" />
+                  <span className="text-lg font-semibold text-blue-700">
+                    Solicitudes Individuales ({individualReservations.length})
+                  </span>
+                </button>
+
+                {individualExpanded && (
+                  <div className="space-y-4">
+                    {individualReservations.length === 0 ? (
+                      <p className="text-gray-500 text-sm pl-8">No hay solicitudes individuales</p>
+                    ) : (
+                      individualReservations.map((reservation) => (
+                        <ReservationCard
+                          key={reservation._id}
+                          reservation={reservation}
+                          onSelect={() => {
+                            setSelectedReservation(reservation);
+                            setShowDetailDialog(true);
+                          }}
+                          onApprove={() => handleApprove(reservation)}
+                          onReject={() => {
+                            setSelectedReservation(reservation);
+                            setShowRejectDialog(true);
+                          }}
+                        />
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* Vista unificada (cuando hay filtro de tipo específico) */
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                {typeFilter === "recurring" ? (
+                  <>
+                    <Repeat className="h-5 w-5 text-purple-600" />
+                    <span className="text-lg font-semibold text-purple-700">
+                      Solicitudes Recurrentes ({filteredReservations.length})
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <CalendarDays className="h-5 w-5 text-blue-600" />
+                    <span className="text-lg font-semibold text-blue-700">
+                      Solicitudes Individuales ({filteredReservations.length})
+                    </span>
+                  </>
+                )}
+              </div>
+              {filteredReservations.map((reservation) => (
+                <ReservationCard
+                  key={reservation._id}
+                  reservation={reservation}
+                  onSelect={() => {
+                    setSelectedReservation(reservation);
+                    setShowDetailDialog(true);
+                  }}
+                  onApprove={() => handleApprove(reservation)}
+                  onReject={() => {
+                    setSelectedReservation(reservation);
+                    setShowRejectDialog(true);
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Detail Dialog */}
