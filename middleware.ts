@@ -21,6 +21,7 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 const blockedIPs = new Set<string>([
   "87.121.84.24",  // Attack detected 2026-01-21 15:00 UTC - file write attempts (Bulgaria)
   "195.3.222.78",  // Attack detected 2026-01-21 18:36 UTC - same attack pattern
+  "95.214.55.246", // Attack detected 2026-01-21 19:00 UTC - same attack pattern
 ]);
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
