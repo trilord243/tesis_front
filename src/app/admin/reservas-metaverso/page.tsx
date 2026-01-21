@@ -409,7 +409,7 @@ export default function AdminReservasMetaversoPage() {
               {/* Filter Row */}
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
                 {/* Status Filter */}
-                <Select value={statusFilter} onValueChange={(value: keyof typeof STATUS_OPTIONS) => setStatusFilter(value)}>
+                <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as keyof typeof STATUS_OPTIONS)}>
                   <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue>{STATUS_OPTIONS[statusFilter]}</SelectValue>
                   </SelectTrigger>
@@ -422,7 +422,7 @@ export default function AdminReservasMetaversoPage() {
                 </Select>
 
                 {/* Type Filter */}
-                <Select value={typeFilter} onValueChange={(value: keyof typeof TYPE_OPTIONS) => setTypeFilter(value)}>
+                <Select value={typeFilter} onValueChange={(value) => setTypeFilter(value as keyof typeof TYPE_OPTIONS)}>
                   <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue>{TYPE_OPTIONS[typeFilter]}</SelectValue>
                   </SelectTrigger>
@@ -434,7 +434,7 @@ export default function AdminReservasMetaversoPage() {
                 </Select>
 
                 {/* Sort Filter */}
-                <Select value={sortOrder} onValueChange={(value: keyof typeof SORT_OPTIONS) => setSortOrder(value)}>
+                <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as keyof typeof SORT_OPTIONS)}>
                   <SelectTrigger className="w-full sm:w-[180px]">
                     <ArrowUpDown className="h-4 w-4 mr-2" />
                     <SelectValue>{SORT_OPTIONS[sortOrder]}</SelectValue>

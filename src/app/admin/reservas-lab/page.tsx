@@ -317,7 +317,7 @@ export default function AdminReservasLabPage() {
             {/* Filtros en una segunda fila con más espacio */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="w-full">
-                <Select value={statusFilter} onValueChange={(value: keyof typeof STATUS_FILTER_OPTIONS) => setStatusFilter(value)}>
+                <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as keyof typeof STATUS_FILTER_OPTIONS)}>
                   <SelectTrigger className="w-full">
                     <SelectValue>{STATUS_FILTER_OPTIONS[statusFilter]}</SelectValue>
                   </SelectTrigger>
@@ -347,7 +347,7 @@ export default function AdminReservasLabPage() {
               </div>
 
               <div className="w-full">
-                <Select value={sortOrder} onValueChange={(value: keyof typeof SORT_OPTIONS) => setSortOrder(value)}>
+                <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as keyof typeof SORT_OPTIONS)}>
                   <SelectTrigger className="w-full">
                     <ArrowUpDown className="h-4 w-4 mr-2" />
                     <SelectValue>{SORT_OPTIONS[sortOrder]}</SelectValue>
