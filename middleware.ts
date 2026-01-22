@@ -19,9 +19,14 @@ const authRoutes = ["/auth/login", "/auth/register"];
 
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 const blockedIPs = new Set<string>([
-  "87.121.84.24",  // Attack detected 2026-01-21 15:00 UTC - file write attempts (Bulgaria)
-  "195.3.222.78",  // Attack detected 2026-01-21 18:36 UTC - same attack pattern
-  "95.214.55.246", // Attack detected 2026-01-21 19:00 UTC - same attack pattern
+  // === ACTIVE ATTACKERS - RCE & Webshell attempts ===
+  "87.121.84.24",   // VPSVAULT.HOST (USA/NY) - Main attacker, persistent
+  "195.3.222.78",   // MEVSPACE (Poland) - RCE attempts
+  "95.214.55.246",  // Previous attacker
+  "129.159.127.76", // Oracle Cloud (USA/VA) - Suspicious POSTs
+  "72.55.179.209",  // Leaseweb Canada - Suspicious POSTs
+  // === C2 SERVER (Command & Control) ===
+  "176.65.132.224", // Pfcloud (Netherlands) - Attacker's C2 server
 ]);
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
@@ -61,6 +66,24 @@ function checkRateLimit(ip: string, key: string, max: number): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const ip = getClientIP(request);
+
+  // -------------------------------------------------------------------------
+  // SECURITY CHECK 0: Block direct access (bypass Cloudflare)
+  // -------------------------------------------------------------------------
+  const cfConnectingIP = request.headers.get("cf-connecting-ip");
+  const isFromCloudflare = cfConnectingIP !== null;
+  const host = request.headers.get("host") || "";
+
+  // If request is POST to root/suspicious paths and NOT from Cloudflare = attack
+  if (request.method === "POST" && !isFromCloudflare) {
+    console.log(`[Security] ========== CLOUDFLARE BYPASS DETECTED ==========`);
+    console.log(`[Security] IP: ${ip}`);
+    console.log(`[Security] Host: ${host}`);
+    console.log(`[Security] Path: ${pathname}`);
+    console.log(`[Security] Blocked: Direct access without Cloudflare`);
+    console.log(`[Security] ================================================`);
+    return new NextResponse("Forbidden", { status: 403 });
+  }
 
   // -------------------------------------------------------------------------
   // SECURITY CHECK 1: Blocked IPs
