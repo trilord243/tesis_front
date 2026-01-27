@@ -46,18 +46,6 @@ const EQUIPMENT_OPTIONS = [
     ],
     available: 4,
   },
-  {
-    id: "specialized",
-    name: "Equipos Especializados",
-    icon: Settings,
-    specs: [
-      "Sensores IoT",
-      "Equipos medición",
-      "Cámaras 4K",
-      "Instrumentos lab",
-    ],
-    available: 12,
-  },
 ];
 
 interface DemoStepProps {
@@ -353,17 +341,17 @@ function MockReservationForm() {
           </p>
         </div>
 
-        {/* Justificación */}
+        {/* Requerimientos Técnicos */}
         <div data-tour="demo-justification">
           <label className="block text-base sm:text-lg font-roboto font-semibold text-brand-secondary mb-3">
-            Justificación Técnica *
+            Requerimientos Técnicos de tu Proyecto *
           </label>
           <textarea
             rows={3}
-            value="Los modelos de CNN que estoy desarrollando requieren GPUs de alta gama (RTX 4090) para el entrenamiento eficiente. El procesamiento de imágenes de alta resolución y la validación cruzada necesitan al menos 32GB de RAM."
+            value="Necesito GPU RTX 4090 para entrenar modelos de deep learning. Requiero mínimo 32GB de RAM para procesar datasets grandes. Software: Python 3.11, PyTorch 2.0, CUDA 12."
             readOnly
-            title="Justificación técnica - ejemplo"
-            placeholder="Justifica técnicamente por qué necesitas estos equipos"
+            title="Requerimientos técnicos - ejemplo"
+            placeholder="Describe los requerimientos técnicos de tu proyecto"
             className="w-full px-5 py-3.5 text-base border border-gray-300 rounded-lg bg-gray-50 text-brand-gray resize-none"
           />
         </div>
@@ -674,9 +662,6 @@ export function DemoReservationProcess() {
                   <div class="bg-orange-50 p-2 rounded">
                     <strong>🥽 Realidad Virtual:</strong> Para investigación inmersiva, visualización 3D
                   </div>
-                  <div class="bg-green-50 p-2 rounded">
-                    <strong>🔬 Especializados:</strong> Sensores, instrumentos, equipos de medición
-                  </div>
                 </div>
                 <p class="text-sm bg-yellow-50 p-2 rounded">⚡ Se muestra la disponibilidad en tiempo real</p>
               </div>
@@ -693,10 +678,10 @@ export function DemoReservationProcess() {
               <div class="space-y-3">
                 <p><strong>Selecciona cuándo</strong> necesitas los equipos:</p>
                 <ul class="list-disc ml-4 space-y-1 text-sm">
-                  <li><strong>Fecha:</strong> Mínimo 48 horas de anticipación</li>
-                  <li><strong>Horario:</strong> Bloques de 4 horas disponibles</li>
-                  <li><strong>Disponibilidad:</strong> Lun-Vie 8AM-6PM, Sáb 8AM-4PM</li>
+                  <li><strong>Fecha:</strong> Selecciona el día de tu reserva</li>
+                  <li><strong>Horario:</strong> Disponible de 7:00 AM a 5:00 PM</li>
                 </ul>
+                <p class="text-sm bg-yellow-50 p-2 rounded">⚠️ <strong>Nota:</strong> Reservas después de 5:00 PM o los sábados requieren autorización de un supervisor</p>
                 <p class="text-sm bg-blue-50 p-2 rounded">📅 El sistema verifica disponibilidad automáticamente</p>
               </div>
             `,
@@ -730,14 +715,9 @@ export function DemoReservationProcess() {
             title: "⚙️ Justificación Técnica",
             description: `
               <div class="space-y-3">
-                <p><strong>Explica por qué necesitas</strong> estos equipos específicos:</p>
-                <ul class="list-disc ml-4 space-y-1 text-sm">
-                  <li>Requerimientos técnicos de tu proyecto</li>
-                  <li>Por qué estos equipos son necesarios</li>
-                  <li>Alternativas consideradas</li>
-                  <li>Beneficios esperados</li>
-                </ul>
-                <p class="text-sm bg-green-50 p-2 rounded">✅ Justificaciones técnicas sólidas aceleran la aprobación</p>
+                <p><strong>Describe los requerimientos técnicos</strong> de tu proyecto:</p>
+                <p class="text-sm">Especifica qué recursos computacionales, software o características técnicas necesitas para tu investigación o tesis.</p>
+                <p class="text-sm bg-green-50 p-2 rounded">✅ Ser específico con los requerimientos técnicos ayuda a asignar el equipo más adecuado</p>
               </div>
             `,
             side: "left",

@@ -4,6 +4,7 @@ import { Footer } from "@/components/layout/footer";
 import { HeroSection } from "@/components/sections/hero-section";
 import { ValuesSection } from "@/components/sections/values-section";
 import { AboutSection } from "@/components/sections/about-section";
+import { LabRulesSection } from "@/components/sections/lab-rules-section";
 import { CTASection } from "@/components/sections/cta-section";
 
 export default async function HomePage() {
@@ -24,6 +25,7 @@ export default async function HomePage() {
         <HeroSection />
         <ValuesSection />
         <AboutSection />
+        <LabRulesSection />
         <CTASection />
         <Footer />
       </div>
