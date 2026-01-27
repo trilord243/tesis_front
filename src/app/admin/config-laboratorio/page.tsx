@@ -288,9 +288,17 @@ export default function ConfigLaboratorioPage() {
       if (response.ok) {
         await fetchData();
         setComputerDialogOpen(false);
+      } else {
+        const error = await response.json();
+        if (response.status === 409) {
+          alert(`Error: ${error.message || "Ya existe una computadora con ese número"}`);
+        } else {
+          alert(`Error al guardar: ${error.message || "Error desconocido"}`);
+        }
       }
     } catch (error) {
       console.error("Error saving computer:", error);
+      alert("Error al guardar la computadora");
     } finally {
       setSaving(false);
     }
@@ -681,15 +689,21 @@ export default function ConfigLaboratorioPage() {
             </DialogHeader>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 py-4">
               <div className="space-y-2">
-                <Label>Número</Label>
+                <Label>Número (1-99)</Label>
                 <Input
                   type="number"
+                  min={1}
+                  max={99}
                   value={computerForm.number}
                   onChange={(e) =>
                     setComputerForm({ ...computerForm, number: parseInt(e.target.value) })
                   }
-                  disabled={!!editingComputer}
                 />
+                {editingComputer && (
+                  <p className="text-xs text-amber-600">
+                    ⚠️ Cambiar el número puede afectar reservas existentes
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Nombre</Label>
