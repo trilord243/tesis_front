@@ -20,6 +20,7 @@ import {
 } from "@/types/lab-reservation";
 import { Calendar, ArrowLeft, RefreshCw, AlertCircle, Loader2, Computer, Clock, Repeat, X } from "lucide-react";
 import { User } from "@/types/auth";
+import { formatReservationDate, formatDateTimeSafe } from "@/lib/utils";
 
 export default function MisReservasLabPage() {
   const router = useRouter();
@@ -85,15 +86,13 @@ export default function MisReservasLabPage() {
     }
   }, [authLoading, user]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString + "T12:00:00");
-    return date.toLocaleDateString("es-ES", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  // Use safe date formatting from utils
+  const formatDate = (dateString: string | undefined | null) => {
+    return formatReservationDate(dateString, "Fecha no disponible");
   };
+
+  // Helper for displaying computer number with fallback
+  const displayComputerNumber = (num: number | undefined | null) => num ?? "N/A";
 
   const handleCancelReservation = async (reservationId: string) => {
     if (!confirm("¿Estás seguro de que deseas cancelar esta reserva?")) return;
@@ -243,7 +242,7 @@ export default function MisReservasLabPage() {
                       </Badge>
                     </div>
                     <CardDescription>
-                      Creada el {new Date(reservation.createdAt).toLocaleString("es-ES")}
+                      Creada el {formatDateTimeSafe(reservation.createdAt)}
                     </CardDescription>
                   </div>
                 </div>
@@ -312,10 +311,10 @@ export default function MisReservasLabPage() {
                           </div>
                           <div>
                             <p className="font-bold text-2xl text-blue-700">
-                              Computadora #{reservation.computerNumber}
+                              Computadora #{displayComputerNumber(reservation.computerNumber)}
                             </p>
                             <p className="text-sm text-blue-600">
-                              {reservation.computerNumber >= 6 ? "Uso CFD/Metaverso" : "Acceso General"}
+                              {(reservation.computerNumber ?? 0) >= 6 ? "Uso CFD/Metaverso" : "Acceso General"}
                             </p>
                           </div>
                         </div>
@@ -396,7 +395,7 @@ export default function MisReservasLabPage() {
                       <Alert className="bg-green-50 border-green-200">
                         <AlertDescription className="text-green-800">
                           <strong>Aprobada el:</strong>{" "}
-                          {new Date(reservation.approvedAt).toLocaleString("es-ES")}
+                          {formatDateTimeSafe(reservation.approvedAt)}
                         </AlertDescription>
                       </Alert>
                     )}
