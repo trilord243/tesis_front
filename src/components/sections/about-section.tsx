@@ -56,11 +56,11 @@ function ResearchCard() {
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="bg-brand-primary/5 rounded-lg p-3">
             <div className="font-bold text-brand-primary">Tesis</div>
-            <div className="text-brand-gray">Pregrado y Postgrado</div>
+            <div className="text-brand-gray">Proyectos de Grado</div>
           </div>
           <div className="bg-brand-orange/5 rounded-lg p-3">
             <div className="font-bold text-brand-orange">Investigación</div>
-            <div className="text-brand-gray">Proyectos Académicos</div>
+            <div className="text-brand-gray">Trabajos Académicos</div>
           </div>
         </div>
         <div className="mt-6 flex justify-center">
@@ -111,40 +111,41 @@ function EquipmentCard({
 }
 
 function EquipmentShowcase() {
+  // Datos reales de las computadoras del laboratorio (del seed de la base de datos)
   const equipmentData = [
     {
-      title: "Computadores Gaming/Workstation",
+      title: "Workstation CFD-01",
       description:
-        "Estaciones de trabajo de alto rendimiento para desarrollo, análisis de datos y simulaciones complejas.",
+        "Estación de trabajo optimizada para dinámica de fluidos computacional (CFD) y simulaciones térmicas.",
       features: [
-        "Procesadores Intel i9 / AMD Ryzen 9",
-        "32GB+ RAM DDR5",
-        "GPU RTX 4080/4090",
-        "Almacenamiento SSD NVMe",
+        "AMD Ryzen 9 7950X (16 cores)",
+        "NVIDIA RTX 4090 24GB",
+        "128GB DDR5 RAM",
+        "ANSYS Fluent, COMSOL, OpenFOAM",
       ],
       bgColor: "bg-brand-primary/10",
     },
     {
-      title: "Realidad Virtual",
+      title: "Workstation VR-01",
       description:
-        "Equipos VR de última generación para investigación en inmersión digital y visualización 3D.",
+        "Especializada en desarrollo de experiencias de realidad virtual y aumentada con rendimiento máximo.",
       features: [
-        "Meta Quest Pro",
-        "HTC Vive Pro 2",
-        "Controladores de precisión",
-        "Software especializado",
+        "Intel Core i9-13900KF (24 cores)",
+        "NVIDIA RTX 4090 24GB",
+        "64GB DDR5 RAM",
+        "Unity, Unreal Engine 5, SteamVR",
       ],
       bgColor: "bg-brand-orange/10",
     },
     {
-      title: "Equipos Especializados",
+      title: "Workstation Render-01",
       description:
-        "Herramientas y dispositivos para investigaciones específicas en diversas áreas académicas.",
+        "Potencia extrema para renderizado fotorrealista, animación 3D y desarrollo de visualizaciones.",
       features: [
-        "Sensores IoT avanzados",
-        "Equipos de medición",
-        "Cámaras de alta resolución",
-        "Instrumentos de laboratorio",
+        "AMD Threadripper PRO 5975WX (32 cores)",
+        "NVIDIA RTX 4090 24GB",
+        "256GB DDR4 ECC RAM",
+        "Blender, 3ds Max, V-Ray",
       ],
       bgColor: "bg-brand-secondary/10",
     },
