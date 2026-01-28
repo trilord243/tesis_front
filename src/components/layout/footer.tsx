@@ -37,8 +37,8 @@ function CompanyInfo() {
     <div>
       <FooterLogo />
       <p className="font-roboto text-white/80 leading-relaxed">
-        Innovación y excelencia en cada reserva. Comprometidos con tu
-        experiencia y el desarrollo sostenible.
+        Laboratorio Experimental del Metaverso. Fomentando la innovación,
+        el aprendizaje y la colaboración en tecnologías inmersivas.
       </p>
     </div>
   );
@@ -50,16 +50,16 @@ function ServicesSection() {
       <h4 className="font-roboto font-bold text-lg mb-4">Servicios</h4>
       <ul className="space-y-2 font-roboto text-white/80">
         <li>
-          <FooterLink href="#">Reservas Online</FooterLink>
+          <FooterLink href="/dashboard/reservar-lab">Reserva de Laboratorio</FooterLink>
         </li>
         <li>
-          <FooterLink href="#">Gestión de Eventos</FooterLink>
+          <FooterLink href="/laboratorio">Laboratorio Metaverso</FooterLink>
         </li>
         <li>
-          <FooterLink href="#">Soporte 24/7</FooterLink>
+          <FooterLink href="/dashboard/reservas">Equipos VR/AR</FooterLink>
         </li>
         <li>
-          <FooterLink href="#">API Integración</FooterLink>
+          <FooterLink href="/demo-reserva">Tutoriales</FooterLink>
         </li>
       </ul>
     </div>
@@ -69,19 +69,26 @@ function ServicesSection() {
 function CompanySection() {
   return (
     <div>
-      <h4 className="font-roboto font-bold text-lg mb-4">Empresa</h4>
+      <h4 className="font-roboto font-bold text-lg mb-4">Universidad</h4>
       <ul className="space-y-2 font-roboto text-white/80">
         <li>
-          <FooterLink href="#">Sobre Nosotros</FooterLink>
+          <a
+            href="https://www.unimet.edu.ve"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-brand-orange transition-colors"
+          >
+            Universidad Metropolitana
+          </a>
         </li>
         <li>
-          <FooterLink href="#">Nuestros Valores</FooterLink>
+          <FooterLink href="/#about">Sobre Centro Mundo X</FooterLink>
         </li>
         <li>
-          <FooterLink href="#">Carreras</FooterLink>
+          <FooterLink href="/#normas">Normas del Laboratorio</FooterLink>
         </li>
         <li>
-          <FooterLink href="#">Contacto</FooterLink>
+          <FooterLink href="/auth/register">Registrarse</FooterLink>
         </li>
       </ul>
     </div>
@@ -93,12 +100,28 @@ function ContactSection() {
     <div>
       <h4 className="font-roboto font-bold text-lg mb-4">Contacto</h4>
       <div className="space-y-3 font-roboto text-white/80">
-        <p>info@centromundox.com</p>
-        <p>+1 (555) 123-4567</p>
+        <div>
+          <p className="text-xs text-white/60 mb-1">Jefe de Dpto.:</p>
+          <a
+            href="mailto:cguillen@unimet.edu.ve"
+            className="hover:text-brand-orange transition-colors"
+          >
+            cguillen@unimet.edu.ve
+          </a>
+        </div>
+        <div>
+          <p className="text-xs text-white/60 mb-1">Asistente:</p>
+          <a
+            href="mailto:cmorantes@unimet.edu.ve"
+            className="hover:text-brand-orange transition-colors"
+          >
+            cmorantes@unimet.edu.ve
+          </a>
+        </div>
         <p>
           Lunes - Viernes
           <br />
-          9:00 AM - 6:00 PM
+          7:00 AM - 5:30 PM
         </p>
       </div>
     </div>
@@ -109,8 +132,8 @@ function Copyright() {
   return (
     <div className="border-t border-white/20 mt-12 pt-8 text-center">
       <p className="font-roboto text-white/60">
-        © 2024 Centro Mundo X. Todos los derechos reservados. Diseñado siguiendo
-        nuestro manual de marca corporativa.
+        © {new Date().getFullYear()} Centro Mundo X - Universidad Metropolitana.
+        Dpto. de Gestión de Proyectos y Sistemas.
       </p>
     </div>
   );

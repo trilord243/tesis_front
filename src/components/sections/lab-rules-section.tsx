@@ -44,12 +44,12 @@ function RuleCard({ title, icon, rules, iconBg }: RuleCardProps) {
 
 const LAB_RULES = [
   {
-    title: "Respeto y Colaboracion",
+    title: "Respeto y Colaboración",
     icon: <Users className="w-5 h-5 text-white" />,
     iconBg: "bg-blue-500",
     rules: [
-      "Fomenta un ambiente de respeto y colaboracion. Trata a tus companeros y docentes con amabilidad y consideracion.",
-      "Evita comportamientos que puedan interrumpir el trabajo de los demas, como ruidos excesivos o desorden.",
+      "Fomenta un ambiente de respeto y colaboración. Trata a tus compañeros y docentes con amabilidad y consideración.",
+      "Evita comportamientos que puedan interrumpir el trabajo de los demás, como ruidos excesivos o desorden.",
     ],
   },
   {
@@ -57,8 +57,8 @@ const LAB_RULES = [
     icon: <Sparkles className="w-5 h-5 text-white" />,
     iconBg: "bg-purple-500",
     rules: [
-      "Manten el laboratorio limpio y ordenado. Al finalizar tu actividad, asegurate de que todas las luces y equipos esten apagados antes de salir.",
-      "Informa de inmediato cualquier dano o mal funcionamiento del equipo al Asistente o al Jefe del Dpto. de Gestion de Proyectos y Sistemas.",
+      "Mantén el laboratorio limpio y ordenado. Al finalizar tu actividad, asegúrate de que todas las luces y equipos estén apagados antes de salir.",
+      "Informa de inmediato cualquier daño o mal funcionamiento del equipo para que pueda ser reparado a la Asistente o al Jefe del Dpto. de Gestión de Proyectos y Sistemas.",
       "No comas o bebas en este espacio. En los alrededores tienes espacios en los que puedes hacerlo.",
     ],
   },
@@ -68,8 +68,8 @@ const LAB_RULES = [
     iconBg: "bg-green-500",
     rules: [
       "Sigue las instrucciones de uso de cada equipo y herramienta. Si tienes dudas, pregunta a un profesor o asistente.",
-      "Solo utiliza el equipamiento para los fines previstos. El uso inadecuado puede llevar a danos y poner en riesgo la seguridad.",
-      'Los equipos no estan destinados para uso recreativo, ni para tareas comunes como revisar documentos, correos o redes sociales. Para estas tareas, usa los laboratorios de computacion "SL".',
+      "Solo utiliza el equipamiento para los fines previstos. El uso inadecuado puede llevar a daños y poner en riesgo la seguridad.",
+      'Los equipos no están destinados para el uso recreativo, ni para tareas comunes como revisar o elaborar documentos, revisar correos o redes sociales. Para estas tareas, tienes a disposición los laboratorios de computación "SL".',
     ],
   },
   {
@@ -78,17 +78,17 @@ const LAB_RULES = [
     iconBg: "bg-orange-500",
     rules: [
       "Respeta los horarios establecidos que te asignaron para el uso del laboratorio.",
-      "Si es necesario reservar el espacio, envia un correo a cguillen@unimet.edu.ve con copia a cmorantes@unimet.edu.ve",
+      "Si es necesario reservar el espacio, envía un correo al Jefe del Dpto.: cguillen@unimet.edu.ve con copia a la asistente del departamento, Carolina Morantes (cmorantes@unimet.edu.ve).",
       "El tiempo de uso debe ser equitativo.",
     ],
   },
   {
-    title: "Innovacion y Experimentacion",
+    title: "Innovación y Experimentación",
     icon: <Lightbulb className="w-5 h-5 text-white" />,
     iconBg: "bg-yellow-500",
     rules: [
-      "Siente la libertad de innovar y experimentar, pero hazlo con precaucion y responsabilidad, siempre bajo la supervision de un profesor.",
-      "Comparte tus ideas y resultados con el grupo; la colaboracion es clave para el aprendizaje.",
+      "Siente la libertad de innovar y experimentar, pero hazlo con precaución y responsabilidad, siempre bajo la supervisión de un profesor.",
+      "Comparte tus ideas y resultados con el grupo; la colaboración es clave para el aprendizaje.",
     ],
   },
   {
@@ -96,7 +96,7 @@ const LAB_RULES = [
     icon: <Leaf className="w-5 h-5 text-white" />,
     iconBg: "bg-emerald-500",
     rules: [
-      "Manten practicas sostenibles y cuida del medio ambiente. Reduce, reutiliza y recicla cuando sea posible.",
+      "Mantén prácticas sostenibles y cuida del medio ambiente. Reduce, reutiliza y recicla cuando sea posible.",
       "Deja la basura en su lugar fuera del laboratorio.",
     ],
   },
@@ -104,7 +104,7 @@ const LAB_RULES = [
 
 export function LabRulesSection() {
   return (
-    <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+    <section id="normas" className="py-20 bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -113,9 +113,9 @@ export function LabRulesSection() {
           </h2>
           <div className="max-w-3xl mx-auto">
             <p className="text-brand-gray text-lg leading-relaxed">
-              Este espacio ha sido disenado para fomentar la{" "}
+              Este espacio ha sido diseñado para fomentar la{" "}
               <span className="font-semibold text-brand-primary">
-                innovacion
+                innovación
               </span>
               , el{" "}
               <span className="font-semibold text-brand-primary">
@@ -123,7 +123,7 @@ export function LabRulesSection() {
               </span>{" "}
               y la{" "}
               <span className="font-semibold text-brand-primary">
-                colaboracion
+                colaboración
               </span>{" "}
               entre estudiantes y profesores del Centro Mundo X. Para asegurar
               un ambiente productivo y seguro para todos, por favor respeta las
@@ -152,8 +152,8 @@ export function LabRulesSection() {
               Juntos, crearemos un espacio de aprendizaje estimulante y seguro.
             </p>
             <p className="text-sm opacity-90 mt-1">
-              Gracias por contribuir a la excelencia academica en nuestro
-              laboratorio
+              Gracias por contribuir a la excelencia académica en nuestro
+              laboratorio.
             </p>
           </div>
         </div>
