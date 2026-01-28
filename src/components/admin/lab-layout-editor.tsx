@@ -38,6 +38,7 @@ import {
   Pencil,
   Copy,
 } from "lucide-react";
+import { ComputerNumberInput } from "./computer-number-input";
 
 interface Computer {
   _id: string;
@@ -875,16 +876,12 @@ export function LabLayoutEditor({
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 py-4">
-            <div className="space-y-2">
-              <Label>Número</Label>
-              <Input
-                type="number"
-                value={newComputerForm.number}
-                onChange={(e) =>
-                  setNewComputerForm({ ...newComputerForm, number: parseInt(e.target.value) })
-                }
-              />
-            </div>
+            <ComputerNumberInput
+              value={newComputerForm.number}
+              onChange={(num) => setNewComputerForm({ ...newComputerForm, number: num })}
+              existingNumbers={computers.map((c) => c.number)}
+              label="Número de Computadora"
+            />
             <div className="space-y-2">
               <Label>Nombre</Label>
               <Input
@@ -1141,16 +1138,13 @@ export function LabLayoutEditor({
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 py-4">
-            <div className="space-y-2">
-              <Label>Número</Label>
-              <Input
-                type="number"
-                value={editComputerForm.number}
-                onChange={(e) =>
-                  setEditComputerForm({ ...editComputerForm, number: parseInt(e.target.value) })
-                }
-              />
-            </div>
+            <ComputerNumberInput
+              value={editComputerForm.number}
+              onChange={(num) => setEditComputerForm({ ...editComputerForm, number: num })}
+              existingNumbers={computers.map((c) => c.number)}
+              currentEditingNumber={editComputerForm.number}
+              label="Número de Computadora"
+            />
             <div className="space-y-2">
               <Label>Nombre</Label>
               <Input

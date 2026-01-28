@@ -38,6 +38,7 @@ import {
   ArrowUpDown,
   Repeat,
 } from "lucide-react";
+import { formatDateSafe, formatReservationDate } from "@/lib/utils";
 
 // Mapeo de valores a labels para los filtros
 const STATUS_FILTER_OPTIONS = {
@@ -190,15 +191,8 @@ export default function AdminReservasLabPage() {
     loadReservations();
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString + "T12:00:00");
-    return date.toLocaleDateString("es-ES", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  };
+  // Helper to display computer number with fallback
+  const displayComputerNumber = (num: number | undefined | null) => num ?? "N/A";
 
   return (
     <>
@@ -473,7 +467,7 @@ export default function AdminReservasLabPage() {
                           </Badge>
                           <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">
                             <Computer className="h-3 w-3 mr-1" />
-                            Computadora #{reservation.computerNumber}
+                            Computadora #{displayComputerNumber(reservation.computerNumber)}
                           </Badge>
                           <span className="font-semibold">{reservation.userName}</span>
                           <span className="text-sm text-muted-foreground">
@@ -493,7 +487,7 @@ export default function AdminReservasLabPage() {
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
                           <span className="font-medium">
-                            {formatDate(reservation.reservationDate)}
+                            {formatReservationDate(reservation.reservationDate)}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -504,7 +498,7 @@ export default function AdminReservasLabPage() {
                             </span>
                           ) : (
                             <span>
-                              Solicitada el {new Date(reservation.createdAt).toLocaleDateString("es-ES")}
+                              Solicitada el {formatDateSafe(reservation.createdAt)}
                             </span>
                           )}
                         </div>

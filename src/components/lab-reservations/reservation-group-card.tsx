@@ -31,6 +31,7 @@ import {
   Check,
   X,
 } from "lucide-react";
+import { formatDateSafe } from "@/lib/utils";
 
 interface ReservationGroupCardProps {
   groupId: string;
@@ -66,14 +67,14 @@ export function ReservationGroupCard({
       new Date(b.reservationDate).getTime()
   );
 
+  // Helper to format reservation dates (YYYY-MM-DD) safely
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString + "T12:00:00");
-    return date.toLocaleDateString("es-ES", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-    });
+    // Add noon time to avoid timezone issues with YYYY-MM-DD dates
+    return formatDateSafe(dateString + "T12:00:00", "EEE, d MMM");
   };
+
+  // Helper to display computer number with fallback
+  const displayComputerNumber = firstReservation.computerNumber ?? "N/A";
 
   const toggleSelect = (id: string) => {
     const newSelected = new Set(selectedIds);
@@ -230,7 +231,7 @@ export function ReservationGroupCard({
         <div className="flex flex-wrap gap-4 text-sm">
           <div className="flex items-center gap-2">
             <Computer className="h-4 w-4 text-blue-600" />
-            <span>Computadora #{firstReservation.computerNumber}</span>
+            <span>Computadora #{displayComputerNumber}</span>
           </div>
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-gray-600" />

@@ -25,6 +25,7 @@ import {
   calculateTotalDuration,
 } from "@/types/lab-reservation";
 import { Calendar, Computer, User, CheckCircle, XCircle, Loader2, Clock, Repeat } from "lucide-react";
+import { formatDateTimeSafe, formatReservationDate } from "@/lib/utils";
 
 interface AdminReservationDialogProps {
   reservation: LabReservation | null;
@@ -45,15 +46,8 @@ export function AdminReservationDialog({
 
   if (!reservation) return null;
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString + "T12:00:00");
-    return date.toLocaleDateString("es-ES", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  // Helper to display computer number with fallback
+  const displayComputerNumber = reservation.computerNumber ?? "N/A";
 
   const handleApprove = async () => {
     setIsUpdating(true);
@@ -203,13 +197,13 @@ export function AdminReservationDialog({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-sm text-muted-foreground">Fecha:</span>
-                  <p className="font-medium">{formatDate(reservation.reservationDate)}</p>
+                  <p className="font-medium">{formatReservationDate(reservation.reservationDate)}</p>
                 </div>
                 <div>
                   <span className="text-sm text-muted-foreground">Computadora:</span>
                   <Badge variant="outline" className="flex items-center gap-1 w-fit">
                     <Computer className="h-3 w-3" />
-                    Computadora #{reservation.computerNumber}
+                    Computadora #{displayComputerNumber}
                   </Badge>
                 </div>
               </div>
@@ -249,13 +243,7 @@ export function AdminReservationDialog({
 
               <div>
                 <span className="text-sm text-muted-foreground">Solicitada el:</span>
-                <p className="text-sm">{new Date(reservation.createdAt).toLocaleDateString("es-ES", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit"
-                })}</p>
+                <p className="text-sm">{formatDateTimeSafe(reservation.createdAt)}</p>
               </div>
             </div>
           </div>
@@ -292,7 +280,7 @@ export function AdminReservationDialog({
           {reservation.status === ReservationStatus.PENDING && (
             <Alert>
               <AlertDescription>
-                <strong>Importante:</strong> Al aprobar esta solicitud, la Computadora #{reservation.computerNumber} quedará reservada para el día {formatDate(reservation.reservationDate)}
+                <strong>Importante:</strong> Al aprobar esta solicitud, la Computadora #{displayComputerNumber} quedará reservada para el día {formatReservationDate(reservation.reservationDate)}
                 {reservation.timeBlocks && reservation.timeBlocks.length > 0
                   ? ` durante los bloques ${formatTimeBlocksRange(reservation.timeBlocks)}`
                   : ""} y no estará disponible para otros usuarios en ese horario.
